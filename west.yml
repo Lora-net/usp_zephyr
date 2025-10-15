@@ -1,0 +1,13 @@
+manifest:
+  projects:
+  - import: true
+    name: zephyr
+    revision: v4.2.0
+    url: https://github.com/zephyrproject-rtos/zephyr
+  - name: usp
+    path: modules/lib/usp
+    revision: v0.5.1-alpha
+    submodules: true
+    url: https://github.com/Lora-net/usp.git
+  self:
+    path: application

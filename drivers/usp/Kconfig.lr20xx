@@ -1,0 +1,26 @@
+# Copyright (c) 2024 Semtech Corporation - Félix Piédallu
+# SPDX-License-Identifier: Apache-2.0
+
+# LoRa transceiver drivers configuration options
+
+config SEMTECH_LR20XX
+	bool "Semtech LR20xx family LoRa transceiver driver"
+	default y
+	depends on DT_HAS_SEMTECH_LR2021_ENABLED
+	select SPI
+	select GPIO
+	help
+	  Enable driver for the LR20xx family LoRa transceiver driver
+
+if SEMTECH_LR20XX
+
+config SEMTECH_LR20XX_BLE
+	bool "Semtech LR20xx support for BLE"
+	default n
+
+config LR20XX_HAL_SPI_BUFFER_MAX_LENGTH
+	int "Max length of SPI TX/RX buffers"
+	default 260
+	range 0 65535
+
+endif

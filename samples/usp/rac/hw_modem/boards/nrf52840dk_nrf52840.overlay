@@ -1,0 +1,88 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	zephyr,user {
+		/* PINS used for the HW modem sample. */
+		hw-modem-command-gpios = <&gpio1 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		hw-modem-busy-gpios = <&gpio0 24 GPIO_ACTIVE_HIGH>;
+		hw-modem-event-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
+		hw-modem-led-scan-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+	};
+
+	aliases {
+		/* Specify which UART is used for communication as input for the hw modem tester */
+		smtc-hal-uart = &uart1;
+		smtc-watchdog = &wdt;
+	};
+};
+
+//Label for flash controller (needed cause we need properties, and we grab alias in user code)
+smtc_flash: &flash0 {};
+
+&spi1 {
+	status = "disabled";
+};
+
+&qspi {
+	status = "disabled"; //Needed because we use pin P0.24
+};
+
+//Delete HFC for uart0 as we use RTS pin
+&uart0 {
+	/delete-property/ hw-flow-control;
+};
+
+&uart1 {
+	status = "okay";
+
+	current-speed = <115200>;
+
+	pinctrl-0 = <&uart1_default_alt>;
+	pinctrl-1 = <&uart1_sleep_alt>;
+	pinctrl-names = "default", "sleep";
+	/delete-property/ hw-flow-control;
+};
+
+&pinctrl {
+	//Disable Flow Control for uart0 (user log uart)
+	uart0_default: uart0_default {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 0, 6)>;
+		};
+		group2 {
+			psels = <NRF_PSEL(UART_RX, 0, 8)>;
+			bias-pull-up;
+		};
+	};
+
+	uart0_sleep: uart0_sleep {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 0, 6)>,
+					<NRF_PSEL(UART_RX, 0, 8)>;
+			low-power-enable;
+		};
+	};
+
+	uart1_default_alt: uart1_default_alt {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 0, 11)>,
+					<NRF_PSEL(UART_RX, 0, 12)>;
+		};
+	};
+
+	uart1_sleep_alt: uart1_sleep_alt {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 0, 11)>,
+					<NRF_PSEL(UART_RX, 0, 12)>;
+			low-power-enable;
+		};
+	};
+};
+
+&wdt {
+	status = "okay";
+};

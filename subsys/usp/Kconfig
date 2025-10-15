@@ -1,0 +1,71 @@
+# LoRaWAN configuration options
+
+# Copyright (c) 2024 Semtech Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig USP
+	bool "USP support"
+	depends on LORA_BASICS_MODEM_DRIVERS
+	select EXPERIMENTAL
+	select LORA_BASICS_MODEM_DRIVERS_RAL_RALF
+	select REBOOT
+	# depends on REQUIRES_FULL_LIBC
+	select ENTROPY_GENERATOR
+	select ZEPHYR_USP_MODULE
+	depends on !LORAWAMN
+	help
+	  This option enables the USP module for USP & LoRaWAN support.
+	  Full libc is required for floorf.
+	  Also make sure some source of randomness is used.
+
+if USP
+
+module = USP
+module-str = USP
+source "subsys/logging/Kconfig.template.log_config"
+
+config USP_LOG_VERBOSE
+	bool "Additional very verbose logging"
+	help
+	 An even more verbose log level than debug
+
+config USP_LORA_BASICS_MODEM
+	bool "Include LoRa Basics Modem over USP/RAC"
+ 	default n
+
+config USP_MAIN_THREAD
+	bool "Build a main loop thread that runs USP/RAC."
+	default n
+	help
+	 This thread needs to be manually started. It initializes USP/RAC,
+	 and runs it.
+	 The chosen zephyr,lorawan-transceiver device will be used as transceiver.
+
+if USP_MAIN_THREAD
+
+config USP_MAIN_THREAD_STACK_SIZE
+	int "Stack size of the USP/RAC main thread"
+	default 4096
+	help
+	  Stack size for the USP/RAC main thread
+
+config USP_MAIN_THREAD_PRIORITY
+	int "Priority of the USP/RAC main thread"
+	default 2
+	help
+	  Thread priority of the USP/RAC main thread
+
+config USP_MAIN_THREAD_MAX_SLEEP_MS
+	int "Maximum sleeping time for the USP/RAC main thread"
+	default 60000
+	help
+	  Present as a fail-safe if the thread wake-up fails for some reason
+
+config USP_THREADS_MUTEXES
+	bool "Manage Mutexes instead of message queue for API call"
+        default n
+
+endif # USP_MAIN_THREAD
+
+
+endif # USP

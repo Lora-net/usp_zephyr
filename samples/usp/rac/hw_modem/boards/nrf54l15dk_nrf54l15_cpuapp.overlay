@@ -1,0 +1,125 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	zephyr,user {
+		/* PINS used for the HW modem sample. */
+		hw-modem-command-gpios = <&gpio1 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; //LED1
+		hw-modem-busy-gpios = <&gpio2 10 GPIO_ACTIVE_HIGH>;
+		hw-modem-event-gpios = <&gpio2 7 GPIO_ACTIVE_HIGH>; //LED2
+		hw-modem-led-scan-gpios = <&gpio1 14 GPIO_ACTIVE_HIGH>; //LED3
+	};
+
+	aliases {
+		/* Specify which UART is used for communication as input for the hw modem tester */
+		smtc-hal-uart = &uart22;
+		smtc-watchdog = &wdt31;
+	};
+};
+
+//Label for flash controller (needed cause we need properties, and we grab alias in user code)
+smtc_flash: &cpuapp_rram {};
+
+&radio {
+	status = "disabled";
+};
+
+&ieee802154 {
+	status = "disabled";
+};
+
+&bt_hci_controller {
+	status = "disabled";
+};
+
+&pwm20 {
+	status = "disabled";
+};
+
+&adc {
+	status = "disabled";
+};
+
+&temp {
+	status = "disabled";
+};
+
+&mx25r64 {
+	status = "disabled";
+};
+
+//Bridge uart (no need flow control)
+&uart22 {
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart22_default>;
+	pinctrl-1 = <&uart22_sleep>;
+	pinctrl-names = "default", "sleep";
+	/delete-property/ hw-flow-control;
+};
+
+//User uart (for logging)
+&uart20 {
+	status = "okay";
+	// disable-rx; //Disabling RX allows a gain of ~200µA, totally disabling uart allows another gain of ~200µA
+	/delete-property/ hw-flow-control;
+};
+
+&pinctrl {
+	uart20_default: uart20_default {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 1, 4)>
+			// ,<NRF_PSEL(UART_RTS, 0, 2)>
+			;
+		};
+		group2 {
+			psels = <NRF_PSEL(UART_RX, 1, 5)>
+			// ,<NRF_PSEL(UART_CTS, 0, 3)>
+			;
+			bias-pull-up;
+		};
+	};
+
+	uart20_sleep: uart20_sleep {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 1, 4)>,
+					<NRF_PSEL(UART_RX, 1, 5)>
+					// ,<NRF_PSEL(UART_RTS, 0, 2)>
+					// ,<NRF_PSEL(UART_CTS, 0, 3)>
+					;
+			low-power-enable;
+		};
+	};
+
+	uart22_default: uart22_default {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 1, 8)> //BUTTON2
+			// ,<NRF_PSEL(UART_RTS, 0, 2)>
+			;
+		};
+		group2 {
+			psels = <NRF_PSEL(UART_RX, 1, 9)> //BUTTON1
+			// ,<NRF_PSEL(UART_CTS, 0, 3)>
+			;
+			bias-pull-up;
+		};
+	};
+
+	uart22_sleep: uart22_sleep {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 1, 8)>,
+					<NRF_PSEL(UART_RX, 1, 9)>
+					// ,<NRF_PSEL(UART_RTS, 0, 2)>
+					// ,<NRF_PSEL(UART_CTS, 0, 3)>
+					;
+			low-power-enable;
+		};
+	};
+};
+
+&wdt31 {
+	status = "okay";
+};

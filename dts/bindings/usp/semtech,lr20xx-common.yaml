@@ -1,0 +1,261 @@
+# Copyright (c) 2024 Semtech Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+description: Semtech LR20XX LoRa radio module
+
+include: spi-device.yaml
+
+properties:
+  reset-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      GPIO connected to the radio's NRESET signal.
+
+      This signal is open-drain, active-low as interpreted by the modem.
+
+  busy-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      GPIO connected to the radio's BUSY/DIO0.
+
+      This signal is high when the radio is ready to accept commands, and
+      low when it is processing a command.
+
+  reg-mode:
+    type: int
+    required: true
+    enum:
+      - 0
+      - 2
+    description: |
+      Configuration of the radio's power regulator mode.
+
+      See constants LR20XX_REG_MODE_* in dt-bindings/usp/lr11xx.h
+
+  hf-clk-out-scaling:
+    type: int
+    enum: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    required: false
+    description: |
+      The power of 2 of the scaling divider for the HF clock output on DIOs.
+
+      * 0x00: Division by 1 (32MHz)
+      * 0x01: Division by 2 (16MHz)
+      * 0x02: Division by 4 (8MHz)
+      * ...
+      * 0x0F: Division by 32768 (976.5625kHz)
+
+      This is only used if at least one DIO is configured with the function
+      LR20XX_SYSTEM_DIO_FUNC_HF_CLK_OUT.
+
+      See constants LR20XX_SYSTEM_HF_CLK_SCALING_* in dt-bindings/usp/lr20xx.h
+
+  # lf-tx-path:
+  #   type: int
+  #   required: true
+  #   enum: [0, 1, 2]
+  #   description: |
+  #     Configures which low frequency paths are available on the board.
+
+  #     See constants LR20XX_TX_PATH_* in dt-bindings/usp/lr20xx.h
+
+  tcxo-voltage:
+    type: int
+    required: true
+    description: |
+      Supply voltage on the radio's VTCXO signal, if enabled.
+
+      See constants LR20XX_SYSTEM_TCXO_CTRL_* in dt-bindings/usp/lr20xx.h
+
+  tcxo-wakeup-time:
+    type: int
+    required: true
+    description: |
+      In milliseconds, the wakeup (or stabilization) time of the TCXO used
+      by the radio.
+
+      Set this value to 0 to disable the TCXO management feature.
+
+  lf-clk:
+    type: int
+    required: true
+    enum: [0, 1, 2]
+    description: |
+      Low frequency clock source for the radio.
+
+      See constants LR20XX_LFCLK_* in dt-bindings/usp/lr20xx.h
+
+  pa-ramp-time:
+    type: int
+    required: false
+    enum: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+    description: |
+      The ramp-up time for the radio PA. 
+      If not provided, the driver will use the default, recommended time (48us).
+      It is not recommended to modify this value.
+
+  rx-boost-cfg:
+    type: int
+    required: false
+    enum: [0, 1, 2, 3, 4, 5, 6, 7]
+    description: |
+      The RX boost option, between 0 to 7, to increase RX sensitivity
+      at the expense of higher current consumption in RX mode.
+      Defaults to 0 if the property isn't present in dts.
+
+  tx-power-offset:
+    type: int
+    required: false
+    description: |
+      Board-specific TX Power offset in dB. Defaults to 0 if the property isn't present in dts.
+      I.E if when the PA is outputting 14dB but you measure only 12dB at antenna output, 
+      the board tx-power-offset will be 2dB. Can alse be negative if antenna outputs higher power
+      than PA output (using an active antenna).
+
+      Can be reconfigured at runtime via radio_utilities_set_tx_power_offset.
+
+  tx-power-cfg-lf:
+    type: array
+    required: true
+    description: |
+      Low-power, low-frequency board output TX power calibrated configuration,
+      from -10dBm to +22dBm (in 1dBm steps).
+
+      An array of 3-element cells is expected. Each cell describes the
+      configuration for a particular TX power with the following format:
+      <half_power, power amplifier duty cycle, power amplifier selection>.
+      This config depends on the board BOM and layout.
+
+
+  tx-power-cfg-hf:
+    type: array
+    required: true
+    description: |
+      High-frequency board output TX power calibrated configuration,
+      from -18dBm to +12dBm (in 1dBm steps).
+
+      An array of 3-element cells is expected. Each cell describes the
+      configuration for a particular TX power with the following format:
+      <half_power, power amplifier duty cycle, power amplifier selection>.
+      This config depends on the board BOM and layout.
+
+  # rssi-calibration-lf-offset:
+  #   type: int
+  #   required: true
+  #   description: |
+  #     RSSI offset calibration value, for frequencies below 600MHz.
+
+  #     This config depends on the board BOM and layout.
+  #     See the LR1110 User Manual, 7.2.15 SetRssiCalibration.
+
+  # rssi-calibration-lf-tune:
+  #   type: array
+  #   required: true
+  #   description: |
+  #     RSSI tuning calibration values, for frequencies below 600MHz.
+
+  #     This config depends on the board BOM and layout. Array order is:
+  #     G4 G5 G6 G7 G8 G9 G10 G11 G12 G13 G13hp1 G13hp2 G13hp3 G13hp4 G13hp5 G13hp6 G13hp7
+  #     See the LR1110 User Manual, 7.2.15 SetRssiCalibration.
+
+  # rssi-calibration-mf-offset:
+  #   type: int
+  #   required: true
+  #   description: |
+  #     RSSI offset calibration value, for frequencies between 600MHz and 2GHz.
+
+  #     This config depends on the board BOM and layout.
+  #     See the LR1110 User Manual, 7.2.15 SetRssiCalibration.
+
+  # rssi-calibration-mf-tune:
+  #   type: array
+  #   required: true
+  #   description: |
+  #     RSSI tuning calibration values, for frequencies between 600MHz and 2GHz.
+
+  #     This config depends on the board BOM and layout. Array order is:
+  #     G4 G5 G6 G7 G8 G9 G10 G11 G12 G13 G13hp1 G13hp2 G13hp3 G13hp4 G13hp5 G13hp6 G13hp7
+  #     See the LR1110 User Manual, 7.2.15 SetRssiCalibration.
+
+  # rssi-calibration-hf-offset:
+  #   type: int
+  #   required: true
+  #   description: |
+  #     RSSI offset calibration value, for frequencies over 2GHz.
+
+  #     This config depends on the board BOM and layout.
+  #     See the LR1110 User Manual, 7.2.15 SetRssiCalibration.
+
+  # rssi-calibration-hf-tune:
+  #   type: array
+  #   required: true
+  #   description: |
+  #     RSSI tuning calibration values, for frequencies over 2GHz.
+
+  #     This config depends on the board BOM and layout. Array order is:
+  #     G4 G5 G6 G7 G8 G9 G10 G11 G12 G13 G13hp1 G13hp2 G13hp3 G13hp4 G13hp5 G13hp6 G13hp7
+  #     See the LR1110 User Manual, 7.2.15 SetRssiCalibration.
+
+  tx-dbm-to-ua-reg-mode-dcdc-lf-vreg:
+    type: array
+    required: true
+    description: |
+      Mapping of the current consumption, in microamperes, for each TX power, on low-frequency path.
+      Using DC-DC regulator and VReg as supply.
+
+  tx-dbm-to-ua-reg-mode-ldo-lf-vreg:
+    type: array
+    required: true
+    description: |
+      Mapping of the current consumption, in microamperes, for each TX power, on low-frequency path.
+      Using LDO regulator and VReg as supply.
+
+  tx-dbm-to-ua-reg-mode-dcdc-hf-vreg:
+    type: array
+    required: true
+    description: |
+      Mapping of the current consumption, in microamperes, for each TX power, on high-frequency path.
+      Using DC-DC regulator and VReg as supply.
+
+  rx-bw-to-ua-reg-mode-dcdc-lf-vreg:
+    type: array
+    required: true
+
+  rx-bw-to-ua-reg-mode-dcdc-hf-vreg:
+    type: array
+    required: true
+
+  rx-bw-to-ua-reg-mode-dcdc-lf-vreg-boosted:
+    type: array
+    required: true
+
+  rx-bw-to-ua-reg-mode-dcdc-hf-vreg-boosted:
+    type: array
+    required: true
+
+  rx-bw-to-ua-reg-mode-ldo-lf-vreg:
+    type: array
+    required: true
+
+  rx-bw-to-ua-reg-mode-ldo-hf-vreg:
+    type: array
+    required: true
+
+  rx-bw-to-ua-reg-mode-ldo-lf-vreg-boosted:
+    type: array
+    required: true
+
+  rx-bw-to-ua-reg-mode-ldo-hf-vreg-boosted:
+    type: array
+    required: true
+
+  calibration-freqs:
+    type: array
+    required: true
+    description: |
+      An array of 3 frequency calibration values for LR2021 different frequency bands.
+      Frequency[0] is (430 MHZ - 510 MHz)
+      Frequency[1] is (867 MHZ - 928 MHz)
+      Frequency[2] is (2.403 GHZ - 2.479 GHz)

@@ -1,0 +1,5 @@
+# Copyright (c) 2025 Semtech Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+config SHIELD_SEMTECH_LORAPLUS_EXPANSION_BOARD
+	def_bool $(shields_list_contains,semtech_loraplus_expansion_board)

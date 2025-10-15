@@ -1,0 +1,320 @@
+/*
+ * Copyright (c) 2025 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/usp/lr20xx.h>
+
+/ {
+	chosen {
+		zephyr,lorawan-transceiver = &lora_semtech_lr2021wio;
+	};
+	aliases {
+		lora-transceiver = &lora_semtech_lr2021wio;
+	};
+};
+
+&xiao_spi {
+	status = "okay";
+	overrun-character = <0>; // Defines state of MOSI when SPI RX
+	cs-gpios = <&xiao_d 3 GPIO_ACTIVE_LOW>;
+
+	lora_semtech_lr2021wio: lora@0 {
+		compatible = "semtech,lr2021";
+		reg = <0>;
+		spi-max-frequency = <DT_FREQ_M(4)>;
+
+		// Board-specific offset
+		tx-power-offset = <0>;
+
+		// RX boost offset, from 0 (no RX boost) to 7 (max RX boost)
+		rx-boost-cfg = <7>;
+
+		reset-gpios = <&xiao_d 2 GPIO_ACTIVE_LOW>; //D2
+
+		busy-gpios = <&xiao_d 1 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; //D1
+
+		reg-mode = <LR20XX_REG_MODE_DCDC>;
+
+		lf-clk = <LR20XX_SYSTEM_LFCLK_RC>;
+
+		tcxo-voltage = <LR20XX_SYSTEM_TCXO_CTRL_1_8V>;
+		tcxo-wakeup-time = <0>;
+
+		tx-power-cfg-lf =
+		/* half_power, pa_lf_duty_cycle, pa_lf_slices */
+		/* meas @902MHz */
+		<(-18) 0x03 0x06>, /* Expected output power = -10dBm */
+		<(-13) 0x02 0x05>, /* Expected output power = -9dBm */
+		<(-13) 0x06 0x01>, /* Expected output power = -8dBm */
+		<( -6) 0x06 0x00>, /* Expected output power = -7dBm */
+		<(  4) 0x01 0x00>, /* Expected output power = -6dBm */
+		<(  4) 0x02 0x00>, /* Expected output power = -5dBm */
+		<(  2) 0x01 0x03>, /* Expected output power = -4dBm */
+		<( 14) 0x00 0x00>, /* Expected output power = -3dBm */
+		<(  9) 0x00 0x03>, /* Expected output power = -2dBm */
+		<( 11) 0x03 0x00>, /* Expected output power = -1dBm */
+		<( 16) 0x01 0x00>, /* Expected output power = 0dBm */
+		<( 11) 0x07 0x00>, /* Expected output power = 1dBm */
+		<( 18) 0x02 0x00>, /* Expected output power = 2dBm */
+		<( 16) 0x05 0x00>, /* Expected output power = 3dBm */
+		<( 17) 0x07 0x00>, /* Expected output power = 4dBm */
+		<( 21) 0x01 0x02>, /* Expected output power = 5dBm */
+		<( 25) 0x03 0x00>, /* Expected output power = 6dBm */
+		<( 32) 0x00 0x01>, /* Expected output power = 7dBm */
+		<( 32) 0x02 0x00>, /* Expected output power = 8dBm */
+		<( 27) 0x03 0x01>, /* Expected output power = 9dBm */
+		<( 32) 0x02 0x01>, /* Expected output power = 10dBm */
+		<( 28) 0x05 0x01>, /* Expected output power = 11dBm */
+		<( 30) 0x05 0x01>, /* Expected output power = 12dBm */
+		<( 34) 0x04 0x01>, /* Expected output power = 13dBm */
+		<( 31) 0x05 0x04>, /* Expected output power = 14dBm */
+		<( 34) 0x04 0x04>, /* Expected output power = 15dBm */
+		<( 34) 0x05 0x06>, /* Expected output power = 16dBm */
+		<( 39) 0x03 0x05>, /* Expected output power = 17dBm */
+		<( 37) 0x06 0x06>, /* Expected output power = 18dBm */
+		<( 40) 0x05 0x05>, /* Expected output power = 19dBm */
+		<( 41) 0x07 0x04>, /* Expected output power = 20dBm */
+		<( 43) 0x07 0x04>, /* Expected output power = 21dBm */
+		<( 44) 0x07 0x07>; /* Expected output power = 22dBm */
+
+
+		tx-power-cfg-hf =
+		/* half_power, pa_duty_cycle, pa_hp_sel */
+		/* meas @2445MHz */
+		<(-39) 29   0x07>, /* Expected output power = -17dBm */
+		<(-39) 16   0x07>, /* Expected output power = -16dBm */
+		<(-35) 19   0x07>, /* Expected output power = -15dBm */
+		<(-32) 19   0x07>, /* Expected output power = -14dBm */
+		<(-29) 19   0x07>, /* Expected output power = -13dBm */
+		<(-27) 16   0x07>, /* Expected output power = -12dBm */
+		<(-24) 17   0x07>, /* Expected output power = -11dBm */
+		<(-22) 16   0x07>, /* Expected output power = -10dBm */
+		<(-19) 18   0x07>, /* Expected output power = -9dBm */
+		<(-17) 16   0x07>, /* Expected output power = -8dBm */
+		<(-14) 21   0x07>, /* Expected output power = -7dBm */
+		<(-12) 18   0x07>, /* Expected output power = -6dBm */
+		<( -7) 30   0x07>, /* Expected output power = -5dBm */
+		<( -8) 16   0x07>, /* Expected output power = -4dBm */
+		<( -5) 24   0x07>, /* Expected output power = -3dBm */
+		<( -2) 27   0x07>, /* Expected output power = -2dBm */
+		<(  1) 29   0x07>, /* Expected output power = -1dBm */
+		<(  4) 30   0x07>, /* Expected output power = 0dBm */
+		<(  6) 30   0x07>, /* Expected output power = 1dBm */
+		<(  7) 28   0x07>, /* Expected output power = 2dBm */
+		<(  8) 25   0x07>, /* Expected output power = 3dBm */
+		<( 10) 25   0x07>, /* Expected output power = 4dBm */
+		<( 15) 31   0x07>, /* Expected output power = 5dBm */
+		<( 16) 30   0x07>, /* Expected output power = 6dBm */
+		<( 18) 30   0x07>, /* Expected output power = 7dBm */
+		<( 21) 31   0x07>, /* Expected output power = 8dBm */
+		<( 22) 30   0x07>, /* Expected output power = 9dBm */
+		<( 24) 30   0x07>, /* Expected output power = 10dBm */
+		<( 24) 26   0x07>, /* Expected output power = 11dBm */
+		<( 24) 16   0x07>; /* Expected output power = 12dBm */
+
+		// Power consumptions tables
+		// DC/DC mode, LF path, meas @902MHz
+		tx-dbm-to-ua-reg-mode-dcdc-lf-vreg = <
+		10400   /* -10 dBm */
+		10100   /*  -9 dBm */
+		9000    /*  -8 dBm */
+		9000    /*  -7 dBm */
+		8400    /*  -6 dBm */
+		8700    /*  -5 dBm */
+		10100   /*  -4 dBm */
+		9200    /*  -3 dBm */
+		10600   /*  -2 dBm */
+		10000   /*  -1 dBm */
+		10000   /*   0 dBm */
+		12100   /*   1 dBm */
+		10900   /*   2 dBm */
+		12000   /*   3 dBm */
+		13100   /*   4 dBm */
+		13300   /*   5 dBm */
+		13400   /*   6 dBm */
+		14600   /*   7 dBm */
+		15300   /*   8 dBm */
+		16800   /*   9 dBm */
+		18100   /*  10 dBm */
+		20200   /*  11 dBm */
+		21900   /*  12 dBm */
+		25600   /*  13 dBm */
+		28300   /*  14 dBm */
+		32200   /*  15 dBm */
+		37600   /*  16 dBm */
+		46000   /*  17 dBm */
+		51800   /*  18 dBm */
+		61300   /*  19 dBm */
+		74100   /*  20 dBm */
+		89400   /*  21 dBm */
+		108200  /*  22 dBm */
+		>;
+
+		// LDO mode, LF path, NOT MEASed
+		tx-dbm-to-ua-reg-mode-ldo-lf-vreg = <
+		1000  /* -10 dBm */
+		1000  /*  -9 dBm */
+		1000  /*  -8 dBm */
+		1000  /*  -7 dBm */
+		1000  /*  -6 dBm */
+		1000  /*  -5 dBm */
+		1000  /*  -4 dBm */
+		1000  /*  -3 dBm */
+		1000  /*  -2 dBm */
+		1000  /*  -1 dBm */
+		1000  /*   0 dBm */
+		1000  /*   1 dBm */
+		1000  /*   2 dBm */
+		1000  /*   3 dBm */
+		1000  /*   4 dBm */
+		1000  /*   5 dBm */
+		1000  /*   6 dBm */
+		1000  /*   7 dBm */
+		1000  /*   8 dBm */
+		1000  /*   9 dBm */
+		1000  /*  10 dBm */
+		1000  /*  11 dBm */
+		1000  /*  12 dBm */
+		1000  /*  13 dBm */
+		1000  /*  14 dBm */
+		1000  /*  15 dBm */
+		1000  /*  16 dBm */
+		1000  /*  17 dBm */
+		1000  /*  18 dBm */
+		1000  /*  19 dBm */
+		1000  /*  20 dBm */
+		1000  /*  21 dBm */
+		1000  /*  22 dBm */
+		>;
+
+		// DC/DC mode, HF path, meas @2445MHz
+		tx-dbm-to-ua-reg-mode-dcdc-hf-vreg = <
+		8625   /* -17 dBm */
+		8783   /* -16 dBm */
+		8874   /* -15 dBm */
+		8998   /* -14 dBm */
+		9145   /* -13 dBm */
+		9289   /* -12 dBm */
+		9481   /* -11 dBm */
+		9646   /* -10 dBm */
+		9840   /* -9 dBm */
+		10073  /* -8 dBm */
+		10280  /* -7 dBm */
+		10597  /* -6 dBm */
+		10511  /* -5 dBm */
+		11200  /* -4 dBm */
+		11391  /* -3 dBm */
+		11630  /* -2 dBm */
+		11360  /* -1 dBm */
+		11635  /*  0 dBm */
+		11986  /*  1 dBm */
+		12670  /*  2 dBm */
+		13292  /*  3 dBm */
+		13859  /*  4 dBm */
+		13685  /*  5 dBm */
+		14629  /*  6 dBm */
+		15388  /*  7 dBm */
+		15804  /*  8 dBm */
+		17270  /*  9 dBm */
+		18943  /* 10 dBm */
+		21041  /* 11 dBm */
+		22524  /* 12 dBm */
+		>;
+
+		// RX LoRa tables
+		// Measured @LR20XX_RADIO_COMMON_RX_PATH_BOOST_MODE_NONE
+		rx-bw-to-ua-reg-mode-dcdc-lf-vreg = <
+		5700  /* RAL_LORA_BW_125_KHZ */
+		5790  /* RAL_LORA_BW_250_KHZ */
+		6320  /* RAL_LORA_BW_400_KHZ */
+		6140  /* RAL_LORA_BW_500_KHZ */
+		6840  /* RAL_LORA_BW_800_KHZ */
+		6600  /* RAL_LORA_BW_1000_KHZ */
+		>;
+
+		rx-bw-to-ua-reg-mode-dcdc-hf-vreg = <
+		6400  /* RAL_LORA_BW_125_KHZ */
+		6510  /* RAL_LORA_BW_250_KHZ */
+		7040  /* RAL_LORA_BW_400_KHZ */
+		6860  /* RAL_LORA_BW_500_KHZ */
+		6880  /* RAL_LORA_BW_800_KHZ */
+		7350  /* RAL_LORA_BW_1000_KHZ */
+		>;
+
+		// Measured @LR20XX_RADIO_COMMON_RX_PATH_BOOST_MODE_7
+		rx-bw-to-ua-reg-mode-dcdc-lf-vreg-boosted = <
+		6920  /* RAL_LORA_BW_125_KHZ */
+		6990  /* RAL_LORA_BW_250_KHZ */
+		7530  /* RAL_LORA_BW_400_KHZ */
+		7370  /* RAL_LORA_BW_500_KHZ */
+		8160  /* RAL_LORA_BW_800_KHZ */
+		7820  /* RAL_LORA_BW_1000_KHZ */
+		>;
+
+		rx-bw-to-ua-reg-mode-dcdc-hf-vreg-boosted = <
+		6740  /* RAL_LORA_BW_125_KHZ */
+		6850  /* RAL_LORA_BW_250_KHZ */
+		7130  /* RAL_LORA_BW_400_KHZ */
+		7180  /* RAL_LORA_BW_500_KHZ */
+		8010  /* RAL_LORA_BW_800_KHZ */
+		7690  /* RAL_LORA_BW_1000_KHZ */
+		>;
+
+		rx-bw-to-ua-reg-mode-ldo-lf-vreg = <
+		9420   /* RAL_LORA_BW_125_KHZ */
+		9580   /* RAL_LORA_BW_250_KHZ */
+		10580  /* RAL_LORA_BW_400_KHZ */
+		10240  /* RAL_LORA_BW_500_KHZ */
+		11770  /* RAL_LORA_BW_800_KHZ */
+		11130  /* RAL_LORA_BW_1000_KHZ */
+		>;
+
+		rx-bw-to-ua-reg-mode-ldo-hf-vreg = <
+		10760  /* RAL_LORA_BW_125_KHZ */
+		10890  /* RAL_LORA_BW_250_KHZ */
+		11870  /* RAL_LORA_BW_400_KHZ */
+		11640  /* RAL_LORA_BW_500_KHZ */
+		13130  /* RAL_LORA_BW_800_KHZ */
+		12500  /* RAL_LORA_BW_1000_KHZ */
+		>;
+
+		rx-bw-to-ua-reg-mode-ldo-lf-vreg-boosted = <
+		11670  /* RAL_LORA_BW_125_KHZ */
+		11710  /* RAL_LORA_BW_250_KHZ */
+		12880  /* RAL_LORA_BW_400_KHZ */
+		12560  /* RAL_LORA_BW_500_KHZ */
+		14090  /* RAL_LORA_BW_800_KHZ */
+		13500  /* RAL_LORA_BW_1000_KHZ */
+		>;
+
+		rx-bw-to-ua-reg-mode-ldo-hf-vreg-boosted = <
+		11410  /* RAL_LORA_BW_125_KHZ */
+		11570  /* RAL_LORA_BW_250_KHZ */
+		12590  /* RAL_LORA_BW_400_KHZ */
+		12280  /* RAL_LORA_BW_500_KHZ */
+		13720  /* RAL_LORA_BW_800_KHZ */
+		13180  /* RAL_LORA_BW_1000_KHZ */
+		>;
+
+		calibration-freqs = <
+		470000000
+		897500000
+		2441000000
+		>;
+
+		dios {
+			compatible = "semtech,lr20xx-dios";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			dio@8 {
+				reg = <8>;
+				function = <LR20XX_SYSTEM_DIO_FUNC_IRQ>;
+				dio-gpios = <&xiao_d 0 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; //D0
+				irq-mask = <LR20XX_SYSTEM_IRQ_ALL_MASK>;
+			};
+		};
+
+	};
+};

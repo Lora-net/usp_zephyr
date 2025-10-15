@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "user_keys.overlay"
+
+/ {
+	aliases {
+		smtc-watchdog = &wdt;
+		smtc-user-button = &button0;
+	};
+};
+
+&radio {
+	status = "disabled";
+};
+
+&i2c0 {
+	status = "disabled";
+};
+
+&adc {
+	status = "disabled";
+};
+
+&temp {
+	status = "disabled";
+};
+
+&rng {
+	status = "disabled";
+};
+
+&ecb {
+	status = "disabled";
+};
+
+&pwm0 {
+	status = "disabled";
+};
+
+&usbd {
+	status = "disabled";
+};
+
+&uart0 {
+	status = "okay";
+	disable-rx; //Disabling RX allows a gain of ~200µA, totally disabling uart allows another gain of ~200µA
+	/delete-property/ hw-flow-control;
+};
+
+&rng_hci {
+	status = "disabled";
+};
+
+&ccm {
+	status = "disabled";
+};
+
+// On nRF52840dk, SPI3 is used by default on arduino header, and this SPI is power-consumption bugged (see Anomaly 195)
+//So, we create an alias that will use spi0 routed on the same pins (arduino header SPI pins)
+
+&spi1 {
+	status = "disabled";
+};
+
+&spi2 {
+	status = "disabled";
+};
+
+&spi3 {
+	status = "okay";
+};
+
+&qspi {
+	status = "disabled";
+};
+
+&wdt {
+	status = "okay";
+};
