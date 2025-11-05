@@ -48,6 +48,7 @@
 #include <zephyr/usp/lora_lbm_transceiver.h>
 
 #include <smtc_modem_hal.h>
+#include <smtc_modem_utilities.h>
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
 
 #if defined(CONFIG_USP)
@@ -111,7 +112,7 @@ void lorawan_smtc_modem_hal_init(const struct device *transceiver)
 #if defined(CONFIG_USP)
     smtc_rac_set_radio_context(prv_transceiver_dev); // Driver HAL implementation
 #endif
-#if defined( CONFIG_LORA_BASICS_MODEM )
+#if defined( CONFIG_LORA_BASICS_MODEM ) || defined( CONFIG_USP_LORA_BASICS_MODEM )
     smtc_modem_set_radio_context(prv_transceiver_dev);
 #endif
 }
