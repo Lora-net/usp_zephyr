@@ -592,7 +592,7 @@ This section presents frequentely-encountered errors and how to fix them.
 > | P1.12 | D5 | DIO9 |
 > | P2.06 | D13 | SPI_SCK |
 > | P2.08 | D11 | SPI_MOSI |
-> | P0.09 | D12 | SPI_MISO |
+> | P2.09 | D12 | SPI_MISO |
 >
 > The mandatory pin for geoloc example on shield embedding a LNA is:
 > | nRF54L15-DK Pin | Arduino connector Pin | LRXXxx shield pin function |
