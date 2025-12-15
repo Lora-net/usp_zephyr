@@ -6,7 +6,7 @@ manifest:
     url: https://github.com/zephyrproject-rtos/zephyr
   - name: usp
     path: modules/lib/usp
-    revision: v1.0.0
+    revision: main
     submodules: true
     url: https://github.com/Lora-net/usp.git
   self:
