@@ -22,7 +22,7 @@ The services used are:
 
 For more details about the GNSS and Wi-Fi services, please refer to the documentation here:
 
-[Geolocation services documentation](<../modules/lib/usp/protocols/lbm_lib/smtc_modem_core/geolocation_services/README.md>)
+Geolocation services documentation: [LOCAL](../../../../../modules/lib/usp/protocols/lbm_lib/smtc_modem_core/geolocation_services/README.md)  [ONLINE](https://github.com/Lora-net/usp/blob/main/protocols/lbm_lib/smtc_modem_core/geolocation_services/README.md)
 
 
 ## Key Features
