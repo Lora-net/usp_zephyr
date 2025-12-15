@@ -1,0 +1,92 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Xiao nRF54 with PyOCD",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder:Zephyr Workspace (all files)}/build/zephyr/zephyr.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "pyocd",
+            "svdFile": "nrf54l15.svd", //For CMSIS peripherals view
+            "device": "nrf54l",
+            "targetId": "nrf54l",
+            "postRestartCommands": [
+                "monitor reset halt"
+            ],
+            "preLaunchTask": "West Build",
+            "toolchainPrefix": "arm-zephyr-eabi",
+            "windows": {
+                "gdbPath": "${config:zephyr.gdb_windows}"
+                //"pyocdPath": "${config:zephyr.pyocd_windows}"
+            },
+            "linux": {
+                "gdbPath": "${config:zephyr.gdb_linux}"
+                //"pyocdPath": "${config:zephyr.pyocd_linux}"
+            },
+            "interface": "swd",
+            "showDevDebugOutput": "raw"
+        },
+        {
+            "name": "STM32L476RG with openocd",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder:Zephyr Workspace (all files)}/build/zephyr/zephyr.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "showDevDebugOutput": "none",
+            "servertype": "openocd",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32l4x.cfg"
+            ],
+            // "openOCDLaunchCommands": [
+            //     "hla_serial  0671FF495648807567102644"
+            // ],
+            //"preLaunchTask": "West Build",
+            "windows": {
+                "gdbPath": "${config:zephyr.gdb_windows}"
+            },
+            "linux": {
+                "gdbPath": "${config:zephyr.gdb_linux}"
+            }
+        },
+        {
+            "name": "nRF52840 DK with JLink",
+            "device": "nRF52840_xxAA",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder:Zephyr Workspace (all files)}/build/zephyr/zephyr.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "jlink",
+            //"preLaunchTask": "West Build",
+            "windows": {
+                "gdbPath": "${config:zephyr.gdb_windows}"
+            },
+            "linux": {
+                "gdbPath": "${config:zephyr.gdb_linux}"
+            }
+        },
+        {
+            "name": "nRF54l15 DK with JLink",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder:Zephyr Workspace (all files)}/build/zephyr/zephyr.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "jlink",
+            "device": "nRF54L15_M33",
+            //"preLaunchTask": "West Build",
+            "windows": {
+                "gdbPath": "${config:zephyr.gdb_windows}"
+            },
+            "linux": {
+                "gdbPath": "${config:zephyr.gdb_linux}"
+            },
+            "interface": "swd",
+            "showDevDebugOutput": "raw"
+        }
+    ]
+}

@@ -1,0 +1,10 @@
+sample:
+  name: LoRa Basics Modem porting tests
+tests:
+  sample.lora_basics_modem.porting_tests:
+    tags: lorawan_lbm
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - 'PORTING_TEST example is starting$'

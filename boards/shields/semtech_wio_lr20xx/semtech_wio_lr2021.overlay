@@ -1,0 +1,11 @@
+/*
+ * Copyright (c) 2025 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "semtech_wio_lr20xx_common.dtsi"
+
+lora_semtech_wio_lr2021: &lora_semtech_wio_lr20xx {
+	compatible = "semtech,lr2021";
+};

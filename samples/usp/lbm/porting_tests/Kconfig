@@ -1,0 +1,17 @@
+# Copyright (c) 2022 Meta
+#
+# SPDX-License-Identifier: Apache-2.0
+
+config TEST_FLASH_ONLY
+	bool "Enable Flash porting tests but disables other porting tests"
+	default n
+
+config TEST_SPI_NB_LOOPS
+	int "Number of loops to test SPI"
+	default 2
+
+config TEST_CONFIG_RADIO_NB_LOOPS
+	int "Number of loops to test radio configuration"
+	default 2
+
+source "Kconfig.zephyr"

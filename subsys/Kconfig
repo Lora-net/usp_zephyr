@@ -1,0 +1,10 @@
+# Subsystem configuration options
+
+# SPDX-License-Identifier: Apache-2.0
+
+menu "Subsystems and OS Services"
+
+rsource "usp/Kconfig"
+rsource "lbm/Kconfig"
+
+endmenu

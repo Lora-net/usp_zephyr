@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder:USP for Zephyr}/**",
+                "${workspaceFolder:Zephyr Workspace (all files)}/modules/**",
+                "${workspaceFolder:Zephyr Workspace (all files)}/zephyr/**"
+            ]
+        }
+    ],
+    "version": 4
+}

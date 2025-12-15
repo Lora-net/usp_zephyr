@@ -1,0 +1,312 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "West Build",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder:Zephyr Workspace (all files)}"
+            },
+            "linux": {
+                "command": "${config:zephyr.west_linux}",
+                "args": [
+                    "build",
+                    "--pristine",
+                    "auto",
+                    "--board",
+                    "xiao_nrf54l15/nrf54l15/cpuapp",
+                    "--shield",
+                    "semtech_wio_lr2021",
+                    "${workspaceFolder:USP for Zephyr}/samples/usp/sdk/ranging_demo",
+                    "--",
+                    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE\""
+                ]
+            },
+            "windows": {
+                "command": "${config:zephyr.west_windows}",
+                "args": [
+                    "build",
+                    "--pristine",
+                    "auto",
+                    "--board",
+                    "xiao_nrf54l15/nrf54l15/cpuapp",
+                    "--shield",
+                    "semtech_wio_lr2021",
+                    "${workspaceFolder:USP for Zephyr}\\samples\\usp\\sdk\\ranging_demo",
+                    "--",
+                    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE\""
+                ]
+            },
+            "osx": {
+                "command": "${config:zephyr.west_osx}",
+                "args": [
+                    "build",
+                    "--pristine",
+                    "auto",
+                    "--board",
+                    "xiao_nrf54l15/nrf54l15/cpuapp",
+                    "--shield",
+                    "semtech_wio_lr2021",
+                    "${workspaceFolder:USP for Zephyr}/samples/usp/sdk/ranging_demo",
+                    "--",
+                    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE\""
+                ]
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "West Interactive Build",
+            "type": "shell",
+            "group": "build",
+			"linux": {
+				"command": "${config:zephyr.west_linux}",
+				"args": [
+					"build",
+					"--pristine",
+					"${input:pristine}",
+					"--board",
+					"${input:board}",
+					"--shield",
+					"${input:shield}",
+					"${input:example}",
+					"--",
+					"-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE\"",
+					"${input:compilationFlags}"
+				],
+			},
+			"windows": {
+				"command": "${config:zephyr.west_windows}",
+				"args": [
+					"build",
+					"--pristine",
+					"${input:pristine}",
+					"--board",
+					"${input:board}",
+					"--shield",
+					"${input:shield}",
+					"${input:example_windows}",
+					"--",
+					"-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE\"",
+					"${input:compilationFlags}"
+				],
+			},
+			"osx": {
+				"command": "${config:zephyr.west_osx}",
+				"args": [
+					"build",
+					"--pristine",
+					"${input:pristine}",
+					"--board",
+					"${input:board}",
+					"--shield",
+					"${input:shield}",
+					"${input:example}",
+					"--",
+					"-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE\"",
+					"${input:compilationFlags}"
+				],
+			},
+            "options": {
+                "cwd": "${workspaceFolder:Zephyr Workspace (all files)}"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "West Flash",
+            "type": "shell",
+            "linux": {
+                "command": "${config:zephyr.west_linux}"
+            },
+            "windows": {
+                "command": "${config:zephyr.west_windows}"
+            },
+            "osx": {
+                "command": "${config:zephyr.west_osx}"
+            },
+            "args": [
+                "flash",
+                "--runner",
+                "nrfutil"
+            ],
+            "problemMatcher": [],
+            "group": "build"
+        }
+    ],
+	"inputs": [
+		{
+			"id": "board",
+			"type": "pickString",
+			"description": "Select your MCU board",
+			"default": "xiao_nrf54l15/nrf54l15/cpuapp",
+			"options": [
+				{
+					"label": "nRF52840DK",
+					"value": "nrf52840dk/nrf52840"
+				},
+				{
+					"label": "nRF54L15DK CPU App",
+					"value": "nrf54l15dk/nrf54l15/cpuapp"
+				},
+				{
+					"label": "Nucleo L476RG",
+					"value": "nucleo_l476rg/stm32l476xx"
+				}
+			]
+		},
+		{
+			"id": "shield",
+			"type": "pickString",
+			"description": "Select your radio shield",
+			"default": "semtech_wio_lr2021",
+			"options": [
+				{
+					"label": "LR1110 MB1xxS",
+					"value": "semtech_lr1110mb1xxs"
+				},
+				{
+					"label": "LR1120 MB1xxS",
+					"value": "semtech_lr1120mb1xxs"
+				},
+				{
+					"label": "LR1121 MB1xxS",
+					"value": "semtech_lr1121mb1xxs"
+				},
+				{
+					"label": "LR2021 WIO LoRa Plus",
+					"value": "semtech_wio_lr2021"
+				},
+				{
+					"label": "SX1261 MB2BAS",
+					"value": "semtech_sx1261mb2bas"
+				}
+			]
+		},
+		{
+			"id": "example",
+			"type": "pickString",
+			"description": "Select the example to compile",
+			"options": [
+				{
+					"label": "LoRaWAN Periodical Uplink",
+					"value": "${workspaceFolder:USP for Zephyr}/samples/usp/sdk/ranging_demo"
+				},
+				{
+					"label": "Ranging Demo",
+					"value": "${workspaceFolder:USP for Zephyr}/samples/usp/sdk/ranging_demo"
+				},
+				{
+					"label": "Ping Pong Example",
+					"value": "${workspaceFolder:USP for Zephyr}/samples/usp/sdk/ping_pong"
+				},
+				{
+					"label": "Packet Error Rate (PER)",
+					"value": "${workspaceFolder:USP for Zephyr}/samples/usp/sdk/packet_error_rate"
+				},
+				{
+					"label": "HW Modem",
+					"value": "${workspaceFolder:USP for Zephyr}/samples/usp/rac/hw_modem"
+				},
+				{
+					"label": "LoRaWAN Geolocation",
+					"value": "${workspaceFolder:USP for Zephyr}/samples/subsys/lorawan_lbm/geolocation"
+				},
+				{
+					"label": "LoRaWAN HW Modem",
+					"value": "${workspaceFolder:USP for Zephyr}/samples/subsys/lorawan_lbm/hw_modem"
+				},
+				{
+					"label": "LoRaWAN Porting Tests",
+					"value": "${workspaceFolder:USP for Zephyr}/samples/subsys/lorawan_lbm/ranging_demo"
+				}
+			]
+		},
+		{
+			"id": "example_windows",
+			"type": "pickString",
+			"description": "Select the example to compile",
+			"options": [
+				{
+					"label": "LoRaWAN Periodical Uplink",
+					"value": "${workspaceFolder:USP for Zephyr}\\samples\\usp\\sdk\\ranging_demo"
+				},
+				{
+					"label": "Ranging Demo",
+					"value": "${workspaceFolder:USP for Zephyr}\\samples\\usp\\sdk\\ranging_demo"
+				},
+				{
+					"label": "Ping Pong Example",
+					"value": "${workspaceFolder:USP for Zephyr}\\samples\\usp\\sdk\\ping_pong"
+				},
+				{
+					"label": "Packet Error Rate (PER)",
+					"value": "${workspaceFolder:USP for Zephyr}\\samples\\usp\\sdk\\packet_error_rate"
+				},
+				{
+					"label": "HW Modem",
+					"value": "${workspaceFolder:USP for Zephyr}\\samples\\usp\\rac\\hw_modem"
+				},
+				{
+					"label": "LoRaWAN Geolocation",
+					"value": "${workspaceFolder:USP for Zephyr}\\samples\\subsys\\lorawan_lbm\\geolocation"
+				},
+				{
+					"label": "LoRaWAN HW Modem",
+					"value": "${workspaceFolder:USP for Zephyr}\\samples\\subsys\\lorawan_lbm\\hw_modem"
+				},
+				{
+					"label": "LoRaWAN Porting Tests",
+					"value": "${workspaceFolder:USP for Zephyr}\\samples\\subsys\\lorawan_lbm\\ranging_demo"
+				}
+			]
+		},
+		{
+			"id": "compilationFlags",
+			"type": "pickString",
+			"description": "Special compilation parameters",
+			"default": "",
+			"options": [
+				{
+					"label": "Ranging Demo - Manager Mode",
+					"value": "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE\""
+				},
+				{
+					"label": "Ranging Demo - Subordinate Mode",
+					"value": "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE\""
+				},
+				{
+					"label": "Ranging Demo - Manager + Periodic Uplink",
+					"value": "-DEXTRA_CFLAGS=\"-DRANGING_DEVICE_MODE=RANGING_DEVICE_MODE_SUBORDINATE -DENABLE_PERIODIC_UPLINK\""
+				},
+				{
+					"label": "Enable Periodic Uplink",
+					"value": "-DEXTRA_CFLAGS=\"-DENABLE_PERIODIC_UPLINK\""
+				},
+				{
+					"label": "No special flags",
+					"value": ""
+				}
+			]
+		},
+		{
+			"id": "pristine",
+			"type": "pickString",
+			"description": "Pristine build type",
+			"default": "auto",
+			"options": [
+				"auto",
+				"always",
+				"never"
+			]
+		},
+		{
+			"id": "additionalFlags",
+			"type": "promptString",
+			"description": "Additional CMAKE flags (ex: -DENABLE_PERIODIC_UPLINK)",
+			"default": ""
+		}
+	]
+}

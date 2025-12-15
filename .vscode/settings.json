@@ -1,0 +1,22 @@
+{
+    "zephyr.west_linux": "${workspaceFolder:Zephyr Workspace (all files)}/../zephyrproject/.venv/bin/west",
+    "zephyr.west_windows": "${workspaceFolder:Zephyr Workspace (all files)}\\..\\zephyrproject\\.venv\\Scripts\\west.exe",
+    "zephyr.west_osx": "${workspaceFolder:Zephyr Workspace (all files)}/../zephyrproject/.venv/bin/west", 
+    "zephyr.gdb_linux": "${userHome}/zephyr-sdk-0.17.0/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
+    "zephyr.gdb_windows": "${userHome}\\zephyr-sdk-0.17.0\\arm-zephyr-eabi\\bin\\arm-zephyr-eabi-gdb.exe",
+    "zephyr.gdb_osx": "${userHome}/zephyr-sdk-0.17.0/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
+    "zephyr.pyocd_linux": "${workspaceFolder:Zephyr Workspace (all files)}/../zephyrproject/.venv/bin/pyocd",
+    "zephyr.pyocd_windows": "${workspaceFolder:Zephyr Workspace (all files)}\\..\\zephyrproject\\.venv\\Scripts\\pyocd.exe",
+    "zephyr.pyocd_osx": "${workspaceFolder:Zephyr Workspace (all files)}/../zephyrproject/.venv/bin/pyocd", 
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/../modules/**",
+        "${workspaceFolder}/../zephyr/**"
+    ],
+    "files.exclude": {
+        "**/build": true
+    },
+  "clangd.arguments": [
+    "--background-index=true"
+  ]
+}

@@ -1,0 +1,111 @@
+// /*
+//  * Copyright (c) 2024 Semtech Corporation
+//  *
+//  * SPDX-License-Identifier: Apache-2.0
+//  */
+
+/ {
+	aliases {
+		smtc-watchdog = &wdt31;
+		smtc-user-button = &button0;
+	};
+};
+
+&radio {
+	status = "disabled";
+};
+
+&ieee802154 {
+	status = "disabled";
+};
+
+&bt_hci_controller {
+	status = "disabled";
+};
+
+&pwm20 {
+	status = "disabled";
+};
+
+&adc {
+	status = "disabled";
+};
+
+&temp {
+	status = "disabled";
+};
+
+&mx25r64 {
+	status = "disabled";
+};
+
+
+// &rng_hci {
+	//     status = "disabled";
+// };
+
+&uart30 {
+	status = "disabled";
+};
+
+// &clock {
+	//     status = "disabled"; //For some reason, disabling it increases power consumption
+// };
+
+&power {
+	status = "okay";
+};
+
+&gpregret1 {
+	status = "okay";
+};
+
+&gpregret2 {
+	status = "okay";
+};
+
+&rng {
+	status = "disabled";
+};
+
+// &spi00 {
+	//     status = "disabled";
+// };
+
+
+&uart20 {
+	status = "okay";
+	// disable-rx; //Disabling RX allows a gain of ~200µA, totally disabling uart allows another gain of ~200µA
+	// /delete-property/ hw-flow-control;
+};
+
+&pinctrl {
+	uart20_default: uart20_default {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 1, 4)>
+			// ,<NRF_PSEL(UART_RTS, 0, 2)>
+			;
+		};
+		group2 {
+			psels = <NRF_PSEL(UART_RX, 0, 1)> //DIO9 is mapped on RX
+			// ,<NRF_PSEL(UART_CTS, 0, 3)>
+			;
+			bias-pull-up;
+		};
+	};
+
+	uart20_sleep: uart20_sleep {
+		group1 {
+			psels = <NRF_PSEL(UART_TX, 1, 4)>,
+					<NRF_PSEL(UART_RX, 0, 1)>
+					// ,<NRF_PSEL(UART_RTS, 0, 2)>
+					// ,<NRF_PSEL(UART_CTS, 0, 3)>
+					;
+			low-power-enable;
+		};
+	};
+};
+
+&wdt31 {
+	status = "okay";
+};

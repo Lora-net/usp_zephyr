@@ -1,0 +1,47 @@
+// /*
+//  * Copyright (c) 2024 Semtech Corporation
+//  *
+//  * SPDX-License-Identifier: Apache-2.0
+//  */
+
+#include "user_keys.overlay"
+
+/ {
+	aliases {
+		smtc-watchdog = &wdt0;
+		smtc-user-button = &usr_btn;
+	};
+
+	buttons: buttons {
+		compatible = "gpio-keys";
+
+		usr_btn: usr-btn {
+			gpios = <&gpio1 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>; //GPIO38
+		};
+	};
+};
+
+&uart0
+{
+	status = "disabled";
+};
+
+&wifi {
+	status = "disabled";
+};
+
+&esp32_bt_hci {
+	status = "disabled";
+};
+
+&i2c0 {
+	status = "disabled";
+};
+
+&twai {
+	status = "disabled";
+};
+
+&wdt0 {
+	status = "okay";
+};

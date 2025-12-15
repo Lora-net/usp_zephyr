@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "user_keys.overlay"
+
+/ {
+        aliases {
+                smtc-watchdog = &iwdg;
+                smtc-user-button = &user_button;
+        };
+};
+
+&spi3 {
+        status = "disabled";
+};
+
+&iwdg {
+        status = "disabled";
+};
+
+&arduino_spi {
+        /delete-property/ overrun-character;
+        // Uncomment those 3 lines to activate DMA on STM32L4
+        // dmas = <&dma1 3 1 (STM32_DMA_PERIPH_TX | STM32_DMA_PRIORITY_HIGH)>,
+        //        <&dma1 2 1 (STM32_DMA_PERIPH_RX | STM32_DMA_PRIORITY_HIGH)>;
+        // dma-names = "tx", "rx";
+};
+
+// Uncomment those 3 lines to activate DMA on STM32L4
+// &dma1 {
+//         status = "okay";
+// };
+
+&arduino_i2c {
+        /delete-property/ zephyr,concat-buf-size;
+};

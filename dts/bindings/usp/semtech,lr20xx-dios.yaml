@@ -1,0 +1,92 @@
+description: |
+  This binding is used to describe the LR20xx DIOs configuration.
+
+  Here is an example:
+  dios {
+      dio@5 {
+          reg = <5>;
+          function = <LR20XX_SYSTEM_DIO_FUNC_RF_SWITCH>;
+          sleep-drive = <LR20XX_SYSTEM_DIO_DRIVE_PULL_UP>;
+          rf-sw = <(LR20XX_DIO_RF_SWITCH_WHEN_LF_RX | LR20XX_DIO_RF_SWITCH_WHEN_HF_TX)>;
+      };
+      dio@6 {
+          reg = <6>;
+          function = <LR20XX_SYSTEM_DIO_FUNC_RF_SWITCH>;
+          sleep-drive = <LR20XX_SYSTEM_DIO_DRIVE_AUTO>;
+          rf-sw = <(
+              LR20XX_DIO_RF_SWITCH_WHEN_LF_RX | LR20XX_DIO_RF_SWITCH_WHEN_LF_TX |
+              LR20XX_DIO_RF_SWITCH_WHEN_HF_RX | LR20XX_DIO_RF_SWITCH_WHEN_HF_TX
+          )>;
+      };
+      dio@9 {
+          reg = <9>;
+          function = <LR20XX_SYSTEM_DIO_FUNC_IRQ>;
+          dio-gpios = <&arduino_header 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+          irq-mask = <LR20XX_SYSTEM_IRQ_ALL_MASK>;
+      };
+  };
+
+compatible: "semtech,lr20xx-dios"
+
+include: "base.yaml"
+
+properties:
+  "#address-cells":
+    const: 1
+
+  "#size-cells":
+    const: 0
+
+
+child-binding:
+  description: Semtech LR20XX LoRa radio module DIO Digital I/O description
+
+  properties:
+    reg:
+      type: int
+      required: true
+      enum: [5, 6, 7, 8, 9, 10, 11]
+      description: The radio's DIO number (5 to 11)
+
+    function:
+      type: int
+      required: true
+      description: |
+        The function configured on the radio's DIO signal.
+
+        See constants LR20XX_SYSTEM_DIO_FUNC_* in dt-bindings/usp/lr20xx.h
+
+    sleep-drive:
+      type: int
+      description: |
+        The radio's DIO signal can be pulled up or down when sleeping.
+
+        Auto means DIO is pull-up if its last state was 1 and pull-down if it was 0.
+
+        See constants LR20XX_SYSTEM_DIO_DRIVE_* in dt-bindings/usp/lr20xx.h
+
+    irq-mask:
+      type: int
+      description: |
+        A bitmask of the IRQs that should be routed on the radio's DIO signal.
+
+        Only valid if function is LR20XX_SYSTEM_DIO_FUNC_IRQ.
+
+        See constants LR20XX_SYSTEM_IRQ_* in dt-bindings/usp/lr20xx.h
+
+    dio-gpios:
+      type: phandle-array
+      description: |
+        GPIO connected to the radio's DIO signal. This GPIO will be used as a
+        generic IRQ line from the chip.
+
+        Only valid if function is LR20XX_SYSTEM_DIO_FUNC_IRQ.
+
+    rf-sw:
+      type: int
+      description: |
+        A bitmask of the RF modes when the DIO needs to be asserted.
+
+        Only valid if function is LR20XX_SYSTEM_DIO_FUNC_RF_SWITCH.
+
+        See constants LR20XX_DIO_RF_SWITCH_WHEN_* in dt-bindings/usp/lr20xx.h

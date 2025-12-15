@@ -1,0 +1,5 @@
+# Copyright (c) 2025 Semtech Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+config SHIELD_SEMTECH_NRF54L15DK_MBED_INTERFACE
+	def_bool $(shields_list_contains,semtech_nrf54l15dk_mbed_interface)

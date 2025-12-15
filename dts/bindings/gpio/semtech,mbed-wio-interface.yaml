@@ -1,0 +1,10 @@
+description: |
+    Yes
+
+compatible: "semtech,mbed-wio-interface"
+
+properties:
+  gpio-controller:
+    type: boolean
+
+include: [gpio-nexus.yaml, base.yaml]

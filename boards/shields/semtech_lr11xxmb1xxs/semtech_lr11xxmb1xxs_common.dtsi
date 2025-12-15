@@ -1,0 +1,365 @@
+/*
+ * Copyright (c) 2025 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/usp/lr11xx.h>
+
+/ {
+	chosen {
+		zephyr,lorawan-transceiver = &lora_semtech_lr11xxmb1xxs;
+	};
+	aliases {
+		lora-transceiver = &lora_semtech_lr11xxmb1xxs;
+	};
+	leds {
+		lora_rx_led: lr11xx_rx_led {
+			gpios = <&arduino_header 5 GPIO_ACTIVE_HIGH>;
+			label = "RX LED";
+		};
+		lora_tx_led: lr11xx_tx_led {
+			gpios = <&arduino_header 4 GPIO_ACTIVE_HIGH>;
+			label = "TX LED";
+		};
+		lora_scanning_led: lr11xx_scanning_led {
+			gpios = <&arduino_header 10 GPIO_ACTIVE_HIGH>;
+			label = "Scanning LED";
+		};
+		lora_gnss_lna_control: lr11xx_gnss_lna_control {
+			/* Not an LED but necessary */
+			gpios = <&arduino_header 3 GPIO_ACTIVE_HIGH>;
+			label = "LR11xx GNSS LNA control";
+		};
+	};
+};
+
+&arduino_spi {
+	status = "okay";
+	overrun-character = <0>; //Defines state of MOSI when SPI RX
+
+	cs-gpios = <&arduino_header 13 GPIO_ACTIVE_LOW>;
+
+	lora_semtech_lr11xxmb1xxs: lora@0 {
+		reg = <0>;
+		spi-max-frequency = <DT_FREQ_M(16)>;
+
+		reset-gpios = <&arduino_header 0 GPIO_ACTIVE_LOW>;
+
+		busy-gpios = <&arduino_header 9 GPIO_ACTIVE_HIGH>;
+
+		event-gpios = <&arduino_header 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+
+		lf-tx-path = <LR11XX_TX_PATH_LF_LP_HP>;
+
+		lf-clk = <LR11XX_LFCLK_XTAL>;
+		reg-mode = <LR11XX_REG_MODE_DCDC>;
+
+		rf-sw-enable = <(LR11XX_DIO5 | LR11XX_DIO6 | LR11XX_DIO7)>;
+		rf-sw-rx-mode = <LR11XX_DIO5>;
+		rf-sw-tx-mode = <(LR11XX_DIO5 | LR11XX_DIO6)>;
+		rf-sw-tx-hp-mode = <LR11XX_DIO6>;
+		rf-sw-gnss-mode = <LR11XX_DIO7>;
+
+		tcxo-voltage = <LR11XX_TCXO_SUPPLY_1_8V>;
+		/* Default to XTAL board */
+		tcxo-wakeup-time = <0>;
+
+		tx-power-cfg-lf-lp =
+		/* power, pa_duty_cycle, pa_hp_sel */
+		<(-15) 0x00 0x00>, /* Expected output power = -17dBm */
+		<(-14) 0x00 0x00>, /* Expected output power = -16dBm */
+		<(-13) 0x00 0x00>, /* Expected output power = -15dBm */
+		<(-12) 0x00 0x00>, /* Expected output power = -14dBm */
+		<(-11) 0x00 0x00>, /* Expected output power = -13dBm */
+		<(-9) 0x00 0x00>, /* Expected output power = -12dBm */
+		<(-8) 0x00 0x00>, /* Expected output power = -11dBm */
+		<(-7) 0x00 0x00>, /* Expected output power = -10dBm */
+		<(-6) 0x00 0x00>, /* Expected output power = -9dBm */
+		<(-5) 0x00 0x00>, /* Expected output power = -8dBm */
+		<(-4) 0x00 0x00>, /* Expected output power = -7dBm */
+		<(-3) 0x00 0x00>, /* Expected output power = -6dBm */
+		<(-2) 0x00 0x00>, /* Expected output power = -5dBm */
+		<(-1) 0x00 0x00>, /* Expected output power = -4dBm */
+		<( 0) 0x00 0x00>, /* Expected output power = -3dBm */
+		<( 1) 0x00 0x00>, /* Expected output power = -2dBm */
+		<( 2) 0x00 0x00>, /* Expected output power = -1dBm */
+		<( 3) 0x00 0x00>, /* Expected output power = 0dBm */
+		<( 3) 0x01 0x00>, /* Expected output power = 1dBm */
+		<( 4) 0x01 0x00>, /* Expected output power = 2dBm */
+		<( 7) 0x00 0x00>, /* Expected output power = 3dBm */
+		<( 8) 0x00 0x00>, /* Expected output power = 4dBm */
+		<( 9) 0x00 0x00>, /* Expected output power = 5dBm */
+		<( 10) 0x00 0x00>, /* Expected output power = 6dBm */
+		<( 12) 0x00 0x00>, /* Expected output power = 7dBm */
+		<( 13) 0x00 0x00>, /* Expected output power = 8dBm */
+		<( 14) 0x00 0x00>, /* Expected output power = 9dBm */
+		<( 13) 0x01 0x00>, /* Expected output power = 10dBm */
+		<( 13) 0x02 0x00>, /* Expected output power = 11dBm */
+		<( 14) 0x02 0x00>, /* Expected output power = 12dBm */
+		<( 14) 0x03 0x00>, /* Expected output power = 13dBm */
+		<( 14) 0x04 0x00>, /* Expected output power = 14dBm */
+		<( 14) 0x07 0x00>; /* Expected output power = 15dBm */
+
+		tx-power-cfg-lf-hp =
+		/* power, pa_duty_cycle, pa_hp_sel */
+		<(  9) 0x00 0x00>, /* Expected output power = -9dBm */
+		<( 10) 0x00 0x00>, /* Expected output power = -8dBm */
+		<( 11) 0x00 0x00>, /* Expected output power = -7dBm */
+		<( 12) 0x00 0x00>, /* Expected output power = -6dBm */
+		<( 13) 0x00 0x00>, /* Expected output power = -5dBm */
+		<( 13) 0x01 0x00>, /* Expected output power = -4dBm */
+		<( 13) 0x02 0x00>, /* Expected output power = -3dBm */
+		<( 17) 0x02 0x00>, /* Expected output power = -2dBm */
+		<( 14) 0x04 0x00>, /* Expected output power = -1dBm */
+		<( 12) 0x00 0x01>, /* Expected output power = 0dBm */
+		<( 13) 0x00 0x01>, /* Expected output power = 1dBm */
+		<( 13) 0x01 0x01>, /* Expected output power = 2dBm */
+		<( 13) 0x02 0x01>, /* Expected output power = 3dBm */
+		<( 15) 0x00 0x02>, /* Expected output power = 4dBm */
+		<( 15) 0x04 0x01>, /* Expected output power = 5dBm */
+		<( 14) 0x02 0x02>, /* Expected output power = 6dBm */
+		<( 14) 0x01 0x03>, /* Expected output power = 7dBm */
+		<( 17) 0x04 0x02>, /* Expected output power = 8dBm */
+		<( 22) 0x00 0x01>, /* Expected output power = 9dBm */
+		<( 22) 0x01 0x01>, /* Expected output power = 10dBm */
+		<( 22) 0x02 0x01>, /* Expected output power = 11dBm */
+		<( 22) 0x03 0x01>, /* Expected output power = 12dBm */
+		<( 22) 0x00 0x03>, /* Expected output power = 13dBm */
+		<( 22) 0x01 0x03>, /* Expected output power = 14dBm */
+		<( 22) 0x04 0x02>, /* Expected output power = 15dBm */
+		<( 22) 0x01 0x04>, /* Expected output power = 16dBm */
+		<( 22) 0x02 0x04>, /* Expected output power = 17dBm */
+		<( 22) 0x01 0x06>, /* Expected output power = 18dBm */
+		<( 22) 0x03 0x05>, /* Expected output power = 19dBm */
+		<( 22) 0x03 0x07>, /* Expected output power = 20dBm */
+		<( 22) 0x04 0x06>, /* Expected output power = 21dBm */
+		<( 22) 0x04 0x07>; /* Expected output power = 22dBm */
+
+		tx-power-cfg-hf =
+		/* power, pa_duty_cycle, pa_hp_sel */
+		<(-18) 0x04 0x00>, //Expected output power = -18dBm
+		<(-18) 0x04 0x00>, /* Expected output power = -17dBm */
+		<(-17) 0x04 0x00>, /* Expected output power = -16dBm */
+		<(-16) 0x04 0x00>, /* Expected output power = -15dBm */
+		<(-15) 0x04 0x00>, /* Expected output power = -14dBm */
+		<(-14) 0x04 0x00>, /* Expected output power = -13dBm */
+		<(-14) 0x04 0x00>, /* Expected output power = -12dBm */
+		<(-12) 0x04 0x00>, /* Expected output power = -11dBm */
+		<(-10) 0x04 0x00>, /* Expected output power = -10dBm */
+		<( -9) 0x04 0x00>, /* Expected output power = -9dBm */
+		<( -8) 0x04 0x00>, /* Expected output power = -8dBm */
+		<( -7) 0x04 0x00>, /* Expected output power = -7dBm */
+		<( -6) 0x04 0x00>, /* Expected output power = -6dBm */
+		<( -5) 0x04 0x00>, /* Expected output power = -5dBm */
+		<( -4) 0x04 0x00>, /* Expected output power = -4dBm */
+		<( -3) 0x04 0x00>, /* Expected output power = -3dBm */
+		<( -2) 0x03 0x00>, /* Expected output power = -2dBm */
+		<( -1) 0x04 0x00>, /* Expected output power = -1dBm */
+		<(  0) 0x04 0x00>, /* Expected output power = 0dBm */
+		<(  1) 0x00 0x00>, /* Expected output power = 1dBm */
+		<(  2) 0x00 0x00>, /* Expected output power = 2dBm */
+		<(  4) 0x04 0x00>, /* Expected output power = 3dBm */
+		<(  5) 0x04 0x00>, /* Expected output power = 4dBm */
+		<(  6) 0x04 0x00>, /* Expected output power = 5dBm */
+		<(  7) 0x04 0x00>, /* Expected output power = 6dBm */
+		<(  8) 0x04 0x00>, /* Expected output power = 7dBm */
+		<(  9) 0x04 0x00>, /* Expected output power = 8dBm */
+		<( 10) 0x04 0x00>, /* Expected output power = 9dBm */
+		<( 11) 0x04 0x00>, /* Expected output power = 10dBm */
+		<( 12) 0x03 0x00>, /* Expected output power = 11dBm */
+		<( 13) 0x04 0x00>, /* Expected output power = 12dBm */
+		<( 13) 0x00 0x00>; /* Expected output power = 13dBm */
+
+
+		/* Tune is G4 G5 G6 G7 G8 G9 G10 G11 G12 G13
+		 * G13hp1 G13hp2 G13hp3 G13hp4 G13hp5 G13hp6 G13hp7
+		 */
+		rssi-calibration-lf-offset = <0>;
+		rssi-calibration-lf-tune = <12 12 14 0 1 3 4 4 3 6 6 6 6 6 6 6 6>;
+
+		rssi-calibration-mf-offset = <0>;
+		rssi-calibration-mf-tune = <2 2 2 3 3 4 5 4 4 6 5 5 6 6 6 7 6>;
+
+		rssi-calibration-hf-offset = <2030>;
+		rssi-calibration-hf-tune = <6 7 6 4 3 4 14 12 14 12 12 12 12 8 8 9 9>;
+
+		// Current consumptions
+		tx-dbm-to-ua-reg-mode-dcdc-lf-lp-vreg = <
+		10820 /* -17 dBm */
+		10980 /* -16 dBm */
+		11060 /* -15 dBm */
+		11160 /* -14 dBm */
+		11300 /* -13 dBm */
+		11430 /* -12 dBm */
+		11550 /* -11 dBm */
+		11680 /* -10 dBm */
+		11930 /*  -9 dBm */
+		12170 /*  -8 dBm */
+		12420 /* -7 dBm */
+		12650 /* -6 dBm */
+		12900 /* -5 dBm */
+		13280 /* -4 dBm */
+		13600 /* -3 dBm */
+		14120 /* -2 dBm */
+		14600 /* -1 dBm */
+		15090 /*  0 dBm */
+		15780 /*  1 dBm */
+		16490 /*  2 dBm */
+		17250 /*  3 dBm */
+		17850 /*  4 dBm */
+		18720 /*  5 dBm */
+		19640 /*  6 dBm */
+		20560 /*  7 dBm */
+		21400 /*  8 dBm */
+		22620 /*  9 dBm */
+		23720 /* 10 dBm */
+		25050 /* 11 dBm */
+		26350 /* 12 dBm */
+		27870 /* 13 dBm */
+		28590 /* 14 dBm */
+		37820 /* 15 dBm */
+		>;
+
+		tx-dbm-to-ua-reg-mode-ldo-lf-lp-vreg = <
+		14950 /* -17 dBm */
+		15280 /* -16 dBm */
+		15530 /* -15 dBm */
+		15770 /* -14 dBm */
+		16020 /* -13 dBm */
+		16290 /* -12 dBm */
+		16550 /* -11 dBm */
+		16760 /* -10 dBm */
+		17280 /*  -9 dBm */
+		17770 /*  -8 dBm */
+		18250 /* -7 dBm */
+		18750 /* -6 dBm */
+		19250 /* -5 dBm */
+		19960 /* -4 dBm */
+		20710 /* -3 dBm */
+		21620 /* -2 dBm */
+		22570 /* -1 dBm */
+		23570 /*  0 dBm */
+		24990 /*  1 dBm */
+		26320 /*  2 dBm */
+		27830 /*  3 dBm */
+		29070 /*  4 dBm */
+		30660 /*  5 dBm */
+		32490 /*  6 dBm */
+		34220 /*  7 dBm */
+		35820 /*  8 dBm */
+		38180 /*  9 dBm */
+		40220 /* 10 dBm */
+		42800 /* 11 dBm */
+		45030 /* 12 dBm */
+		47900 /* 13 dBm */
+		51220 /* 14 dBm */
+		66060 /* 15 dBm */
+		>;
+
+		tx-dbm-to-ua-reg-mode-dcdc-lf-hp-vbat = <
+		27750  /*  -9 dBm */
+		29100  /*  -8 dBm */
+		30320  /*  -7 dBm */
+		31650  /*  -6 dBm */
+		34250  /*  -5 dBm */
+		35550  /*  -4 dBm */
+		36770  /*  -3 dBm */
+		39250  /*  -2 dBm */
+		41480  /*  -1 dBm */
+		43820  /*   0 dBm */
+		46000  /*  1 dBm */
+		49020  /*  2 dBm */
+		50900  /*  3 dBm */
+		54200  /*  4 dBm */
+		56330  /*  5 dBm */
+		59050  /*  6 dBm */
+		62210  /*  7 dBm */
+		65270  /*  8 dBm */
+		68600  /*  9 dBm */
+		71920  /* 10 dBm */
+		75500  /* 11 dBm */
+		79500  /* 12 dBm */
+		84130  /* 13 dBm */
+		88470  /* 14 dBm */
+		92200  /* 15 dBm */
+		94340  /* 16 dBm */
+		96360  /* 17 dBm */
+		98970  /* 18 dBm */
+		102220 /* 19 dBm */
+		106250 /* 20 dBm */
+		111300 /* 21 dBm */
+		113040 /* 22 dBm */
+		>;
+
+		tx-dbm-to-ua-reg-mode-ldo-lf-hp-vbat = <
+		31310  /*  -9 dBm */
+		32700  /*  -8 dBm */
+		33970  /*  -7 dBm */
+		35270  /*  -6 dBm */
+		37900  /*  -5 dBm */
+		39140  /*  -4 dBm */
+		40380  /*  -3 dBm */
+		42860  /*  -2 dBm */
+		45150  /*  -1 dBm */
+		47400  /*   0 dBm */
+		49600  /*  1 dBm */
+		52600  /*  2 dBm */
+		54460  /*  3 dBm */
+		57690  /*  4 dBm */
+		59840  /*  5 dBm */
+		62550  /*  6 dBm */
+		65750  /*  7 dBm */
+		68520  /*  8 dBm */
+		72130  /*  9 dBm */
+		75230  /* 10 dBm */
+		78600  /* 11 dBm */
+		82770  /* 12 dBm */
+		87450  /* 13 dBm */
+		91700  /* 14 dBm */
+		95330  /* 15 dBm */
+		97520  /* 16 dBm */
+		99520  /* 17 dBm */
+		102080 /* 18 dBm */
+		105140 /* 19 dBm */
+		109300 /* 20 dBm */
+		114460 /* 21 dBm */
+		116530 /* 22 dBm */
+		>;
+
+		tx-dbm-to-ua-reg-mode-dcdc-hf-vreg = <
+		11800 /* -18 dBm */
+		11800 /* -17 dBm */
+		11800 /* -16 dBm */
+		11900 /* -15 dBm */
+		12020 /* -14 dBm */
+		12120 /* -13 dBm */
+		12230 /* -12 dBm */
+		12390 /* -11 dBm */
+		12540 /* -10 dBm */
+		12740 /*  -9 dBm */
+		12960 /* -8 dBm */
+		13150 /* -7 dBm */
+		13460 /* -6 dBm */
+		13770 /* -5 dBm */
+		14070 /* -4 dBm */
+		14460 /* -3 dBm */
+		15030 /* -2 dBm */
+		15440 /* -1 dBm */
+		16030 /*  0 dBm */
+		16980 /*  1 dBm */
+		17590 /*  2 dBm */
+		18270 /*  3 dBm */
+		19060 /*  4 dBm */
+		19900 /*  5 dBm */
+		20740 /*  6 dBm */
+		21610 /*  7 dBm */
+		22400 /*  8 dBm */
+		23370 /*  9 dBm */
+		24860 /* 10 dBm */
+		26410 /* 11 dBm */
+		26430 /* 12 dBm */
+		27890 /* 13 dBm */
+		>;
+	};
+};
