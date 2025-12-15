@@ -37,7 +37,7 @@ Configure your LoRaWAN credentials in `boards/user_keys.overlay`:
 
 #### USP
 
-Configure your LoRaWAN credentials in [USP credentials](../../../../../modules/lib/usp/examples/main_examples/example_options.h)
+Configure your LoRaWAN credentials in [LOCAL](../../../../../modules/lib/usp/examples/main_examples/example_options.h) [ONLINE](https://github.com/Lora-net/usp/blob/main/examples/main_examples/example_options.h)
 
 ```dts
 /**
