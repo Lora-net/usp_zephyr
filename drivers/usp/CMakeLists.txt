@@ -36,3 +36,15 @@ if(CONFIG_SEMTECH_SX126X)
     sx126x/sx126x_ral_bsp.c
   )
 endif()
+
+# STM32WL internal radio: uses LL functions for reset/busy, NVIC for DIO1
+if(CONFIG_SEMTECH_SX126X_STM32WL)
+  zephyr_library_sources(
+    sx126x/sx126x_hal_stm32wl.c
+    sx126x/sx126x_board_stm32wl.c
+  )
+
+  zephyr_library_sources_ifdef(CONFIG_LORA_BASICS_MODEM_DRIVERS_RAL_RALF
+    sx126x/sx126x_ral_bsp_stm32wl.c
+  )
+endif()

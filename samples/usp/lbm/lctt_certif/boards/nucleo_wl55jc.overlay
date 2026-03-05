@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2026 Semtech Corporation
+ * SPDX-License-Identifier: Apache-2.0
+ * Created by Charles-Henri Hallard (charles@evolyenergy.com)
+ *
+ * Board overlay for ST NUCLEO-WL55JC (STM32WL55JC, HP PA).
+ *
+ * The base board DTS already contains all radio properties matching
+ * the USP binding: RF switch (PC4/PC5 ACTIVE_LOW), TCXO (DIO3 1.7V 5ms),
+ * PA config (rfo-hp +22dBm). No regulator-ldo: DC-DC converter used.
+ */
+
+&subghzspi {
+    status = "okay";
+
+    lora_usp: radio@0 {
+        compatible = "semtech,sx126x-stm32wl";
+        status = "okay";
+        spi-max-frequency = <8000000>;
+    };
+};
+
+/ {
+    aliases {
+        lora-transceiver   = &lora_usp;
+        lctt-certif-button = &user_button_1; /* SW1 = PA0 */
+    };
+
+    chosen {
+        zephyr,lorawan-transceiver = &lora_usp;
+    };
+};
+
+/* LoRaWAN credentials (placeholder — replace with real values before flashing) */
+#include "user_keys.overlay"

@@ -1,0 +1,59 @@
+/*
+ * Copyright (c) 2026 Semtech Corporation
+ * SPDX-License-Identifier: Apache-2.0
+ * Created by Charles-Henri Hallard (charles@evolyenergy.com)
+ *
+ * Board overlay for ST NUCLEO-WL55JC (STM32WL55JC, HP PA).
+ *
+ * The base board DTS (nucleo_wl55jc.dts) already contains all hardware
+ * properties needed by the USP binding (property names match native Zephyr):
+ *   - tx-enable-gpios (PC4 / FE_CTRL1, ACTIVE_LOW)
+ *   - rx-enable-gpios (PC5 / FE_CTRL2, ACTIVE_LOW)
+ *   - dio3-tcxo-voltage = <SX126X_DIO3_TCXO_1V7>
+ *   - tcxo-power-startup-delay-ms = <5>
+ *   - power-amplifier-output = "rfo-hp"
+ *   - rfo-lp-max-power = <15>
+ *   - rfo-hp-max-power = <22>
+ *
+ * We only need to:
+ *   1. Replace the compatible with "semtech,sx126x-stm32wl".
+ *   2. Add spi-max-frequency (required by spi-device.yaml).
+ *   3. Wire up aliases/chosen for the USP framework.
+ *
+ * No regulator-ldo: NUCLEO-WL55JC has an external DC-DC inductor (L2)
+ * so the DC-DC converter is used (better efficiency).
+ *
+ * Console stays on lpuart1 (PA2/PA3) — the board default.
+ */
+
+&subghzspi {
+    status = "okay";
+
+    lora_usp: radio@0 {
+        /* Use the STM32WL internal-radio USP driver. */
+        compatible = "semtech,sx126x-stm32wl";
+        status = "okay";
+
+        /* SPI speed (required by spi-device.yaml) */
+        spi-max-frequency = <8000000>;
+
+        /* All radio properties (RF switch, TCXO, PA) are inherited
+         * from nucleo_wl55jc.dts — no overrides needed. */
+
+        /* No regulator-ldo: DC-DC converter used (external inductor). */
+    };
+};
+
+/* Alias required by USP sample applications */
+/ {
+    aliases {
+        lora-transceiver0 = &lora_usp;
+    };
+
+    chosen {
+        zephyr,lorawan-transceiver = &lora_usp;
+    };
+};
+
+/* LoRaWAN credentials (placeholder — replace with real values before flashing) */
+#include "user_keys.overlay"

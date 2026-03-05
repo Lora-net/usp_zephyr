@@ -25,8 +25,14 @@ if(CONFIG_ZEPHYR_USP_MODULE)
       include(${CMAKE_CURRENT_LIST_DIR}/../usp_drivers/lr20xx.cmake)
     endif()
 
-    if(CONFIG_SEMTECH_SX126X)
+    if(CONFIG_SEMTECH_SX126X OR CONFIG_SEMTECH_SX126X_STM32WL)
       include(${CMAKE_CURRENT_LIST_DIR}/../usp_drivers/sx126x.cmake)
+    endif()
+
+    # STM32WL LP PA behaves like SX1261; set the compile definition so the
+    # LBM core library selects the correct LP PA register settings.
+    if(CONFIG_SEMTECH_SX126X_STM32WL)
+      zephyr_library_compile_definitions(SX1261)
     endif()
 
     if(CONFIG_LORA_BASICS_MODEM_DRIVERS_RAL_RALF)

@@ -115,19 +115,29 @@ typedef enum return_code_test_e
  */
 
 #if defined( SX128X )
-static ralf_t modem_radio = RALF_SX128X_INSTANTIATE( NULL );
+static ralf_t modem_radio  = RALF_SX128X_INSTANTIATE( NULL );
+#define RADIO_HAL_NAME "SX128x (SPI)"
 #elif defined( SX126X )
-static ralf_t modem_radio = RALF_SX126X_INSTANTIATE( NULL );
+static ralf_t modem_radio  = RALF_SX126X_INSTANTIATE( NULL );
+#if IS_ENABLED( CONFIG_SEMTECH_SX126X_STM32WL )
+#define RADIO_HAL_NAME "SX126x STM32WL (internal subghzspi)"
+#else
+#define RADIO_HAL_NAME "SX126x (SPI)"
+#endif
 #elif defined( LR11XX )
-static ralf_t modem_radio = RALF_LR11XX_INSTANTIATE( NULL );
+static ralf_t modem_radio  = RALF_LR11XX_INSTANTIATE( NULL );
+#define RADIO_HAL_NAME "LR11xx (SPI)"
 #elif defined( LR20XX )
-static ralf_t modem_radio = RALF_LR20XX_INSTANTIATE( NULL );
+static ralf_t modem_radio  = RALF_LR20XX_INSTANTIATE( NULL );
+#define RADIO_HAL_NAME "LR20xx (SPI)"
 #elif defined( SX127X )
 #include "sx127x.h"
 static sx127x_t sx127x;
 static ralf_t   modem_radio = RALF_SX127X_INSTANTIATE( &sx127x );
+#define RADIO_HAL_NAME "SX127x (SPI)"
 #else
 #error "Please select radio board.."
+#define RADIO_HAL_NAME "unknown"
 #endif
 
 /* lr11xx radio context and its use in the ralf layer */
@@ -217,7 +227,8 @@ int main( void )
 
     LOG_INF( "" );
     LOG_INF( "" );
-    LOG_INF( "PORTING_TESTS example is starting" );
+    LOG_INF( "PORTING_TESTS example on " CONFIG_BOARD " is starting" );
+    LOG_INF( "Radio/shield : " RADIO_HAL_NAME );
     LOG_INF( "" );
     LOG_INF( "" );
 

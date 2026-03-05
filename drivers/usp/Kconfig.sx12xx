@@ -4,10 +4,22 @@
 # LoRa transceiver drivers configuration options
 
 config SEMTECH_SX126X
-	bool "Semtech SX126x family LoRa transceiver driver"
+	bool "Semtech SX126x family LoRa transceiver driver (external SPI)"
 	default y
-	depends on DT_HAS_SEMTECH_SX1261_NEW_ENABLED || DT_HAS_SEMTECH_SX1262_NEW_ENABLED || DT_HAS_SEMTECH_SX1268_NEW_ENABLED || DT_HAS_ST_STM32WL_SUBGHZ_RADIO_ENABLED
+	depends on DT_HAS_SEMTECH_SX1261_NEW_ENABLED || DT_HAS_SEMTECH_SX1262_NEW_ENABLED || DT_HAS_SEMTECH_SX1268_NEW_ENABLED
 	select SPI
 	select GPIO
 	help
-	  Enable driver for the SX126x family and stm32wl embedded LoRa transceiver driver
+	  Enable driver for the external SX126x family (SX1261/SX1262/SX1268)
+	  connected via SPI with explicit reset, busy, and DIO GPIO pins.
+
+config SEMTECH_SX126X_STM32WL
+	bool "Semtech SX126x driver for STM32WL internal radio"
+	default y
+	depends on DT_HAS_SEMTECH_SX126X_STM32WL_ENABLED
+	select SPI
+	help
+	  Enable driver for the SX126x-compatible radio embedded inside the
+	  STM32WLE5 / STM32WL55 SoC. Reset and busy signals are accessed via
+	  internal LL register functions (no external GPIO pins required).
+	  DIO1 interrupts are delivered through NVIC IRQ 50 (SUBGHZ_Radio_IRQn).

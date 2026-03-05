@@ -1,0 +1,116 @@
+# Copyright (c) 2026 Semtech Corporation
+# SPDX-License-Identifier: Apache-2.0
+# Created by Charles-Henri Hallard (charles@evolyenergy.com)
+
+# Binding for the STM32WL internal SX126x-compatible radio.
+# This binding extends the st,stm32wl-subghz-radio node with USP-specific
+# properties. Reset and busy signals are internal to the STM32WL CPU and
+# are accessed via LL register functions, not GPIO pins.
+#
+# Property names are intentionally aligned with semtech,sx126x-base.yaml
+# (Zephyr native LoRa driver) for consistency.
+
+description: |
+  Semtech SX126x radio - STM32WL internal variant (no external GPIO reset/busy).
+  Supported boards using this binding:
+    - RAK3172_SIP  (STM32WLE5CC, HP PA +22 dBm, RF switch PA1/PA0 ACTIVE_HIGH, LDO)
+    - RAK3172LP_SIP (STM32WLE5JC, LP PA +14 dBm, RF switch PA1/PA0 ACTIVE_HIGH, LDO)
+    - NUCLEO-WL55JC (STM32WL55JC, HP PA +22 dBm, RF switch PC4/PC5 ACTIVE_LOW, DC-DC)
+  Note: plain RAK3172 uses an external SX1262 over SPI and does NOT use this binding.
+
+compatible: "semtech,sx126x-stm32wl"
+
+include: spi-device.yaml
+
+properties:
+  dio2-tx-enable:
+    type: boolean
+    description: |
+      Use the radio's internal DIO2 to drive an RF switch selecting between
+      TX and RX paths. When enabled, DIO2 goes high when the chip is
+      transmitting. On STM32WL, this maps to the internal TX/RX switch.
+      Leave absent when using tx-enable-gpios / rx-enable-gpios instead.
+
+  dio3-tcxo-voltage:
+    type: int
+    description: |
+      Supply voltage driven on DIO3 to power an external TCXO.
+      See constants SX126X_DIO3_TCXO_* in dt-bindings/lora/sx126x.h
+      (same values as SX126X_TCXO_SUPPLY_* in dt-bindings/usp/sx126x.h).
+      Omit this property if no TCXO is present (crystal oscillator used).
+
+  tcxo-power-startup-delay-ms:
+    type: int
+    description: |
+      Startup (stabilization) delay of the TCXO in milliseconds after DIO3
+      is asserted. Omit or set to 0 if no TCXO is used.
+
+  regulator-ldo:
+    type: boolean
+    description: |
+      Use the LDO power regulator inside the radio (default mode).
+      When absent, the DC-DC converter is used instead.
+      Most boards without an external inductor must set this.
+
+  power-amplifier-output:
+    type: string
+    required: true
+    enum:
+      - "rfo-lp"
+      - "rfo-hp"
+    description: |
+      PA output path used on this board.
+      rfo-lp: low-power PA output (up to +14 dBm on STM32WL LP).
+      rfo-hp: high-power PA output (up to +22 dBm on STM32WL HP).
+
+  rfo-lp-max-power:
+    type: int
+    enum: [10, 14, 15]
+    description: |
+      Maximum TX output power in dBm when using the LP PA.
+      Allowed values: 10, 14, or 15. Defaults to 14 dBm.
+    default: 14
+
+  rfo-hp-max-power:
+    type: int
+    enum: [14, 17, 20, 22]
+    description: |
+      Maximum TX output power in dBm when using the HP PA.
+      Allowed values: 14, 17, 20, or 22. Defaults to 22 dBm.
+    default: 22
+
+  tx-enable-gpios:
+    type: phandle-array
+    description: |
+      GPIO driven HIGH to enable the TX RF path on an external RF switch.
+      When present the driver asserts it before sending SetTx to the radio
+      and deasserts it on standby/sleep. Leave absent when using
+      dio2-tx-enable instead.
+
+  rx-enable-gpios:
+    type: phandle-array
+    description: |
+      GPIO driven HIGH to enable the RX RF path on an external RF switch.
+      When present the driver asserts it before sending SetRx to the radio
+      and deasserts it on standby/sleep. Leave absent when using
+      dio2-tx-enable instead.
+
+  rx-boosted:
+    type: boolean
+    description: |
+      Enable RX Boosted mode for ~2 dB better sensitivity at the cost of
+      ~2 mA extra current in RX mode.
+
+  tx-power-offset:
+    type: int
+    description: |
+      Board-level TX power offset in dB applied on top of the requested
+      output power. Defaults to 0.
+
+  pa-ramp-time:
+    type: int
+    required: false
+    enum: [0, 1, 2, 3, 4, 5, 6, 7]
+    description: |
+      PA ramp-up time index (0 = 10 us ... 7 = 3400 us).
+      Default (0x02) corresponds to 40 us.
