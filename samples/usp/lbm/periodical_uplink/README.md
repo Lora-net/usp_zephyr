@@ -17,7 +17,6 @@ This application demonstrates **LoRaWAN network integration** using LoRa Basics 
 
 ### Network Credentials (Required)
 
-#### USP Zephyr
 
 Configure your LoRaWAN credentials in `boards/user_keys.overlay`:
 
@@ -35,41 +34,7 @@ Configure your LoRaWAN credentials in `boards/user_keys.overlay`:
 };
 ```
 
-#### USP
 
-Configure your LoRaWAN credentials in [LOCAL](../../../../../modules/lib/usp/examples/main_examples/example_options.h) [ONLINE](https://github.com/Lora-net/usp/blob/main/examples/main_examples/example_options.h)
-
-```dts
-/**
- * @brief LoRaWAN User credentials
- */
-#ifndef USER_LORAWAN_DEVICE_EUI
-#define USER_LORAWAN_DEVICE_EUI                        \
-    {                                                  \
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 \
-    }
-#endif
-#ifndef USER_LORAWAN_JOIN_EUI
-#define USER_LORAWAN_JOIN_EUI                          \
-    {                                                  \
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 \
-    }
-#endif
-#ifndef USER_LORAWAN_GEN_APP_KEY
-#define USER_LORAWAN_GEN_APP_KEY                                                                       \
-    {                                                                                                  \
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 \
-    }
-#endif
-#ifndef USER_LORAWAN_APP_KEY
-#define USER_LORAWAN_APP_KEY                                                                           \
-    {                                                                                                  \
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 \
-    }
-#endif
-```
-
-An alternative possibility is to compile the example passing the keys :
 ### Using CMake
 
 | Parameter                    | Default Value | Description                                    |
@@ -87,7 +52,8 @@ An alternative possibility is to compile the example passing the keys :
 
 ### LoRaWAN Regions
 
-Set the selected region in `boards/user_keys.overlay` file for USP zephyr project or in [USP credentials](../../../../../modules/lib/usp/examples/main_examples/example_options.h) for USP
+Set the selected region in `boards/user_keys.overlay` file for USP zephyr project
+
 
 | Region    | Description           |
 |-----------|-----------------------|
@@ -107,8 +73,6 @@ Set the selected region in `boards/user_keys.overlay` file for USP zephyr projec
 
 ## Compilation
 
-### USP Zephyr
-
 **Build standard version:**
 ```bash
 west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/lbm/periodical_uplink
@@ -121,7 +85,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 **Flash the firmware:**
 ```bash
-west flash
+west flash --runner pyocd
 ```
 
 Note:
@@ -129,16 +93,6 @@ Note:
   - uncommenting the DMA definition in `nucleo_l476rg.overlay`file,
   - uncommenting the DMA Kconfig symbols in `prj.conf`
 
-### USP 
-**Build sample:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target periodical_uplink
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/periodical_uplink verify reset exit"
-```
 
 ## Usage
 

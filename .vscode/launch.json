@@ -9,13 +9,17 @@
             "type": "cortex-debug",
             "runToEntryPoint": "main",
             "servertype": "pyocd",
+            //"serverArgs": ["-u", "7170C10D"],
             "svdFile": "nrf54l15.svd", //For CMSIS peripherals view
             "device": "nrf54l",
             "targetId": "nrf54l",
+            // "serverArgs": [
+            //     "--uid", "3F02CDAC"
+            // ],
             "postRestartCommands": [
                 "monitor reset halt"
             ],
-            "preLaunchTask": "West Build",
+            // "preLaunchTask": "West Build",
             "toolchainPrefix": "arm-zephyr-eabi",
             "windows": {
                 "gdbPath": "${config:zephyr.gdb_windows}"

@@ -23,13 +23,9 @@ This application provides **RF spectral analysis** capabilities for radio freque
 | `RSSI_TOP_LEVEL_DBM`    | `0`                   | Maximum RSSI level in dBm            |
 | `RSSI_BOTTOM_LEVEL_DBM` | `-128`                | Minimum RSSI level in dBm            |
 | `RSSI_SCALE`            | `4`                   | RSSI histogram bin size in dBm       |
-| `LORA_BANDWIDTH`        | `RAL_LORA_BW_125_KHZ` | LoRa bandwidth for measurements      |
-| `LORA_SPREADING_FACTOR` | `7`                   | LoRa spreading factor                |
-| `LORA_CODING_RATE`      | `1`                   | LoRa coding rate (4/5)               |
 
 ## Compilation
 
-### Compilation with Zephyr
 
 **Build with default configuration:**
 ```bash
@@ -37,25 +33,9 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 ```
 
 ```bash
-west flash
+west flash --runner pyocd
 ```
 
-### Compilation with USP
-
-**Build with default configuration**
-```bash
-rm -Rf build ; cmake -L -S examples -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target spectral_scan
-```
-
-**Flash using openocd**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/sepctral_scan verify reset exit"
-```
-
-**Flash using pyocd**
-```bash
-pyocd flash --target stm32l476rgtx --uid <SERIAL_NUMBER> --connect under-reset --format elf build/spectral_scan
-```
 
 ## Usage
 
@@ -70,9 +50,8 @@ pyocd flash --target stm32l476rgtx --uid <SERIAL_NUMBER> --connect under-reset -
 
 The output can be seen using minicom
 ```
-minicom -D /dev/USB0 -b 921600
+minicom -D /dev/USB0 -b 115200
 ```
-Please note that the `spectral_scan` application is configured for a baudrate of 921600
 
 ### Application Startup
 

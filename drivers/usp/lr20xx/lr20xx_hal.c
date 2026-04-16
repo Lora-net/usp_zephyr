@@ -45,7 +45,8 @@ LOG_MODULE_REGISTER( lr20xx_hal, CONFIG_LORA_BASICS_MODEM_DRIVERS_LOG_LEVEL );
 #include "lr20xx_hal_context.h"
 
 #define LR20XX_HAL_WAIT_ON_BUSY_TIMEOUT_SEC CONFIG_LR20XX_HAL_WAIT_ON_BUSY_TIMEOUT_SEC
-#define LR20XX_HAL_SPI_BUFFER_MAX_LENGTH CONFIG_LR20XX_HAL_SPI_BUFFER_MAX_LENGTH
+
+#define LR20XX_HAL_LR20_DUMMY_BYTE_LENGHT 2
 
 /**
  * @brief Wait until radio busy pin returns to inactive state or
@@ -67,10 +68,10 @@ static lr20xx_hal_status_t lr20xx_hal_wait_on_busy( const void* context )
         {
             break;
         }
-        else
-        {
-            k_usleep( 100 );
-        }
+        // else
+        // {
+        //     k_usleep( 100 );
+        // }
     }
 
     if( !timed_out )
@@ -138,26 +139,6 @@ lr20xx_hal_status_t lr20xx_hal_wakeup( const void* context )
     return LR20XX_HAL_STATUS_OK;
 }
 
-/*
-void wait_spi_bytes(const struct spi_dt_spec *spi, uint32_t bytes, bool set)
-{
-    const struct spi_cs_control *cs = &spi->config.cs;
-    uint32_t delay_us = (
-        bytes * 8 * 1000 * 1000 / spi->config.frequency
-        + cs->delay
-    );
-
-    k_busy_wait(delay_us);
-    if (set) {
-        gpio_pin_set_dt(&cs->gpio, 0);
-    }
-}
-*/
-
-// Outside the function to prevent stack errors
-static uint8_t tx_buffer[LR20XX_HAL_SPI_BUFFER_MAX_LENGTH];
-static uint8_t rx_buffer[LR20XX_HAL_SPI_BUFFER_MAX_LENGTH];
-
 lr20xx_hal_status_t lr20xx_hal_write( const void* context, const uint8_t* command, const uint16_t command_length,
                                       const uint8_t* data, const uint16_t data_length )
 {
@@ -166,27 +147,22 @@ lr20xx_hal_status_t lr20xx_hal_write( const void* context, const uint8_t* comman
     struct lr20xx_hal_context_data_t*      dev_data = dev->data;
     int                                    ret;
 
-    if( command_length + data_length > LR20XX_HAL_SPI_BUFFER_MAX_LENGTH )
-    {
-        // Early fail if length of data to exchange overflow allocated buffers
-        return LR20XX_HAL_STATUS_ERROR;
-    }
+    const struct spi_buf tx_buf[] = { {
+                                          .buf = ( uint8_t* ) command,
+                                          .len = command_length,
+                                      },
+                                      {
+                                          .buf = ( uint8_t* ) data,
+                                          .len = data_length,
+                                      } };
 
-    //  Make a single SPI transaction packet
-    memcpy( tx_buffer, command, command_length );
-    memcpy( tx_buffer + command_length, data, data_length );
+    const struct spi_buf_set tx = {
+        .buffers = tx_buf,
+        .count   = ARRAY_SIZE( tx_buf ),
+    };
 
     lr20xx_hal_check_device_ready( context );
-    const struct spi_buf tx_buf[] = { { .buf = ( uint8_t* ) tx_buffer, .len = command_length + data_length } };
-
-    const struct spi_buf_set tx = { .buffers = tx_buf, .count = ARRAY_SIZE( tx_buf ) };
-
     ret = spi_write_dt( &config->spi, &tx );
-
-    // ret = spi_write_signal(config->spi.bus, &config->spi.config, &tx, NULL);
-    // wait_spi_bytes(&config->spi, command_length + data_length, true);
-
-    // LOG_INF("%s finished writing %dbytes", __func__, command_length);
     if( ret )
     {
         return LR20XX_HAL_STATUS_ERROR;
@@ -213,45 +189,48 @@ lr20xx_hal_status_t lr20xx_hal_read( const void* context, const uint8_t* command
     const struct lr20xx_hal_context_cfg_t* config = dev->config;
     int                                    ret;
 
-    if( ( 2 + data_length ) > LR20XX_HAL_SPI_BUFFER_MAX_LENGTH )
-    {
-        // Early fail if length of data to exchange overflow allocated buffers
-        return LR20XX_HAL_STATUS_ERROR;
-    }
-
-    lr20xx_hal_check_device_ready( context );
-
     const struct spi_buf tx_buf[] = { {
         .buf = ( uint8_t* ) command,
         .len = command_length,
     } };
 
-    const struct spi_buf_set tx = { .buffers = tx_buf, .count = ARRAY_SIZE( tx_buf ) };
+    const struct spi_buf_set tx = {
+        .buffers = tx_buf,
+        .count   = ARRAY_SIZE( tx_buf ),
+    };
 
+    lr20xx_hal_check_device_ready( context );
     ret = spi_write_dt( &config->spi, &tx );
     if( ret )
     {
         return LR20XX_HAL_STATUS_ERROR;
     }
-    // wait_spi_bytes(&config->spi, command_length, true);
 
     if( data_length > 0 )
     {
-        lr20xx_hal_check_device_ready( context );
+        uint8_t dummy_byte[LR20XX_HAL_LR20_DUMMY_BYTE_LENGHT];
 
-        const struct spi_buf rx_buf[] = { // save dummy for crc calculation
-                                          { .buf = rx_buffer, .len = 2 + data_length }
+        /* save dummy for crc calculation */
+        const struct spi_buf rx_buf[] = { {
+                                              .buf = ( uint8_t* ) dummy_byte,
+                                              .len = LR20XX_HAL_LR20_DUMMY_BYTE_LENGHT,
+                                          },
+                                          {
+                                              .buf = ( uint8_t* ) data,
+                                              .len = data_length,
+                                          } };
+
+        const struct spi_buf_set rx = {
+            .buffers = rx_buf,
+            .count   = ARRAY_SIZE( rx_buf ),
         };
 
-        const struct spi_buf_set rx = { .buffers = rx_buf, .count = ARRAY_SIZE( rx_buf ) };
-
+        lr20xx_hal_check_device_ready( context );
         ret = spi_read_dt( &config->spi, &rx );
         if( ret )
         {
             return LR20XX_HAL_STATUS_ERROR;
         }
-        // wait_spi_bytes(&config->spi, data_length, true);
-        memcpy( data, rx_buffer + 2, data_length );
     }
 
     return LR20XX_HAL_STATUS_OK;
@@ -265,16 +244,21 @@ lr20xx_hal_status_t lr20xx_hal_direct_read( const void* context, uint8_t* data, 
 
     lr20xx_hal_check_device_ready( context );
 
-    const struct spi_buf rx_buf[] = { { .buf = data, .len = data_length } };
+    const struct spi_buf rx_buf[] = { {
+        .buf = ( uint8_t* ) data,
+        .len = data_length,
+    } };
 
-    const struct spi_buf_set rx = { .buffers = rx_buf, .count = ARRAY_SIZE( rx_buf ) };
+    const struct spi_buf_set rx = {
+        .buffers = rx_buf,
+        .count   = ARRAY_SIZE( rx_buf ),
+    };
 
     ret = spi_read_dt( &config->spi, &rx );
     if( ret )
     {
         return LR20XX_HAL_STATUS_ERROR;
     }
-    // wait_spi_bytes(&config->spi, data_length, true);
 
     return LR20XX_HAL_STATUS_OK;
 }
@@ -287,30 +271,42 @@ lr20xx_hal_status_t lr20xx_hal_direct_read_fifo( const void* context, const uint
     const struct lr20xx_hal_context_cfg_t* config = dev->config;
     int                                    ret;
 
-    if( command_length + data_length > LR20XX_HAL_SPI_BUFFER_MAX_LENGTH )
-    {
-        // Early fail if length of data to exchange overflow allocated buffers
-        return LR20XX_HAL_STATUS_ERROR;
-    }
+    uint8_t dummy_byte[LR20XX_HAL_LR20_DUMMY_BYTE_LENGHT];
 
-    memcpy( tx_buffer, command, command_length );
-    memset( tx_buffer + command_length, 0, data_length );
+    const struct spi_buf tx_bufs[] = { {
+                                           .buf = ( uint8_t* ) command,
+                                           .len = command_length,
+                                       },
+                                       {
+                                           .buf = ( uint8_t* ) data,
+                                           .len = data_length,
+                                       } };
+
+    /* save dummy for crc calculation */
+    const struct spi_buf rx_bufs[] = { {
+                                           .buf = ( uint8_t* ) dummy_byte,
+                                           .len = LR20XX_HAL_LR20_DUMMY_BYTE_LENGHT,
+                                       },
+                                       {
+                                           .buf = ( uint8_t* ) data,
+                                           .len = data_length,
+                                       } };
+
+    const struct spi_buf_set tx_buf_set = {
+        .buffers = tx_bufs,
+        .count   = ARRAY_SIZE( tx_bufs ),
+    };
+    const struct spi_buf_set rx_buf_set = {
+        .buffers = rx_bufs,
+        .count   = ARRAY_SIZE( rx_bufs ),
+    };
 
     lr20xx_hal_check_device_ready( context );
-
-    const struct spi_buf tx_bufs[] = { { .buf = ( uint8_t* ) tx_buffer, .len = command_length + data_length } };
-
-    const struct spi_buf rx_bufs[] = { { .buf = rx_buffer, .len = command_length + data_length } };
-
-    const struct spi_buf_set tx_buf_set = { .buffers = tx_bufs, .count = ARRAY_SIZE( tx_bufs ) };
-    const struct spi_buf_set rx_buf_set = { .buffers = rx_bufs, .count = ARRAY_SIZE( rx_bufs ) };
-
     ret = spi_transceive_dt( &config->spi, &tx_buf_set, &rx_buf_set );
     if( ret )
     {
         return LR20XX_HAL_STATUS_ERROR;
     }
-    // wait_spi_bytes(&config->spi, command_length + data_length, true);
-    memcpy( data, rx_buffer + command_length, data_length );
+
     return LR20XX_HAL_STATUS_OK;
 }

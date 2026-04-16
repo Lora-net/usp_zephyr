@@ -47,7 +47,7 @@
 #include "cmd_parser.h"
 #include "git_version.h"
 
-LOG_MODULE_REGISTER( hw_modem, 3 );
+LOG_MODULE_REGISTER( hw_modem, LOG_LEVEL_INF );
 
 /**
  * @brief Watchdog counter reload value during sleep (The period must be lower than MCU watchdog

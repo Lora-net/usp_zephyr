@@ -17,18 +17,18 @@ This application demonstrates **Channel Activity Detection (CAD)** for detecting
 | Parameter               | Default Value           | Description                                |
 |-------------------------|-------------------------|--------------------------------------------|
 | `CAD_DELAY_MS`          | `1000`                  | Delay between CAD operations in ms         |
-| `CAD_DURATION_MS`       | `1000`                  | Maximum duration for CAD operation         |
+| `CAD_DURATION_MS`       | `2000`                  | Maximum duration for CAD operation         |
 | `TYPE_OF_CAD`           | `RAL_LORA_CAD_RX`       | CAD mode: ONLY/RX/LBT (see below)          |
-| `FREQ_IN_HZ`            | `868100000`             | Operating frequency in Hz (868.1 MHz)      |
+| `RF_FREQ_IN_HZ`         | `868100000`             | Operating frequency in Hz (868.1 MHz)      |
 | `LORA_SYNCWORD`         | `0x34`                  | LoRa synchronization word                  |
-| `LORA_SPREADING_FACTOR` | `RAL_LORA_SF12`         | Spreading factor (SF12)                    |
+| `LORA_SPREADING_FACTOR` | `RAL_LORA_SF9`          | Spreading factor (SF12)                    |
 | `LORA_BANDWIDTH`        | `RAL_LORA_BW_125_KHZ`   | Bandwidth (125 kHz)                        |
 | `LORA_CODING_RATE`      | `RAL_LORA_CR_4_5`       | Coding rate (4/5)                          |
-| `LORA_IQ`               | `false`                 | IQ inversion disabled                      |
+| `LORA_IQ`               | `true`                  | IQ inversion disabled                      |
 | `TX_OUTPUT_POWER_DBM`   | `14`                    | Output power in dBm (for CAD-to-TX mode)   |
-| `PAYLOAD_SIZE`          | `12`                    | Payload size in bytes (for CAD-to-TX mode) |
-| `LORA_PREAMBLE_LENGTH`  | `8`                     | LoRa preamble length in symbols            |
-| `LORA_CRC`              | `true`                  | CRC enabled                                |
+| `PAYLOAD_SIZE`          | `255`                   | Payload size in bytes (for CAD-to-TX mode) |
+| `LORA_PREAMBLE_LENGTH`  | `255`                   | LoRa preamble length in symbols            |
+| `LORA_CRC`              | `false`                 | CRC enabled                                |
 | `LORA_PKT_LEN_MODE`     | `RAL_LORA_PKT_EXPLICIT` | Explicit header mode                       |
 
 ### CAD Modes
@@ -52,8 +52,6 @@ The `TYPE_OF_CAD` parameter determines the behavior after CAD detection:
 
 ## Compilation
 
-### USP Zephyr
-
 **Build CAD example:**
 ```bash
 west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/rac/cad -- -DEXTRA_CFLAGS="-DTYPE_OF_CAD=RAL_LORA_CAD_LBT"
@@ -61,18 +59,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 **Flash the firmware:**
 ```bash
-west flash
-```
-
-### USP
-**Build sample: TYPES_OF_CAD=[CAD_LBT|CAD_ONLY|CAD_RX]**
-```
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -DTYPES_OF_CAD=CAD_LBT -G Ninja; cmake --build build --target cad
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/cad verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage

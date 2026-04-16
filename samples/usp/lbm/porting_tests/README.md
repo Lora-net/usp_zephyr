@@ -25,8 +25,6 @@ This application provides **comprehensive Hardware Abstraction Layer (HAL) testi
 
 ## Compilation
 
-### USP Zephyr
-
 **Build:**
 ```bash
 west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/lbm/porting_tests
@@ -34,18 +32,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 **Flash the firmware:**
 ```bash
-west flash
-```
-
-### USP 
-**Build sample:**
-```
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target porting_tests
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/porting_tests verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage

@@ -29,6 +29,7 @@ zephyr_library_sources(
   ${RAC_LIB_DIR}/smtc_rac/smtc_rac.c
   ${RAC_LIB_DIR}/smtc_rac/smtc_rac_lora.c
   ${RAC_LIB_DIR}/smtc_rac/smtc_rac_flrc.c
+  ${RAC_LIB_DIR}/smtc_rac/smtc_rac_flrc_burst.c
   ${RAC_LIB_DIR}/smtc_rac/smtc_rac_fsk.c
   ${RAC_LIB_DIR}/smtc_rac/smtc_rac_lbt.c
   ${RAC_LIB_DIR}/smtc_rac/smtc_rac_lrfhss.c

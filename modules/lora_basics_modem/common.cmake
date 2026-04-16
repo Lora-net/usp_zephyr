@@ -340,6 +340,7 @@ zephyr_library_sources_ifdef(CONFIG_LORA_BASICS_MODEM_GEOLOCATION
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_gnss_scan.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_gnss_send.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_gnss_almanac.c
+  ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_gnss_almanac_full_update.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/gnss_helpers.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_wifi_scan.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_wifi_send.c

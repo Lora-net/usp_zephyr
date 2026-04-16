@@ -94,7 +94,7 @@ static bool prv_radio_irq_pending_while_disabled;
 static void prv_smtc_modem_hal_timer_handler( struct k_timer* timer );
 static K_TIMER_DEFINE( prv_smtc_modem_hal_timer, prv_smtc_modem_hal_timer_handler, NULL );
 
-/* context and callback for the event pin interrupt */
+/* context and callback for the main event pin interrupt */
 static void* prv_smtc_modem_hal_radio_irq_context;
 static void ( *prv_smtc_modem_hal_radio_irq_callback )( void* context );
 
@@ -289,7 +289,7 @@ uint32_t smtc_modem_hal_get_random_nb_in_range( const uint32_t val_1, const uint
 /* ------------ Radio env management ------------ */
 
 /**
- * @brief Called when the transceiver event pin interrupt is triggered.
+ * @brief Called when the main transceiver event pin interrupt is triggered.
  *
  * If CONFIG_LORA_BASICS_MODEM_DRIVERS_EVENT_TRIGGER_GLOBAL_THREAD=y,
  * this is called in the system workq.
@@ -298,7 +298,7 @@ uint32_t smtc_modem_hal_get_random_nb_in_range( const uint32_t val_1, const uint
  *
  * @param[in] dev The transceiver device.
  */
-void prv_transceiver_event_cb( const struct device* dev )
+static void prv_transceiver_event_cb( const struct device* dev )
 {
     if( prv_modem_irq_enabled )
     {
@@ -326,7 +326,7 @@ void smtc_modem_hal_irq_config_radio_irq( void ( *callback )( void* context ), v
 
 void smtc_modem_hal_radio_irq_clear_pending( void )
 {
-    prv_radio_irq_pending_while_disabled = false;
+    prv_radio_irq_pending_while_disabled      = false;
 }
 
 bool smtc_modem_external_stack_currently_use_radio( void )

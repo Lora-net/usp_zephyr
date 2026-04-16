@@ -1,12 +1,11 @@
 # TX Continuous Wave (CW)
 
-This application demonstrates **continuous transmission** capabilities for testing and development purposes. It provides two transmission modes: standard continuous wave transmission and infinite preamble mode. The application can transmit using either LoRa or FSK modulation with user-controlled start/stop functionality via button press.
+This application demonstrates **continuous transmission** capabilities for testing and development purposes. It provides two transmission modes: standard continuous wave transmission and infinite preamble mode. The application transmits using LoRa modulation with user-controlled start/stop functionality via button press.
 
 ## Key Features
 
 - **Continuous Transmission**: Sustained RF output for testing and measurement
 - **Dual Transmission Modes**: Standard continuous wave or infinite preamble
-- **Multi-Modulation Support**: LoRa and FSK modulation options
 - **Button-Controlled Operation**: Start/stop transmission via user button
 - **LED Feedback**: Visual TX activity indication
 - **Configurable Parameters**: Frequency, power, modulation settings
@@ -31,7 +30,6 @@ This application demonstrates **continuous transmission** capabilities for testi
 
 | Parameter               | Default Value              | Description                                      |
 |-------------------------|----------------------------|--------------------------------------------------|
-| `PACKET_TYPE`           | `SMTC_RAC_MODULATION_LORA` | Modulation type: LoRa or FSK                     |
 | `RF_FREQ_IN_HZ`         | `868100000`                | Operating frequency in Hz (868.1 MHz)            |
 | `TX_OUTPUT_POWER_DBM`   | `14`                       | Transmit power in dBm                            |
 | `PAYLOAD_SIZE`          | `128`                      | Payload size in bytes                            |
@@ -43,18 +41,9 @@ This application demonstrates **continuous transmission** capabilities for testi
 | `LORA_PKT_LEN_MODE`     | `RAL_LORA_PKT_EXPLICIT`    | LoRa packet length mode                          |
 | `LORA_IQ`               | `false`                    | LoRa IQ inversion                                |
 | `LORA_CRC`              | `true`                     | LoRa CRC enable/disable                          |
-| `FSK_BITRATE`           | `50000`                    | FSK bitrate in bps (50 kbps)                     |
-| `FSK_FDEV`              | `25000`                    | FSK frequency deviation in Hz (25 kHz)           |
-| `FSK_BANDWIDTH`         | `138000`                   | FSK bandwidth in Hz (138 kHz)                    |
-| `FSK_PREAMBLE_LENGTH`   | `5`                        | FSK preamble length in bytes                     |
-| `FSK_SYNC_WORD_LENGTH`  | `3`                        | FSK sync word length in bytes                    |
-| `FSK_CRC`               | `RAL_GFSK_CRC_2_BYTES_INV` | FSK CRC type                                     |
-| `FSK_WHITENING`         | `true`                     | FSK data whitening enable/disable                |
-| `FSK_PACKET_TYPE`       | `RAL_GFSK_PKT_VAR_LEN`     | FSK packet length mode                           |
 
 ## Compilation
 
-### USP Zephyr
 
 **Build standard LoRa CW mode with INFINITE PREAMBLE:**
 ```bash
@@ -68,25 +57,9 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 Flash:
 ```bash
-west flash
+west flash --runner pyocd
 ```
 
-### USP
-
-**Build standard LoRa CW mode with INFINITE PREAMBLE:**
-``` bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -DINFINITE_PREAMBLE=ON -G Ninja; cmake --build build --target tx_cw
-```
-
-**Build standard LoRa CW mode with CONTINUOUS WAVE:**
-```
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target tx_cw
-```
-
-Flash:
-``` bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program build/tx_cw verify reset exit"
-```
 
 ## Usage
 
@@ -120,7 +93,6 @@ openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program build/tx_cw v
 [00:00:05.200,000] <inf> usp: button pressed
 [00:00:05.200,000] <inf> usp: Starting continuous transmission...
 [00:00:05.200,000] <inf> usp: Continuous wave
-[00:00:05.200,000] <inf> usp: Modulation type: LORA
 [00:00:05.200,000] <inf> usp: Frequency: 868100000 Hz
 [00:00:05.200,000] <inf> usp: Power: 14 dBm
 [00:00:05.200,000] <inf> usp: Spread factor: SF7
@@ -140,7 +112,6 @@ openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program build/tx_cw v
 [00:00:05.200,000] <inf> usp: button pressed
 [00:00:05.200,000] <inf> usp: Starting continuous transmission...
 [00:00:05.200,000] <inf> usp: Infinite preamble
-[00:00:05.200,000] <inf> usp: Modulation type: LORA
 [00:00:05.200,000] <inf> usp: Frequency: 868100000 Hz
 [00:00:05.200,000] <inf> usp: Power: 14 dBm
 [00:00:05.200,000] <inf> usp: Spread factor: SF7
@@ -164,7 +135,6 @@ openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "program build/tx_cw v
 
 3. **Modulation Analysis**:
    - LoRa modulation characteristics
-   - FSK deviation and bandwidth measurements
    - Symbol rate accuracy verification
 
 4. **Regulatory Compliance**:

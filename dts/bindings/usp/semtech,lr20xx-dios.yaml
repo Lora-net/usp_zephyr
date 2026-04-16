@@ -18,8 +18,8 @@ description: |
               LR20XX_DIO_RF_SWITCH_WHEN_HF_RX | LR20XX_DIO_RF_SWITCH_WHEN_HF_TX
           )>;
       };
-      dio@9 {
-          reg = <9>;
+      dio@8 {
+          reg = <8>;
           function = <LR20XX_SYSTEM_DIO_FUNC_IRQ>;
           dio-gpios = <&arduino_header 11 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
           irq-mask = <LR20XX_SYSTEM_IRQ_ALL_MASK>;

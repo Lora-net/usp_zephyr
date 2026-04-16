@@ -21,6 +21,8 @@ zephyr_library_sources(
   ${LBM_LR20XX_DIR}/src/lr20xx_regmem.c
   ${LBM_LR20XX_DIR}/src/lr20xx_system.c
   ${LBM_LR20XX_DIR}/src/lr20xx_workarounds.c
+  ${LBM_LR20XX_DIR}/src/lr20xx_pram_load.c
+  ${LBM_LR20XX_DIR}/src/lr20xx_patch.c
   ${LBM_LR20XX_DIR}/src/lr20xx_rttof.c # protect with define ?
 )
 
@@ -66,3 +68,11 @@ zephyr_include_directories(${LBM_LR20XX_DIR}/inc)
 zephyr_compile_definitions(
   LR20XX
 )
+
+if(CONFIG_DT_HAS_SEMTECH_LR2021_ENABLED)
+  zephyr_compile_definitions( LR2021 )
+elseif(CONFIG_DT_HAS_SEMTECH_LR2022_ENABLED)
+  zephyr_compile_definitions( LR2022 )
+elseif(CONFIG_DT_HAS_SEMTECH_LR2012_ENABLED)
+  zephyr_compile_definitions( LR2012 )
+endif()

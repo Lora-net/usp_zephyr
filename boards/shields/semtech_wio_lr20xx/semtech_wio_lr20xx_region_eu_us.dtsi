@@ -1,0 +1,90 @@
+/*
+ * Copyright (c) 2025 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+&lora_semtech_wio_lr20xx {
+	/* meas @902MHz */
+	tx-power-cfg-lf =
+	<(-18) 0x03 0x06>, /* Expected output power = -10dBm */
+	<(-13) 0x02 0x05>, /* Expected output power = -9dBm */
+	<(-13) 0x06 0x01>, /* Expected output power = -8dBm */
+	<( -6) 0x06 0x00>, /* Expected output power = -7dBm */
+	<(  4) 0x01 0x00>, /* Expected output power = -6dBm */
+	<(  4) 0x02 0x00>, /* Expected output power = -5dBm */
+	<(  2) 0x01 0x03>, /* Expected output power = -4dBm */
+	<( 14) 0x00 0x00>, /* Expected output power = -3dBm */
+	<(  9) 0x00 0x03>, /* Expected output power = -2dBm */
+	<( 11) 0x03 0x00>, /* Expected output power = -1dBm */
+	<( 16) 0x01 0x00>, /* Expected output power = 0dBm */
+	<( 11) 0x07 0x00>, /* Expected output power = 1dBm */
+	<( 18) 0x02 0x00>, /* Expected output power = 2dBm */
+	<( 16) 0x05 0x00>, /* Expected output power = 3dBm */
+	<( 17) 0x07 0x00>, /* Expected output power = 4dBm */
+	<( 21) 0x01 0x02>, /* Expected output power = 5dBm */
+	<( 25) 0x03 0x00>, /* Expected output power = 6dBm */
+	<( 32) 0x00 0x01>, /* Expected output power = 7dBm */
+	<( 32) 0x02 0x00>, /* Expected output power = 8dBm */
+	<( 27) 0x03 0x01>, /* Expected output power = 9dBm */
+	<( 32) 0x02 0x01>, /* Expected output power = 10dBm */
+	<( 28) 0x05 0x01>, /* Expected output power = 11dBm */
+	<( 30) 0x05 0x01>, /* Expected output power = 12dBm */
+	<( 34) 0x04 0x01>, /* Expected output power = 13dBm */
+	<( 31) 0x05 0x04>, /* Expected output power = 14dBm */
+	<( 34) 0x04 0x04>, /* Expected output power = 15dBm */
+	<( 34) 0x05 0x06>, /* Expected output power = 16dBm */
+	<( 39) 0x03 0x05>, /* Expected output power = 17dBm */
+	<( 37) 0x06 0x06>, /* Expected output power = 18dBm */
+	<( 40) 0x05 0x05>, /* Expected output power = 19dBm */
+	<( 41) 0x07 0x04>, /* Expected output power = 20dBm */
+	<( 43) 0x07 0x04>, /* Expected output power = 21dBm */
+	<( 44) 0x07 0x07>; /* Expected output power = 22dBm */
+
+
+	// Power consumptions tables
+	// DC/DC mode, LF path
+
+	/* meas @902MHz */
+	tx-dbm-to-ua-reg-mode-dcdc-lf-vreg = <
+	10400   /* -10 dBm */
+	10100   /*  -9 dBm */
+	9000    /*  -8 dBm */
+	9000    /*  -7 dBm */
+	8400    /*  -6 dBm */
+	8700    /*  -5 dBm */
+	10100   /*  -4 dBm */
+	9200    /*  -3 dBm */
+	10600   /*  -2 dBm */
+	10000   /*  -1 dBm */
+	10000   /*   0 dBm */
+	12100   /*   1 dBm */
+	10900   /*   2 dBm */
+	12000   /*   3 dBm */
+	13100   /*   4 dBm */
+	13300   /*   5 dBm */
+	13400   /*   6 dBm */
+	14600   /*   7 dBm */
+	15300   /*   8 dBm */
+	16800   /*   9 dBm */
+	18100   /*  10 dBm */
+	20200   /*  11 dBm */
+	21900   /*  12 dBm */
+	25600   /*  13 dBm */
+	28300   /*  14 dBm */
+	32200   /*  15 dBm */
+	37600   /*  16 dBm */
+	46000   /*  17 dBm */
+	51800   /*  18 dBm */
+	61300   /*  19 dBm */
+	74100   /*  20 dBm */
+	89400   /*  21 dBm */
+	108200  /*  22 dBm */
+	>;
+
+	calibration-freqs = <
+	870000000   // Frequency 0 (range from 850MHz to 890MHz) +/- 20MHz
+	920000000   // Frequency 1 (range from 900MHz to 940MHz) +/- 20MHz
+	2441000000  // Frequency 2 (range from 2.391GHz to 2.491GHz) +/- 50MHz
+	>;
+};

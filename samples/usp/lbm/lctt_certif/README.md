@@ -55,8 +55,6 @@ Configure your LoRaWAN credentials in `boards/user_keys.overlay`:
 
 ## Compilation
 
-### USP Zephyr
-
 **Build:**
 ```bash
 west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/lbm/lctt_certif
@@ -64,19 +62,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 **Flash the firmware:**
 ```bash
-west flash
-```
-
-### USP
-
-**Build sample:**
-``` bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L073 -DRAC_RADIO=lr2021 -DLBM_STORE_AND_FORWARD=OFF -G Ninja; cmake --build build --target lctt_certif
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/lctt_certif verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage

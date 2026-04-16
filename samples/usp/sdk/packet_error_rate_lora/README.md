@@ -37,10 +37,10 @@ The PER test uses an 8-byte structured payload:
 | `INTER_SERIES_DELAY`    | `10000`                        | Delay between test series in ms                  |
 | `RF_FREQ_IN_HZ`         | `868100000`                    | Operating frequency in Hz                        |
 | `TX_OUTPUT_POWER_DBM`   | `14`                           | Transmit power in dBm                            |
-| `LORA_SPREADING_FACTOR` | `RAL_LORA_SF9`                 | LoRa spreading factor                            |
-| `LORA_BANDWIDTH`        | `RAL_LORA_BW_125_KHZ`          | LoRa bandwidth                                   |
+| `LORA_SPREADING_FACTOR` | `RAL_LORA_SF10`                 | LoRa spreading factor                            |
+| `LORA_BANDWIDTH`        | `RAL_LORA_BW_500_KHZ`          | LoRa bandwidth                                   |
 | `LORA_CODING_RATE`      | `RAL_LORA_CR_4_5`              | LoRa coding rate                                 |
-| `LORA_PREAMBLE_LENGTH`  | `12`                           | Preamble length in symbols                       |
+| `LORA_PREAMBLE_LENGTH`  | `8`                           | Preamble length in symbols                       |
 | `LORA_PKT_LEN_MODE`     | `RAL_LORA_PKT_EXPLICIT`        | Packet length mode                               |
 | `LORA_IQ`               | `false`                        | LoRa IQ inversion setting                        |
 | `LORA_CRC`              | `true`                         | Enable/disable CRC                               |
@@ -48,7 +48,6 @@ The PER test uses an 8-byte structured payload:
 
 ## Compilation
 
-### USP Zephyr
 
 **Build receiver:**
 ```bash
@@ -61,23 +60,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 ```
 
 ```bash
-west flash
-```
-
-### USP
-**Build receiver:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target per_tx
-```
-
-**Build transmitter:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target per_rx
-```
-
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/per_rx verify reset exit"
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/per_tx verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage

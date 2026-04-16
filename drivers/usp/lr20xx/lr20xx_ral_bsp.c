@@ -70,7 +70,7 @@ void ral_lr20xx_bsp_get_rx_cfg( const void* context, const uint32_t freq_in_hz, 
     const struct device*                   dev    = ( const struct device* ) context;
     const struct lr20xx_hal_context_cfg_t* config = dev->config;
 
-    if( freq_in_hz >= 1600000000 )  // 1.6GHz
+    if( freq_in_hz >= 1500000000 )  // 1.5GHz
     {
         *rx_path = LR20XX_RADIO_COMMON_RX_PATH_HF;
     }

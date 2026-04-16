@@ -49,7 +49,6 @@ The ping-pong protocol uses a structured 6-byte payload:
 
 ## Compilation
 
-### USP Zephyr
 
 **Build:**
 ```bash
@@ -58,18 +57,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 **Flash the firmware:**
 ```bash
-west flash
-```
-
-### USP
-**Build sample:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target ping_pong
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/ping_pong verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage

@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
+/ {
+	aliases {
+		smtc-watchdog = &iwdg;
+		smtc-user-button = &user_button;
+	};
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&i2c2 {
+	status = "disabled";
+};
+
+&lptim1 {
+	status = "disabled";
+};
+
+&timers3 {
+	status = "disabled";
+};
+
+&timers4 {
+	status = "disabled";
+};
+
+&dac1 {
+	status = "disabled";
+};
+
+&adc1 {
+	status = "disabled";
+};
+
+&adc4 {
+	status = "disabled";
+};
+
+&fdcan1 {
+	status = "disabled";
+};
+
+&usbotg_fs {
+	status = "disabled";
+};
+
+&usart2 {
+	status = "disabled";
+};
+
+&iwdg {
+	status = "disabled";
+};
+
+&wwdg {
+	status = "disabled";
+};
+
+&arduino_spi {
+	/delete-property/ overrun-character;
+};
+
+&arduino_i2c {
+    /delete-property/ zephyr,concat-buf-size;
+};

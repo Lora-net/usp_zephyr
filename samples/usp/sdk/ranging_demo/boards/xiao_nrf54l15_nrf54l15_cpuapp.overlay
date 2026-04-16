@@ -16,7 +16,7 @@
 };
 
 &i2c22 {
-	status = "ok";
+	status = "okay";
 };
 
 &i2c30 {
@@ -29,4 +29,19 @@
 
 &wdt31 {
 	status = "okay";
+};
+
+// Override xiao_nrf54l15 default configuration for USP applications
+// Disable boot-on for RF switch regulators to save power
+
+&rfsw_ctl {
+	/delete-property/ regulator-boot-on;
+};
+
+&rfsw_pwr {
+	/delete-property/ regulator-boot-on;
+};
+
+&vbat_pwr {
+	/delete-property/ regulator-boot-on;
 };

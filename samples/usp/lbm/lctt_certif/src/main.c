@@ -506,24 +506,6 @@ static void modem_event_callback( void )
         case SMTC_MODEM_EVENT_NO_DOWNLINK_THRESHOLD:
         {
             LOG_INF( "Event received: NO_DOWNLINK_THRESHOLD\n" );
-            if( current_event.event_data.no_downlink.status != 0 )
-            {
-                // Leave and re-join network
-                smtc_modem_alarm_clear_timer( );
-                ASSERT_SMTC_MODEM_RC( smtc_modem_leave_network( STACK_ID ) );
-                ASSERT_SMTC_MODEM_RC( smtc_modem_join_network( STACK_ID ) );
-                LOG_INF( "Event received: %s-%s\n",
-                         current_event.event_data.no_downlink.status & SMTC_MODEM_EVENT_NO_RX_THRESHOLD_ADR_BACKOFF_END
-                             ? "ADR backoff end-"
-                             : "",
-                         current_event.event_data.no_downlink.status & SMTC_MODEM_EVENT_NO_RX_THRESHOLD_USER_THRESHOLD
-                             ? "-User threshold reached"
-                             : "" );
-            }
-            else  // Event cleared
-            {
-                LOG_INF( "Event type: Cleared\n" );
-            }
             break;
         }
 

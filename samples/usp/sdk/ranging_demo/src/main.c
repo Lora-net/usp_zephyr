@@ -42,6 +42,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/device.h>
+#include <zephyr/logging/log.h>
 
 #include <apps_configuration.h>
 #include <app_ranging_hopping.h>
@@ -50,6 +51,7 @@
 
 #define SMTC_HAL_DBG_TRACE_C
 #include <smtc_hal_dbg_trace.h>
+#include <smtc_hal_led.h>
 #include <smtc_zephyr_usp_api.h>
 #include <smtc_sw_platform_helper.h>
 
@@ -65,7 +67,7 @@
  * --- PRIVATE MACROS-----------------------------------------------------------
  */
 
-LOG_MODULE_REGISTER( usp, LOG_LEVEL_INF );
+LOG_MODULE_REGISTER( ranging_demo, LOG_LEVEL_INF );
 
 /*
  * -----------------------------------------------------------------------------
@@ -176,15 +178,15 @@ int main( void )
     SMTC_SW_PLATFORM_INIT( );
     SMTC_SW_PLATFORM_VOID( smtc_rac_init( ) );
 
-    init_leds( );
-    set_led( SMTC_PF_LED_SCAN, true );
+    hal_led_init( );
+    hal_led_set( HAL_LED_SCAN, true );
     if( is_manager == true )
     {
 #if DT_HAS_CHOSEN( zephyr_display )
         oled_show_str( 4 * 30, 0, "M", 1 );
 #endif
-        set_led( SMTC_PF_LED_TX, true );
-        set_led( SMTC_PF_LED_RX, false );
+        hal_led_set( HAL_LED_TX, true );
+        hal_led_set( HAL_LED_RX, false );
         SMTC_HAL_TRACE_INFO( "Running in ranging manager mode\n" );
         app_radio_ranging_params_init( is_manager, RAC_HIGH_PRIORITY );
         app_radio_ranging_set_user_callback( results_callback );
@@ -198,8 +200,8 @@ int main( void )
         oled_show_str( 4 * 30, 0, "S", 1 );
         oled_show_str( 0, 2, "   Joining...", 2 );
 #endif
-        set_led( SMTC_PF_LED_TX, false );
-        set_led( SMTC_PF_LED_RX, true );
+        hal_led_set( HAL_LED_TX, false );
+        hal_led_set( HAL_LED_RX, true );
         SMTC_HAL_TRACE_INFO( "Running in ranging subordinate mode\n" );
         app_radio_ranging_params_init( is_manager, RAC_HIGH_PRIORITY );
         app_radio_ranging_set_user_callback( results_callback );

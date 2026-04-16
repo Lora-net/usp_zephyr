@@ -49,7 +49,6 @@ The PER test uses an 8-byte structured payload:
 
 ## Compilation
 
-### USP Zephyr
 
 **Build receiver:**
 ```bash
@@ -62,22 +61,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 ```
 
 ```bash
-west flash
-```
-
-### USP
-**Build receiver:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target per_fsk_tx
-```
-
-**Build transmitter:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target per_fsk_rx
-```
-
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/per_fsk_rx verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage

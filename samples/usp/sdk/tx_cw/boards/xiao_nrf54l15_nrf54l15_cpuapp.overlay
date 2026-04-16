@@ -34,3 +34,18 @@
 &uart20 {
     current-speed = <115200>;
 };
+
+// Override xiao_nrf54l15 default configuration for USP applications
+// Disable boot-on for RF switch regulators to save power
+
+&rfsw_ctl {
+	/delete-property/ regulator-boot-on;
+};
+
+&rfsw_pwr {
+	/delete-property/ regulator-boot-on;
+};
+
+&vbat_pwr {
+	/delete-property/ regulator-boot-on;
+};

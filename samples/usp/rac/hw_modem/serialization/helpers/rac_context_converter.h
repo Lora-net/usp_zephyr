@@ -55,9 +55,9 @@ extern "C" {
 smtc_rac_priority_pb_t rac_convert_priority_to_pb( smtc_rac_priority_t native_priority );
 
 /**
- * \brief Convert protobuf priority to native priority
+ * \brief Convert protobuf priority to native priority (with error checking)
  */
-smtc_rac_priority_t rac_convert_priority_from_pb( smtc_rac_priority_pb_t pb_priority );
+bool rac_convert_priority_from_pb( smtc_rac_priority_pb_t pb_priority, smtc_rac_priority_t* output );
 
 /**
  * \brief Convert native modulation type to protobuf modulation type

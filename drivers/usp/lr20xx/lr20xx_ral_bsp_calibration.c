@@ -125,7 +125,7 @@ void ral_lr20xx_bsp_get_tx_cfg( const void* context, const ral_lr20xx_bsp_tx_cfg
     lr20xx_radio_common_pa_selection_t pa_type;
 
     // check frequency band first to choose Low Frequency of High Frequency Power Amplifier
-    if( input_params->freq_in_hz >= 1600000000 )  // 1.6GHz
+    if( input_params->freq_in_hz >= 1500000000 )  // 1.5GHz
     {
         pa_type = LR20XX_RADIO_COMMON_PA_SEL_HF;
     }

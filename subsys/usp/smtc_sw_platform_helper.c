@@ -42,6 +42,7 @@
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>  // LOG_MODULE_REGISTER
 
 #include "smtc_sw_platform_helper.h"
 
@@ -76,6 +77,8 @@
  * -----------------------------------------------------------------------------
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
+LOG_MODULE_REGISTER( usp, LOG_LEVEL_INF );
+
 // If USP/RAC thread is not used, the transceiver has to be initialized
 #if !defined( CONFIG_USP_MAIN_THREAD )
 const struct device* transceiver = DEVICE_DT_GET( DT_CHOSEN( zephyr_lorawan_transceiver ) );
@@ -87,6 +90,7 @@ K_MUTEX_DEFINE( rac_api_mutex );
 #endif
 #endif
 
+#if HAS_LED_SCAN || HAS_LED_TXRX
 static const struct gpio_dt_spec pf_led_pin[SMTC_PF_LED_MAX] = {
 #if HAS_LED_TXRX
     [SMTC_PF_LED_RX] = GPIO_DT_SPEC_GET( RX_LED_NODE, gpios ),
@@ -101,6 +105,7 @@ static const struct gpio_dt_spec pf_led_pin[SMTC_PF_LED_MAX] = {
     [SMTC_PF_LED_SCAN] = { 0 },
 #endif
 };
+#endif
 
 /*
  * -----------------------------------------------------------------------------

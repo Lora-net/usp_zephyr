@@ -58,7 +58,6 @@ The ranging process involves several phases:
 
 ## Compilation
 
-### USP Zehpyr
 
 **Build manager (manager) device:**
 ```bash
@@ -71,29 +70,9 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 ```
 
 ```bash
-west flash
+west flash --runner pyocd
 ```
 
-### USP
-
-Notes: 
-- The USP version do not manage the I2C screen.
-- The output of the USP version is not managed as json format
-
-**Build manager (manager) device:**
-```bash
-rm -Rf build/ ; env CFLAGS="-DCONTINUOUS_RANGING=false" cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -UCMAKE_C_FLAGS -G Ninja; cmake --build build --target rttof_manager
-```
-
-**Build subordinate (subordinate) device:**
-```bash
-rm -Rf build/ ; env CFLAGS="-DCONTINUOUS_RANGING=false" cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -UCMAKE_C_FLAGS -G Ninja; cmake --build build --target rttof_subordinate
-```
-
-**Example of `openocd`command to flash ranging manager:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/rttof_manager verify reset exit"
-```
 
 ## Usage
 

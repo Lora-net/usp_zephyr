@@ -48,8 +48,9 @@
 
 #include <smtc_zephyr_usp_api.h>
 #include <smtc_sw_platform_helper.h>
+#include <smtc_hal_led.h>
 
-LOG_MODULE_REGISTER( usp, LOG_LEVEL_INF );
+LOG_MODULE_REGISTER( periodical_uplink, LOG_LEVEL_INF );
 
 /**
  * @brief Helper macro that returned a human-friendly message if a command does not return
@@ -270,8 +271,9 @@ int main( void )
     // Call smtc_modem_init() after smtc_rac_init()
     SMTC_SW_PLATFORM_VOID( smtc_modem_init( &modem_event_callback ) );
 
-    set_led( SMTC_PF_LED_TX, true );
-    set_led( SMTC_PF_LED_RX, false );
+    hal_led_init( );
+    hal_led_set( HAL_LED_TX, true );
+    hal_led_set( HAL_LED_RX, false );
 
     while( true )
     {
