@@ -10,9 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - LR2012 & LR2022 support
 - New USP/RAC API
-  - to get the current radio ID in post_callbacks (`smtc_rac_get_callback_radio_id()`) (Add fct)
-  - to get the version of API (Add fct)
-  - to get signal rssi result in smtc_rac_data_result_t (Add fct)
+  - to get the current radio ID in post_callbacks (`smtc_rac_get_callback_radio_id()`)
+  - to get the version of API (`smtc_rac_get_version()`)
+  - to get signal rssi result in smtc_rac_data_result_t (`int16_t  signal_rssi_result;`)
 - Specific 470MHz band overlays allowing PA config & frequency calibFE calibration at start with suffix `_cn` for LR2021, LR2022, LR2012
 
 ### Changed
