@@ -68,7 +68,7 @@ static void lr20xx_board_event_callback( const struct device* dev, struct gpio_c
 
     /* Call provided callback */
 #if defined( CONFIG_LORA_BASICS_MODEM_DRIVERS_EVENT_TRIGGER_OWN_THREAD )
-    k_sem_give( &data->gpio_sem );
+    k_sem_give( &data->trig_sem );
 #elif defined( CONFIG_LORA_BASICS_MODEM_DRIVERS_EVENT_TRIGGER_GLOBAL_THREAD )
     k_work_submit( &data->work );
 #elif defined( CONFIG_LORA_BASICS_MODEM_DRIVERS_EVENT_TRIGGER_NO_THREAD )
@@ -85,7 +85,7 @@ static void lr20xx_thread( struct lr20xx_hal_context_data_t* data )
 {
     while( 1 )
     {
-        k_sem_take( &data->gpio_sem, K_FOREVER );
+        k_sem_take( &data->trig_sem, K_FOREVER );
         if( data->event_interrupt_cb )
         {
             data->event_interrupt_cb( data->lr20xx_dev );
