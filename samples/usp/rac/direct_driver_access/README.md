@@ -15,22 +15,20 @@ This application demonstrates **low-level radio driver access** by bypassing the
 
 | Parameter                          | Default Value                   | Description                           |
 |------------------------------------|---------------------------------|---------------------------------------|
-| `FREQ_IN_HZ`                       | `868100000`                     | Operating frequency in Hz (868.1 MHz) |
+| `RF_FREQ_IN_HZ`                    | `868100000`                     | Operating frequency in Hz (868.1 MHz) |
 | `OUT_POWER_IN_DBM`                 | `14`                            | Output power in dBm                   |
-| `LORA_PAYLOAD_LENGTH`              | `51`                            | LoRa payload size in bytes            |
+| `LORA_PAYLOAD_LENGTH`              | `10`                            | LoRa payload size in bytes            |
 | `LORA_PREAMBLE_LENGTH`             | `12`                            | LoRa preamble length in symbols       |
 | `LORA_SYNCWORD`                    | `0x34`                          | LoRa synchronization word             |
 | `DIRECT_DRIVER_ACCESS_DELAY_MS`    | `100`                           | Delay before transmission starts      |
 | `DIRECT_DRIVER_ACCESS_DURATION_MS` | `2000`                          | Maximum transaction duration          |
-| `LORA_SF`                          | `LR20XX_RADIO_LORA_SF12`        | Spreading factor (SF12)               |
+| `LORA_SF`                          | `LR20XX_RADIO_LORA_SF8`         | Spreading factor (SF8)                |
 | `LORA_BW`                          | `LR20XX_RADIO_LORA_BW_125`      | Bandwidth (125 kHz)                   |
 | `LORA_CR`                          | `LR20XX_RADIO_LORA_CR_4_5`      | Coding rate (4/5)                     |
 | `LORA_CRC`                         | `LR20XX_RADIO_LORA_CRC_ENABLED` | CRC enabled                           |
 | `LORA_IQ`                          | `LR20XX_RADIO_LORA_IQ_STANDARD` | Standard IQ polarity                  |
 
 ## Compilation
-
-### USP Zephyr
 
 **Build direct driver access:**
 ```bash
@@ -39,18 +37,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 **Flash the firmware:**
 ```bash
-west flash
-```
-
-### USP 
-**Build sample:**
-```
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target direct_driver_access
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/direct_driver_access verify reset exit"
+west flash --runner pyocd
 ```
 
 

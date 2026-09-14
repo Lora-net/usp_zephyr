@@ -37,13 +37,8 @@
 
 #include <stdint.h>
 
-enum
-{
-    LED_OFF,
-    LED_GREEN,
-    LED_RED,
-    LED_RG
-};
+#define OLED_DISPLAY_WIDTH 128
+#define OLED_DISPLAY_HEIGHT 64
 
 void oled_display_init( void );
 void led_mode( int mode, int intv, int duty_cycle );
@@ -54,5 +49,6 @@ void oled_on( void );
 void oled_cls( void );
 void oled_fill( uint8_t fill_Data );
 void oled_set_pos( uint8_t x, uint8_t y );
+void oled_write_bitmap( uint8_t x, uint8_t y, uint8_t* bitmap, uint8_t width, uint8_t height );
 
 #endif  // _OLED_DISPLAY_H_

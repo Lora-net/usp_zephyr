@@ -225,13 +225,14 @@ zephyr_library_include_directories_ifdef(CONFIG_LORA_BASICS_MODEM_FUOTA_MPA
 # Crypto soft
 #-----------------------------------------------------------------------------
 
-zephyr_library_sources_ifdef(CONFIG_LORA_BASICS_MODEM_CRYPTOGRAPHY_SOFT
-  ${LBM_SMTC_MODEM_CORE_DIR}/smtc_modem_crypto/soft_secure_element/aes.c
-  ${LBM_SMTC_MODEM_CORE_DIR}/smtc_modem_crypto/soft_secure_element/cmac.c
-  ${LBM_SMTC_MODEM_CORE_DIR}/smtc_modem_crypto/soft_secure_element/soft_se.c
-)
+# headers
 zephyr_library_include_directories_ifdef(CONFIG_LORA_BASICS_MODEM_CRYPTOGRAPHY_SOFT
   ${LBM_SMTC_MODEM_CORE_DIR}/smtc_modem_crypto/soft_secure_element
+)
+zephyr_library_sources_ifdef(CONFIG_LORA_BASICS_MODEM_CRYPTOGRAPHY_SOFT
+  ${LBM_SMTC_MODEM_CORE_DIR}/smtc_modem_crypto/soft_secure_element/soft_se.c
+  ${LBM_SMTC_MODEM_CORE_DIR}/smtc_modem_crypto/soft_secure_element/aes.c
+  ${LBM_SMTC_MODEM_CORE_DIR}/smtc_modem_crypto/soft_secure_element/cmac.c
 )
 
 #-----------------------------------------------------------------------------
@@ -340,6 +341,7 @@ zephyr_library_sources_ifdef(CONFIG_LORA_BASICS_MODEM_GEOLOCATION
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_gnss_scan.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_gnss_send.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_gnss_almanac.c
+  ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_gnss_almanac_full_update.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/gnss_helpers.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_wifi_scan.c
   ${LBM_SMTC_MODEM_CORE_DIR}/geolocation_services/mw_wifi_send.c

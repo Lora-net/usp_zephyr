@@ -318,10 +318,10 @@ void oled_fill( uint8_t fill_Data )  // fill the screen
 
     for( m = 0; m < 8; m++ )
     {
-        write_cmd( 0xb0 + m );  // page0-page1
+        write_cmd( 0xb0 + m );  // page0 -> page7
         write_cmd( 0x00 );      // low column start address
         write_cmd( 0x10 );      // high column start address
-        for( n = 0; n < 128; n++ )
+        for( n = 0; n < OLED_DISPLAY_WIDTH; n++ )
         {
             write_data( fill_Data );
         }
@@ -356,7 +356,7 @@ void oled_show_str( uint8_t x, uint8_t y, char ch[], uint8_t text_size )
     case 1:
         while( ch[j] != '\0' )
         {
-            if( x > ( 128 - 6 ) )
+            if( x > ( OLED_DISPLAY_WIDTH - 6 ) )
             {
                 x = 0;
                 y++;
@@ -374,7 +374,7 @@ void oled_show_str( uint8_t x, uint8_t y, char ch[], uint8_t text_size )
     case 2:
         while( ch[j] != '\0' )
         {
-            if( x > ( 128 - 8 ) )
+            if( x > ( OLED_DISPLAY_WIDTH - 8 ) )
             {
                 x = 0;
                 y += 2;
@@ -394,4 +394,30 @@ void oled_show_str( uint8_t x, uint8_t y, char ch[], uint8_t text_size )
         break;
     }
 }
-#endif
+
+void oled_write_bitmap( uint8_t x, uint8_t y, uint8_t* bitmap, uint8_t width, uint8_t height )
+{
+    uint8_t i, j;
+
+    if( ( x < OLED_DISPLAY_WIDTH ) && ( y < ( OLED_DISPLAY_HEIGHT / 8 ) ) )
+    {
+        for( j = 0; j < height; j++ )
+        {
+            if( ( y + j ) >= ( OLED_DISPLAY_HEIGHT / 8 ) )
+            {
+                break;
+            }
+            oled_set_pos( x, y + j );
+            for( i = 0; i < width; i++ )
+            {
+                if( ( x + i ) >= OLED_DISPLAY_WIDTH )
+                {
+                    break;
+                }
+                write_data( bitmap[j * width + i] );
+            }
+        }
+    }
+}
+
+#endif  // DT_HAS_CHOSEN( zephyr_display )

@@ -39,6 +39,7 @@
 
 #include <smtc_modem_hal.h>
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
+#include <zephyr/version.h>
 
 #ifdef CONFIG_USP
 LOG_MODULE_DECLARE( lorawan_hal, CONFIG_USP_LOG_LEVEL );
@@ -64,7 +65,11 @@ static struct lorawan_user_storage_cb* user_storage_cb;
 #if DT_HAS_CHOSEN( lora_basics_modem_context_partition )
 #define CONTEXT_PARTITION DT_FIXED_PARTITION_ID( DT_CHOSEN( lora_basics_modem_context_partition ) )
 #else
+#if ZEPHYR_VERSION_CODE < ZEPHYR_VERSION( 4, 4, 0 )
 #define CONTEXT_PARTITION FIXED_PARTITION_ID( storage_partition )
+#else
+#define CONTEXT_PARTITION PARTITION_ID( storage_partition )
+#endif
 #endif
 
 const struct flash_area* context_flash_area;
@@ -198,24 +203,25 @@ void smtc_modem_hal_context_store( const modem_context_type_t ctx_type, uint32_t
     }
     else
     {
-        /* Workaround because some 4-bytes writes will come while flash supports only 8 */
-        if( size < MIN_FLASH_WRITE_SIZE_BYTES )
+        /* Align data and pad it */
+        uint32_t padding_bytes_size = real_offset % MIN_FLASH_WRITE_SIZE_BYTES;
+        uint32_t real_write_size    = size + padding_bytes_size;
+        if( padding_bytes_size != 0 )
         {
-            // If size is less than supported, we pad with 0xFF.
-            uint8_t tmp[MIN_FLASH_WRITE_SIZE_BYTES];
-            memcpy( tmp, buffer, size );
-            for( uint8_t i = size; i < MIN_FLASH_WRITE_SIZE_BYTES; i++ )
-            {
-                tmp[i] = 0xFF;
-            }
-            flash_area_write( context_flash_area, real_offset, tmp, MIN_FLASH_WRITE_SIZE_BYTES );
+            /* Read the data where the padding is */
+            flash_area_read( context_flash_area, real_offset - padding_bytes_size, page_buffer, padding_bytes_size );
         }
-        else
+        /* Case where it is an unaligned AND smaller than the minimal */
+        if( ( size + padding_bytes_size ) < MIN_FLASH_WRITE_SIZE_BYTES )
         {
-            // const uint32_t real_size = ROUND_UP( size, 8 );
-            // flash_read_modify_write( real_offset, buffer, real_size );
-            flash_area_write( context_flash_area, real_offset, buffer, size );
+            flash_area_read( context_flash_area, real_offset + size, page_buffer + padding_bytes_size + size,
+                             MIN_FLASH_WRITE_SIZE_BYTES - ( padding_bytes_size + size ) );
+            real_write_size = MIN_FLASH_WRITE_SIZE_BYTES;
         }
+        /* Copy the data that actually need to be written but was not aligned */
+        memcpy( page_buffer + padding_bytes_size, buffer, size );
+        /* Write the buffer at aligned address */
+        flash_area_write( context_flash_area, real_offset - padding_bytes_size, page_buffer, real_write_size );
     }
 }
 

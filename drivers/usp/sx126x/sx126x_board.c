@@ -37,13 +37,19 @@
 #include <zephyr/drivers/spi.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/version.h>
 
 #include <zephyr/usp/lora_lbm_transceiver.h>
 #include "sx126x_hal_context.h"
 
+#include "zephyr/dt-bindings/usp/sx126x.h"
+
 LOG_MODULE_REGISTER( lora_sx126x, CONFIG_LORA_BASICS_MODEM_DRIVERS_LOG_LEVEL );
 
 #define SX126X_SPI_OPERATION ( SPI_WORD_SET( 8 ) | SPI_OP_MODE_MASTER | SPI_TRANSFER_MSB )
+
+#define DT_PROP_BY_IDX_U8( node_id, prop, idx ) ( ( uint8_t ) DT_PROP_BY_IDX( node_id, prop, idx ) )
+#define DT_TABLE_U8( node_id, prop ) { DT_FOREACH_PROP_ELEM_SEP( node_id, prop, DT_PROP_BY_IDX_U8, (, ) ) }
 
 /**
  * @brief Event pin callback handler.
@@ -347,40 +353,52 @@ static int sx126x_pm_action( const struct device* dev, enum pm_device_action act
     COND_CODE_1( DT_NODE_HAS_PROP( node_id, dt_prop ), (.name = GPIO_DT_SPEC_GET( node_id, dt_prop ), ), ( ) )
 
 #define SX126X_XOSC_CFG( node_id )                                                                          \
-    COND_CODE_1( DT_PROP( node_id, tcxo_wakeup_time ) == 0, ( RAL_XOSC_CFG_XTAL ),                          \
+    COND_CODE_1( DT_NODE_HAS_PROP( node_id, tcxo_wakeup_time ),                                             \
                  ( COND_CODE_1( DT_PROP( node_id, dio3_as_tcxo_control ), ( RAL_XOSC_CFG_TCXO_RADIO_CTRL ), \
-                                ( RAL_XOSC_CFG_TCXO_EXT_CTRL ) ) ) )
+                                ( RAL_XOSC_CFG_TCXO_EXT_CTRL ) ) ),                                         \
+                 ( RAL_XOSC_CFG_XTAL ) )
 
 /* Derive dio3-as-tcxo-control to know xosc_cfg */
-#define SX126X_CFG_TCXO( node_id )                              \
-    .tcxo_cfg = {                                               \
-        .xosc_cfg       = SX126X_XOSC_CFG( node_id ),           \
-        .voltage        = DT_PROP( node_id, tcxo_voltage ),     \
-        .wakeup_time_ms = DT_PROP( node_id, tcxo_wakeup_time ), \
+#define SX126X_CFG_TCXO( node_id )                                                      \
+    .tcxo_cfg = {                                                                       \
+        .xosc_cfg       = SX126X_XOSC_CFG( node_id ),                                   \
+        .voltage        = DT_PROP_OR( node_id, tcxo_voltage, SX126X_TCXO_SUPPLY_1_8V ), \
+        .wakeup_time_ms = DT_PROP_OR( node_id, tcxo_wakeup_time, 8 ),                   \
     }
 
-#define SX126X_CONFIG( node_id )                                                                                       \
-    {                                                                                                                  \
-        .spi = SPI_DT_SPEC_GET( node_id, SX126X_SPI_OPERATION, 0 ), .reset = GPIO_DT_SPEC_GET( node_id, reset_gpios ), \
-        .busy = GPIO_DT_SPEC_GET( node_id, busy_gpios ),                                                               \
-        CONFIGURE_GPIO_IF_IN_DT( node_id, dio1, dio1_gpios ) CONFIGURE_GPIO_IF_IN_DT( node_id, dio2, dio2_gpios )      \
-            CONFIGURE_GPIO_IF_IN_DT( node_id, dio3, dio3_gpios )                                                       \
-                .dio2_as_rf_switch = DT_PROP( node_id, dio2_as_rf_switch ),                                            \
-        SX126X_CFG_TCXO( node_id ), .capa_xta = DT_PROP_OR( node_id, xtal_capacitor_value_xta, 0xFF ),                 \
-        .capa_xtb = DT_PROP_OR( node_id, xtal_capacitor_value_xtb, 0xFF ), .reg_mode = DT_PROP( node_id, reg_mode ),   \
-        .tx_power_offset_db = DT_PROP_OR( node_id, tx_power_offset, 0 ),                                               \
-        .rx_boosted         = DT_PROP_OR( node_id, rx_boosted, false ),                                                \
-        .pa_ramp_time       = DT_PROP_OR( node_id, pa_ramp_time, 0x02 ),                                               \
+#if ZEPHYR_VERSION_CODE < ZEPHYR_VERSION( 4, 3, 0 )
+#define SX126X_SPI_SPEC( node_id ) SPI_DT_SPEC_GET( node_id, SX126X_SPI_OPERATION, 0 )
+#else
+#define SX126X_SPI_SPEC( node_id ) SPI_DT_SPEC_GET( node_id, SX126X_SPI_OPERATION )
+#endif
+
+#define SX126X_CONFIG( node_id )                                                                                  \
+    {                                                                                                             \
+        .spi   = SX126X_SPI_SPEC( node_id ),                                                                      \
+        .reset = GPIO_DT_SPEC_GET( node_id, reset_gpios ),                                                        \
+        .busy  = GPIO_DT_SPEC_GET( node_id, busy_gpios ),                                                         \
+        CONFIGURE_GPIO_IF_IN_DT( node_id, dio1, dio1_gpios ) CONFIGURE_GPIO_IF_IN_DT( node_id, dio2, dio2_gpios ) \
+            CONFIGURE_GPIO_IF_IN_DT( node_id, dio3, dio3_gpios )                                                  \
+                .dio2_as_rf_switch = DT_PROP( node_id, dio2_as_rf_switch ),                                       \
+        SX126X_CFG_TCXO( node_id ),                                                                               \
+        .capa_xta           = DT_PROP_OR( node_id, xtal_capacitor_value_xta, 0xFF ),                              \
+        .capa_xtb           = DT_PROP_OR( node_id, xtal_capacitor_value_xtb, 0xFF ),                              \
+        .reg_mode           = DT_PROP( node_id, reg_mode ),                                                       \
+        .tx_power_offset_db = DT_PROP_OR( node_id, tx_power_offset, 0 ),                                          \
+        .rx_boosted         = DT_PROP_OR( node_id, rx_boosted, false ),                                           \
+        .pa_ramp_time       = DT_PROP_OR( node_id, pa_ramp_time, 0x02 ),                                          \
+        .pa_cfg_table       = ( sx126x_pa_pwr_cfg_t* ) DT_CAT( pa_cfg_table_, node_id ),                          \
     }
 
 #define SX126X_DEVICE_INIT( node_id )                                                            \
     DEVICE_DT_DEFINE( node_id, sx126x_init, PM_DEVICE_DT_GET( node_id ), &sx126x_data_##node_id, \
                       &sx126x_config_##node_id, POST_KERNEL, CONFIG_LORA_BASICS_MODEM_DRIVERS_INIT_PRIORITY, NULL );
 
-#define SX126X_DEFINE( node_id )                                                                     \
-    static struct sx126x_hal_context_data_t      sx126x_data_##node_id;                              \
-    static const struct sx126x_hal_context_cfg_t sx126x_config_##node_id = SX126X_CONFIG( node_id ); \
-    PM_DEVICE_DT_DEFINE( node_id, sx126x_pm_action );                                                \
+#define SX126X_DEFINE( node_id )                                                                                  \
+    static struct sx126x_hal_context_data_t      sx126x_data_##node_id;                                           \
+    static uint8_t                               pa_cfg_table_##node_id[] = DT_TABLE_U8( node_id, tx_power_cfg ); \
+    static const struct sx126x_hal_context_cfg_t sx126x_config_##node_id  = SX126X_CONFIG( node_id );             \
+    PM_DEVICE_DT_DEFINE( node_id, sx126x_pm_action );                                                             \
     SX126X_DEVICE_INIT( node_id )
 
 DT_FOREACH_STATUS_OKAY( semtech_sx1261_new, SX126X_DEFINE )

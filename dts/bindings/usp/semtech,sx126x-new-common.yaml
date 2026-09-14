@@ -65,20 +65,19 @@ properties:
 
   tcxo-voltage:
     type: int
-    required: true
     description: |
       Supply voltage on the radio's DIO3, if set as TCXO control.
-
       See constants SX126X_TCXO_SUPPLY_* in dt-bindings/usp/sx126x.h.
+
+      Unused if there is no TCXO on the considered shield.
 
   tcxo-wakeup-time:
     type: int
-    required: true
     description: |
       In milliseconds, the wakeup (or stabilization) time of the TCXO used
       by the radio.
 
-      Set this value to 0 to disable the TCXO management feature.
+      Unused if there is no TCXO on the considered shield.
 
   xtal-capacitor-value-xta:
     type: int
@@ -110,6 +109,14 @@ properties:
       Configuration of the radio's power regulator mode.
 
       See constants SX126X_REG_MODE_* in dt-bindings/usp/sx126x.h
+
+  tx-power-cfg:
+    type: array
+    required: true
+    description: |
+      The table handling the Power Amplifier values for each desired output TX power.
+      For SX1261, the output power range is [-17:15]dBm
+      For SX1262, the output power range is [-9:22]dBm
 
   rx-boosted:
     type: boolean

@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Nordic Semiconductor ASA
+# Copyright (c) 2024 Semtech Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 # Out-of-tree drivers for custom classes

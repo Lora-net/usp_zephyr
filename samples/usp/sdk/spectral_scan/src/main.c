@@ -42,6 +42,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/device.h>
+#include <zephyr/logging/log.h>
 
 #include "app_spectral_scan.h"
 #define SMTC_HAL_DBG_TRACE_C
@@ -59,7 +60,7 @@
  * --- PRIVATE MACROS-----------------------------------------------------------
  */
 
-LOG_MODULE_REGISTER( usp, LOG_LEVEL_INF );
+LOG_MODULE_REGISTER( spectral_scan, LOG_LEVEL_INF );
 
 /*
  * -----------------------------------------------------------------------------

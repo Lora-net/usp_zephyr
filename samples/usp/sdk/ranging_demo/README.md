@@ -29,24 +29,24 @@ The ranging process involves several phases:
 
 ### Using CMake
 
-| Parameter                     | Default Value                   | Description                                      |
-|-------------------------------|---------------------------------|--------------------------------------------------|
-| `RANGING_DEVICE_MODE`         | `1`                             | Device role: Subordinate (1) or Manager (2)      |
-| `RF_FREQ_IN_HZ`               | `868100000`                     | Base operating frequency in Hz                   |
-| `TX_OUTPUT_POWER_DBM`         | `14`                            | Transmit power in dBm                            |
-| `LORA_SPREADING_FACTOR`       | `RAL_LORA_SF9`                  | LoRa spreading factor                            |
-| `LORA_BANDWIDTH`              | `RAL_LORA_BW_500_KHZ`           | LoRa bandwidth (500 kHz)                         |
-| `LORA_CODING_RATE`            | `RAL_LORA_CR_4_5`               | LoRa coding rate (4/5)                           |
-| `LORA_PREAMBLE_LENGTH`        | `12`                            | Preamble length in symbols (critical for timing) |
-| `LORA_PKT_LEN_MODE`           | `RAL_LORA_PKT_EXPLICIT`         | Packet length mode                               |
-| `LORA_IQ`                     | `false`                         | IQ inversion (keep standard for calibration)     |
-| `LORA_CRC`                    | `true`                          | Enable CRC                                       |
-| `LORA_SYNCWORD`               | `LORA_PRIVATE_NETWORK_SYNCWORD` | LoRa sync word                                   |
-| `ACTIVATE_MULTIPLE_DATA_RATE` | `false`                         | Enable multiple data rate testing                |
-| `CONTINUOUS_RANGING`          | `false`                         | Enable continuous ranging mode                   |
-| `PERIODIC_UPLINK_ENABLED`     | `false`                         | Enable periodic uplink transmissions             |
-| `TX_PERIODICITY_IN_MS`        | `200000`                        | Periodic uplink interval (200 seconds)           |
-| `PAYLOAD_LENGTH`              | `7`                             | Ranging payload length in bytes                  |
+| Parameter                     | Default Value                   | Description                                           |
+|-------------------------------|---------------------------------|-------------------------------------------------------|
+| `RANGING_DEVICE_MODE`         | `1`                             | Device role: Subordinate (1) or Manager (2)           |
+| `RF_FREQ_IN_HZ`               | `868100000`                     | Base operating frequency in Hz                        |
+| `TX_OUTPUT_POWER_DBM`         | `14`                            | Transmit power in dBm                                 |
+| `LORA_SPREADING_FACTOR`       | `RAL_LORA_SF9`                  | LoRa spreading factor                                 |
+| `LORA_BANDWIDTH`              | `RAL_LORA_BW_500_KHZ`           | LoRa bandwidth (500 kHz)                              |
+| `LORA_CODING_RATE`            | `RAL_LORA_CR_4_5`               | LoRa coding rate (4/5)                                |
+| `LORA_PREAMBLE_LENGTH`        | `12`                            | Preamble length in symbols (critical for timing)      |
+| `LORA_PKT_LEN_MODE`           | `RAL_LORA_PKT_EXPLICIT`         | Packet length mode                                    |
+| `LORA_IQ`                     | `false`                         | IQ inversion (keep standard for calibration)          |
+| `LORA_CRC`                    | `true`                          | Enable CRC                                            |
+| `LORA_SYNCWORD`               | `LORA_PRIVATE_NETWORK_SYNCWORD` | LoRa sync word                                        |
+| `ACTIVATE_MULTIPLE_DATA_RATE` | `false`                         | Enable multiple data rate testing                     |
+| `CONTINUOUS_RANGING`          | `false`                         | Enable continuous ranging mode                        |
+| `PERIODIC_UPLINK_ENABLED`     | `false`                         | Enable periodic uplink transmissions                  |
+| `TX_PERIODICITY_IN_MS`        | `10000`                         | Periodic uplink interval (10 seconds)                 |
+| `PAYLOAD_LENGTH`              | `7`                             | Ranging payload length in bytes                       |
 | `RANGING_ADDR_1`              | `0x32101222`                    | Ranging address value to ease concurent ranging tests |
 
 
@@ -58,7 +58,6 @@ The ranging process involves several phases:
 
 ## Compilation
 
-### USP Zehpyr
 
 **Build manager (manager) device:**
 ```bash
@@ -71,29 +70,9 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 ```
 
 ```bash
-west flash
+west flash --runner pyocd
 ```
 
-### USP
-
-Notes: 
-- The USP version do not manage the I2C screen.
-- The output of the USP version is not managed as json format
-
-**Build manager (manager) device:**
-```bash
-rm -Rf build/ ; env CFLAGS="-DCONTINUOUS_RANGING=false" cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -UCMAKE_C_FLAGS -G Ninja; cmake --build build --target rttof_manager
-```
-
-**Build subordinate (subordinate) device:**
-```bash
-rm -Rf build/ ; env CFLAGS="-DCONTINUOUS_RANGING=false" cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -UCMAKE_C_FLAGS -G Ninja; cmake --build build --target rttof_subordinate
-```
-
-**Example of `openocd`command to flash ranging manager:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/rttof_manager verify reset exit"
-```
 
 ## Usage
 
@@ -121,7 +100,7 @@ openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIA
 ### Manager device output
 
 ```
-*** Booting Zephyr OS build v4.2.0 ***
+*** Booting Zephyr OS build vx.y.z ***
 start oled_init()
 [00:00:00.007,216] <inf> usp: Starting loop...
 [00:00:00.372,926] <inf> usp: ===== ranging and frequency hopping example =====
@@ -190,7 +169,7 @@ button_pressed[00:00:04.121,822] <inf> usp: Button pushed
 ### Subordinate device output
 
 ```
-*** Booting Zephyr OS build v4.2.0 ***
+*** Booting Zephyr OS build vx.y.z ***
 [00:00:00.000,000] <inf> usp: ===== ranging and frequency hopping example =====
 [00:00:00.000,000] <inf> usp: Starting loop...
 [00:00:00.254,000] <inf> lorawan: Defined Hook IDs:

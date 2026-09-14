@@ -71,23 +71,27 @@ smtc_rac_priority_pb_t rac_convert_priority_to_pb( smtc_rac_priority_t native_pr
     }
 }
 
-smtc_rac_priority_t rac_convert_priority_from_pb( smtc_rac_priority_pb_t pb_priority )
+bool rac_convert_priority_from_pb( smtc_rac_priority_pb_t pb_priority, smtc_rac_priority_t* output )
 {
     switch( pb_priority )
     {
     case smtc_rac_priority_pb_t_RAC_VERY_HIGH_PRIORITY_PB:
-        return RAC_VERY_HIGH_PRIORITY;
+        *output = RAC_VERY_HIGH_PRIORITY;
+        return true;
     case smtc_rac_priority_pb_t_RAC_HIGH_PRIORITY_PB:
-        return RAC_HIGH_PRIORITY;
+        *output = RAC_HIGH_PRIORITY;
+        return true;
     case smtc_rac_priority_pb_t_RAC_MEDIUM_PRIORITY_PB:
-        return RAC_MEDIUM_PRIORITY;
+        *output = RAC_MEDIUM_PRIORITY;
+        return true;
     case smtc_rac_priority_pb_t_RAC_LOW_PRIORITY_PB:
-        return RAC_LOW_PRIORITY;
+        *output = RAC_LOW_PRIORITY;
+        return true;
     case smtc_rac_priority_pb_t_RAC_VERY_LOW_PRIORITY_PB:
-        return RAC_VERY_LOW_PRIORITY;
-    default:
-        return RAC_LOW_PRIORITY;  // Safe default
+        *output = RAC_VERY_LOW_PRIORITY;
+        return true;
     }
+    return false;
 }
 
 smtc_rac_return_code_pb_t rac_convert_return_code_to_pb( smtc_rac_return_code_t native_code )

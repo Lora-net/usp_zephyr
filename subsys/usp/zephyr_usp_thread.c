@@ -40,7 +40,9 @@
 #include <smtc_modem_utilities.h>
 #endif
 #include <smtc_rac_api.h>
-
+#if defined( CONFIG_USP_FLRP )
+#include <smtc_flrp_api.h>
+#endif
 #include "zephyr/usp/smtc_sw_platform_helper.h"
 #include "zephyr_usp_initialization.h"
 
@@ -125,6 +127,9 @@ static void usp_main_thread( void* p1, void* p2, void* p3 )
         sleep_time_ms = CONFIG_USP_MAIN_THREAD_MAX_SLEEP_MS;
 #endif
         smtc_rac_run_engine( );
+#if defined( CONFIG_USP_FLRP )
+        smtc_flrp_run_engine( );
+#endif
 #if defined( CONFIG_USP_THREADS_MUTEXES )
         k_mutex_unlock( &rac_api_mutex );
 #endif
@@ -135,6 +140,12 @@ static void usp_main_thread( void* p1, void* p2, void* p3 )
 
 #if CONFIG_USP_MAIN_THREAD_MAX_SLEEP_MS
         sleep_time_ms = MIN( sleep_time_ms, CONFIG_USP_MAIN_THREAD_MAX_SLEEP_MS );
+#endif
+#if defined( CONFIG_USP_FLRP )
+        if( smtc_flrp_call_run( ) == true )
+        {
+            sleep_time_ms = 0;
+        }
 #endif
         LOG_DBG( "Sleeping for %dms", sleep_time_ms );
         smtc_modem_hal_interruptible_msleep( K_MSEC( sleep_time_ms ) );

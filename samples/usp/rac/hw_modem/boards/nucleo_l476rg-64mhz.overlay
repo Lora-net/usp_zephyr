@@ -1,0 +1,73 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	zephyr,user {
+		/* PINS used for the HW modem sample. */
+		hw-modem-command-gpios = <&gpioc 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		hw-modem-busy-gpios = <&gpioc 8 GPIO_ACTIVE_HIGH>;
+		hw-modem-event-gpios = <&gpioc 5 GPIO_ACTIVE_HIGH>;
+		hw-modem-led-scan-gpios = <&gpiob 5 GPIO_ACTIVE_HIGH>;
+	};
+
+	aliases {
+		/* Specify which UART is used for communication as input for the hw modem tester */
+		smtc-hal-uart = &usart3;
+		smtc-watchdog = &iwdg;
+	};
+};
+
+//Label for flash controller (needed cause we need properties, and we grab alias in user code)
+smtc_flash: &flash0 {};
+
+// Uncomment the following 3 sections to set board @64MHz (instead of 80) and SPI@16MHz (instead of 10)
+&pll {
+	mul-n = <16>; 
+};
+
+&rcc {
+	clock-frequency = < 64000000 >;
+};
+
+&{/soc/spi@40013000/lora@0} {
+	spi-max-frequency = < 16000000 >; 
+};
+// END 64MHz --------------------------------------------------------
+
+&lptim1 {
+	// 0x80000000 = 31th bit of register RCC_APB1ENR1 (LPTIM1_EN)
+	// We could also use ST macro : STM32_CLOCK(APB1, 31) to produce same result.
+	// LPTIM1_SEL(3) = Set the LPTIM1SEL bits of RCC_CCIPR to 0b11 (source = LSE)
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x80000000>, 
+		 <&rcc STM32_SRC_LSE LPTIM1_SEL(3)>;
+	status = "okay";
+};
+
+&spi3 {
+	status = "disabled";
+};
+
+&usart3 {
+	status = "okay";
+
+	current-speed = <115200>;
+
+	pinctrl-0 = <&usart3_rx_pc11 &usart3_tx_pc10>;
+	pinctrl-names = "default";
+	/delete-property/ hw-flow-control;
+};
+
+&iwdg {
+	status = "disabled";
+};
+
+&arduino_spi {
+	/delete-property/ overrun-character;
+};
+
+&arduino_i2c {
+        /delete-property/ zephyr,concat-buf-size;
+};

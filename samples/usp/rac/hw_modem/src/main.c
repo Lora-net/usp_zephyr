@@ -42,12 +42,15 @@
 #include <smtc_modem_utilities.h>
 
 #include <smtc_rac_api.h>
+#if defined( CONFIG_USP_FLRP )
+#include <smtc_flrp_api.h>
+#endif
 
 #include "hw_modem.h"
 #include "cmd_parser.h"
 #include "git_version.h"
 
-LOG_MODULE_REGISTER( hw_modem, 3 );
+LOG_MODULE_REGISTER( hw_modem, LOG_LEVEL_INF );
 
 /**
  * @brief Watchdog counter reload value during sleep (The period must be lower than MCU watchdog
@@ -167,6 +170,14 @@ int main( void )
 
         /* Modem process launch */
         sleep_time_ms = smtc_modem_run_engine( );
+        smtc_rac_run_engine( );
+#if defined( CONFIG_USP_FLRP )
+        smtc_flrp_run_engine( );
+        if( smtc_rac_is_irq_flag_pending( ) )
+        {
+            continue;
+        }
+#endif
 
         /* Check sleep conditions (no command available and low power is possible) */
         irq_lock_key = irq_lock( );

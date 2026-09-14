@@ -17,35 +17,28 @@ This application provides **comprehensive Hardware Abstraction Layer (HAL) testi
 
 ### Test Modes
 
-| Parameter                    | Default | Description                        |
-|------------------------------|---------|------------------------------------|
-| `TEST_FLASH_ONLY`            | `n`     | Enable flash tests, disable others |
-| `TEST_SPI_NB_LOOPS`          | `2`     | Number of SPI test iterations      |
-| `TEST_CONFIG_RADIO_NB_LOOPS` | `2`     | Number of radio config test loops  |
+| Parameter                                         | Default | Description                                                     |
+|---------------------------------------------------|---------|-----------------------------------------------------------------|
+| `ENABLE_TEST_FLASH`                               | `n`     | Enable flash tests, disable others                              |
+| `NB_LOOP_TEST_SPI`                                | `2`     | Number of SPI test iterations                                   |
+| `NB_LOOP_TEST_CONFIG_RADIO`                       | `2`     | Number of radio config test loops                               |
+| `LR20XX_PORTING_TEST_SPI_REGMEM_ENDURANCE`        | `n`     | Enable SPI endurance test                                       |
+| `LR20XX_PORTING_TEST_SPI_REGMEM_NB_ITERATIONS`    | `10000` | Number of iterations for SPI endurance                          |
+| `LR20XX_PORTING_TEST_SPI_REGMEM_SIZE_BYTES`       | `1024`  | Number of bytes per iteration for SPI endurance (multiple of 4) |
 
 ## Compilation
-
-### USP Zephyr
 
 **Build:**
 ```bash
 west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/lbm/porting_tests
+
+```build with LR20XX_SPI_ENDURANCE
+west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/lbm/porting_tests -- -DEXTRA_CFLAGS="-DLR20XX_PORTING_TEST_SPI_REGMEM_ENDURANCE=1"
 ```
 
 **Flash the firmware:**
 ```bash
-west flash
-```
-
-### USP 
-**Build sample:**
-```
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target porting_tests
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/porting_tests verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage
@@ -59,16 +52,64 @@ openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIA
 
 ### Standard Test Sequence
 ```
-[00:00:00.000,000] <inf> porting_tests: PORTING_TESTS example is starting
-[00:00:00.203,000] <inf> porting_tests: ---------------------------------------- porting_test_spi :
-[00:00:00.203,000] <inf> porting_tests:  OK
-[00:00:01.447,000] <inf> porting_tests: ---------------------------------------- porting_test_radio_irq :
-[00:00:01.447,000] <inf> porting_tests:  OK
-[00:00:06.716,000] <inf> porting_tests: ---------------------------------------- porting_test_get_time :
-[00:00:06.716,000] <inf> porting_tests:  OK
-[00:00:12.014,000] <inf> porting_tests: ---------------------------------------- porting_test_timer_irq :
-[00:00:12.014,000] <inf> porting_tests:  OK
-[00:00:29.313,000] <inf> porting_tests: ---------------------------------------- PORTING_TESTS END
+*** Booting Zephyr OS build vx.y.z ***
+[00:50:27.826,323] <inf> porting_tests: 
+[00:50:27.826,326] <inf> porting_tests: 
+[00:50:27.826,330] <inf> porting_tests: PORTING_TESTS example is starting
+[00:50:27.826,333] <inf> porting_tests: 
+[00:50:27.826,337] <inf> porting_tests: 
+[00:50:27.826,359] <inf> porting_tests: ---------------------------------------- porting_test_spi :
+[00:50:27.833,471] <inf> porting_tests:  OK 
+[00:50:27.833,494] <inf> porting_tests: ---------------------------------------- porting_test_spi_regmem_endurance :
+[00:50:27.837,676] <inf> porting_tests:  regmem endurance: iteration 0 
+[00:50:32.157,248] <inf> porting_tests:  regmem endurance: iteration 1000 
+[00:50:36.477,649] <inf> porting_tests:  regmem endurance: iteration 2000 
+[00:50:40.799,041] <inf> porting_tests:  regmem endurance: iteration 3000 
+[00:50:45.120,391] <inf> porting_tests:  regmem endurance: iteration 4000 
+[00:50:49.441,351] <inf> porting_tests:  regmem endurance: iteration 5000 
+[00:50:53.761,601] <inf> porting_tests:  regmem endurance: iteration 6000 
+[00:50:58.082,391] <inf> porting_tests:  regmem endurance: iteration 7000 
+[00:51:02.402,862] <inf> porting_tests:  regmem endurance: iteration 8000 
+[00:51:06.724,911] <inf> porting_tests:  regmem endurance: iteration 9000 
+[00:51:11.043,424] <inf> porting_tests:  regmem endurance: iteration 9999 
+[00:51:11.043,432] <inf> porting_tests:  OK 
+[00:51:11.043,454] <inf> porting_tests: ---------------------------------------- porting_test_radio_irq :
+[00:51:12.098,836] <inf> porting_tests:  OK 
+[00:51:12.098,863] <inf> porting_tests: ---------------------------------------- porting_test_get_time :
+[00:51:12.098,867] <inf> porting_tests:  * Get time in second: 
+[00:51:17.143,014] <inf> porting_tests:  OK 
+[00:51:17.143,020] <inf> porting_tests:  Time expected 5s / get 5s (no margin)
+[00:51:17.143,024] <inf> porting_tests:  * Get time in millisecond: 
+[00:51:19.172,671] <inf> porting_tests:  OK 
+[00:51:19.172,681] <inf> porting_tests:  Time expected 1966ms / get 1966ms (margin +/-1ms)
+[00:51:19.172,702] <inf> porting_tests: ---------------------------------------- porting_test_timer_irq :
+[00:51:22.178,815] <inf> porting_tests:  OK 
+[00:51:22.178,828] <inf> porting_tests:  Timer irq configured with 3000ms / get 3000ms (margin +2ms)
+[00:51:22.178,847] <inf> porting_tests: ---------------------------------------- porting_test_stop_timer :
+[00:51:24.178,438] <inf> porting_tests:  OK 
+[00:51:24.178,458] <inf> porting_tests: ---------------------------------------- porting_test_disable_enable_irq :
+[00:51:28.178,455] <inf> porting_tests:  OK 
+[00:51:28.178,475] <inf> porting_tests: ---------------------------------------- porting_test_random :
+[00:51:28.178,479] <inf> porting_tests:  * Get random nb : 
+[00:51:28.178,543] <inf> porting_tests:  OK 
+[00:51:28.178,547] <inf> porting_tests:  random1 = 4201829233, random2 = 1598311636
+[00:51:28.178,554] <inf> porting_tests:  * Get random nb in range : 
+[00:51:28.178,614] <inf> porting_tests:  OK 
+[00:51:28.178,621] <inf> porting_tests:  random1 = 21, random2 = 31 in range [1;42]
+[00:51:28.178,625] <inf> porting_tests:  * Get random draw : 
+[00:51:30.962,660] <inf> porting_tests:  OK 
+[00:51:30.962,668] <inf> porting_tests:  Random draw of 100000 numbers between [1;10] range
+[00:51:30.962,685] <inf> porting_tests: ---------------------------------------- porting_test_config_rx_radio :
+[00:51:31.519,488] <inf> porting_tests:  OK 
+[00:51:31.519,518] <inf> porting_tests: ---------------------------------------- porting_test_config_tx_radio :
+[00:51:31.576,697] <inf> porting_tests:  OK 
+[00:51:31.576,721] <inf> porting_tests: ---------------------------------------- porting_test_sleep_ms :
+[00:51:33.581,497] <inf> porting_tests:  OK 
+[00:51:33.581,510] <inf> porting_tests:  Sleep time expected 2000ms / get 2000ms (margin +/-2ms)
+[00:51:33.581,529] <inf> porting_tests: ---------------------------------------- porting_test_timer_irq_low_power :
+[00:51:41.586,518] <inf> porting_tests:  OK 
+[00:51:41.586,531] <inf> porting_tests:  Timer irq configured with 3000ms / get 3000ms (margin +2ms)
+[00:51:41.586,535] <inf> porting_tests: ---------------------------------------- PORTING_TESTS END
 ```
 
 ## Technical Notes

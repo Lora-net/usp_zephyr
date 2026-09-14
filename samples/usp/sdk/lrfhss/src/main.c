@@ -42,15 +42,16 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/device.h>
+#include <zephyr/logging/log.h>
 
 #include <smtc_zephyr_usp_api.h>
 #include <smtc_sw_platform_helper.h>
 
 #define SMTC_HAL_DBG_TRACE_C
 #include <smtc_hal_dbg_trace.h>
+#include <smtc_hal_led.h>
 
 #include "app_lrfhss_example.h"
-#include "main_lrfhss_example.h"
 
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
 #include <smtc_modem_hal.h>
@@ -60,7 +61,7 @@
  * --- PRIVATE MACROS-----------------------------------------------------------
  */
 
-LOG_MODULE_REGISTER( usp, LOG_LEVEL_INF );
+LOG_MODULE_REGISTER( lrfhss, LOG_LEVEL_INF );
 
 /*
  * -----------------------------------------------------------------------------
@@ -68,7 +69,7 @@ LOG_MODULE_REGISTER( usp, LOG_LEVEL_INF );
  */
 
 /**
- * @brief Watchdog counter reload value during sleep (The period must be lower than MCU watchdog period (here 32s))
+ * @brief Watchdog counter reload value during sleep (The period must be lower than MCU watchdog period (here 20s))
  */
 #define WATCHDOG_RELOAD_PERIOD_MS 20000
 
@@ -143,9 +144,9 @@ int main( void )
     SMTC_SW_PLATFORM_VOID( smtc_rac_init( ) );
 
     // initialize LEDs
-    init_leds( );
-    set_led( SMTC_PF_LED_TX, false );
-    set_led( SMTC_PF_LED_RX, false );
+    hal_led_init( );
+    hal_led_set( HAL_LED_TX, false );
+    hal_led_set( HAL_LED_RX, false );
 
     // initialize and start applications
     lrfhss_example_init( );

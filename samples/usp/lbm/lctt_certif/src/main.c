@@ -37,6 +37,7 @@
 #include <zephyr/drivers/gpio.h>
 
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
+#include <smtc_modem_helper.h>
 #include "smtc_modem_api.h"
 #include "smtc_modem_utilities.h"
 #include "smtc_modem_hal.h"
@@ -49,93 +50,8 @@
 
 LOG_MODULE_REGISTER( lctt_certif, LOG_LEVEL_INF );
 
-/**
- * @brief Helper macro that returned a human-friendly message if a command does not return
- * SMTC_MODEM_RC_OK
- *
- * @remark The macro is implemented to be used with functions returning a @ref
- * smtc_modem_return_code_t
- *
- * @param[in] rc  Return code
- */
-
-void assert_smtc_modem_rc( const char* file, const char* func, int line, smtc_modem_return_code_t rc )
-{
-    char* rc_msg = "";
-    int   level  = LOG_LEVEL_ERR;
-
-    if( rc == SMTC_MODEM_RC_NOT_INIT )
-    {
-        rc_msg = STRINGIFY( SMTC_MODEM_RC_NOT_INIT );
-    }
-    else if( rc == SMTC_MODEM_RC_INVALID )
-    {
-        rc_msg = STRINGIFY( SMTC_MODEM_RC_INVALID );
-    }
-    else if( rc == SMTC_MODEM_RC_BUSY )
-    {
-        rc_msg = STRINGIFY( SMTC_MODEM_RC_BUSY );
-    }
-    else if( rc == SMTC_MODEM_RC_FAIL )
-    {
-        rc_msg = STRINGIFY( SMTC_MODEM_RC_FAIL );
-    }
-    else if( rc == SMTC_MODEM_RC_INVALID_STACK_ID )
-    {
-        rc_msg = STRINGIFY( SMTC_MODEM_RC_INVALID_STACK_ID );
-    }
-    else if( rc == SMTC_MODEM_RC_NO_TIME )
-    {
-        rc_msg = STRINGIFY( SMTC_MODEM_RC_NO_TIME );
-        level  = LOG_LEVEL_WRN;
-    }
-    else if( rc == SMTC_MODEM_RC_NO_EVENT )
-    {
-        rc_msg = STRINGIFY( SMTC_MODEM_RC_NO_EVENT );
-        level  = LOG_LEVEL_INF;
-    }
-    else
-    {
-        return;  // If rc is OK
-    }
-
-    if( level == LOG_LEVEL_INF )
-    {
-        LOG_INF( "In %s - %s (line %d): %s\n", file, func, line, rc_msg );
-    }
-    else if( level == LOG_LEVEL_WRN )
-    {
-        LOG_WRN( "In %s - %s (line %d): %s\n", file, func, line, rc_msg );
-    }
-    else if( level == LOG_LEVEL_ERR )
-    {
-        LOG_ERR( "In %s - %s (line %d): %s\n", file, func, line, rc_msg );
-    }
-}
-
-#define ASSERT_SMTC_MODEM_RC( rc_func ) assert_smtc_modem_rc( __FILE__, __func__, __LINE__, rc_func )
-
 /* lr11xx radio context and its use in the ralf layer */
 static const struct device* transceiver = DEVICE_DT_GET( DT_ALIAS( lora_transceiver ) );
-
-/**
- * Stack id value (multistacks modem is not yet available)
- */
-#define STACK_ID 0
-
-/**
- * @brief Stack credentials
- */
-#if !defined( CONFIG_LORA_BASICS_MODEM_CRYPTOGRAPHY_LR11XX_WITH_CREDENTIALS )
-static const uint8_t user_dev_eui[8]      = DT_PROP( DT_PATH( zephyr_user ), user_lorawan_device_eui );
-static const uint8_t user_join_eui[8]     = DT_PROP( DT_PATH( zephyr_user ), user_lorawan_join_eui );
-static const uint8_t user_gen_app_key[16] = DT_PROP( DT_PATH( zephyr_user ), user_lorawan_gen_app_key );
-static const uint8_t user_app_key[16]     = DT_PROP( DT_PATH( zephyr_user ), user_lorawan_app_key );
-#endif
-
-#define DT_MODEM_REGION( region ) DT_CAT( SMTC_MODEM_REGION_, region )
-
-#define MODEM_REGION DT_MODEM_REGION( DT_STRING_UNQUOTED( DT_PATH( zephyr_user ), user_lorawan_region ) )
 
 /**
  * @brief Watchdog counter reload value during sleep (The period must be lower than MCU watchdog
@@ -165,35 +81,15 @@ static struct gpio_callback      button_cb_data;
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
 
-static uint8_t                  rx_payload[SMTC_MODEM_MAX_LORAWAN_PAYLOAD_LENGTH] = { 0 };
-static uint8_t                  rx_payload_size;
-static smtc_modem_dl_metadata_t rx_metadata = { 0 }; /* Metadata of downlink */
-static uint8_t                  rx_remaining;        /* Remaining downlink payload in modem */
-
 static volatile bool user_button_is_press;
 static uint32_t      uplink_counter;
 
 static bool certif_running;
 
-/**
- * @brief Internal credentials
- */
-#if defined( CONFIG_LORA_BASICS_MODEM_CRYPTOGRAPHY_LR11XX_WITH_CREDENTIALS )
-static uint8_t chip_eui[SMTC_MODEM_EUI_LENGTH] = { 0 };
-static uint8_t chip_pin[SMTC_MODEM_PIN_LENGTH] = { 0 };
-#endif
 /*
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DECLARATION -------------------------------------------
  */
-
-/**
- * @brief User callback for modem event
- *
- *  This callback is called every time an event ( see smtc_modem_event_t ) appears in the modem.
- *  Several events may have to be read from the modem when this callback is called.
- */
-static void modem_event_callback( void );
 
 /**
  * @brief User callback for button EXTI
@@ -223,13 +119,7 @@ void button_pressed( const struct device* dev, struct gpio_callback* cb, uint32_
 {
     user_button_callback( dev );
 }
-/**
- * @brief Example enable/disable certification mode by pushing blue button
- *
- */
-#if defined( CONFIG_LORA_BASICS_MODEM_RELAY_TX )
-static smtc_modem_relay_tx_config_t relay_config = { 0 };
-#endif
+
 int main( void )
 {
     uint32_t sleep_time_ms = 0;
@@ -296,8 +186,7 @@ int main( void )
  * -----------------------------------------------------------------------------
  * --- PRIVATE FUNCTIONS DEFINITION --------------------------------------------
  */
-
-static void modem_event_callback( void )
+void modem_event_callback( void )
 {
     LOG_INF( "Modem event callback" );
 
@@ -319,26 +208,26 @@ static void modem_event_callback( void )
 
 #if !defined( CONFIG_LORA_BASICS_MODEM_CRYPTOGRAPHY_LR11XX_WITH_CREDENTIALS )
             /* Set user credentials */
-            ASSERT_SMTC_MODEM_RC( smtc_modem_set_deveui( stack_id, user_dev_eui ) );
-            ASSERT_SMTC_MODEM_RC( smtc_modem_set_joineui( stack_id, user_join_eui ) );
-            ASSERT_SMTC_MODEM_RC( smtc_modem_set_appkey( stack_id, user_gen_app_key ) );
-            ASSERT_SMTC_MODEM_RC( smtc_modem_set_nwkkey( stack_id, user_app_key ) );
+            ASSERT_SMTC_MODEM_RC( smtc_modem_set_deveui( stack_id, smtc_modem_helper_get_eui( ) ) );
+            ASSERT_SMTC_MODEM_RC( smtc_modem_set_joineui( stack_id, smtc_modem_helper_get_join_eui( ) ) );
+            ASSERT_SMTC_MODEM_RC( smtc_modem_set_appkey( stack_id, smtc_modem_helper_get_gen_app_key( ) ) );
+            ASSERT_SMTC_MODEM_RC( smtc_modem_set_nwkkey( stack_id, smtc_modem_helper_get_app_key( ) ) );
 #else
             /* Get internal credentials */
-            ASSERT_SMTC_MODEM_RC( smtc_modem_get_chip_eui( stack_id, chip_eui ) );
-            SMTC_HAL_TRACE_ARRAY( "CHIP_EUI", chip_eui, SMTC_MODEM_EUI_LENGTH );
-            ASSERT_SMTC_MODEM_RC( smtc_modem_get_pin( stack_id, chip_pin ) );
-            SMTC_HAL_TRACE_ARRAY( "CHIP_PIN", chip_pin, SMTC_MODEM_PIN_LENGTH );
+            ASSERT_SMTC_MODEM_RC( smtc_modem_get_chip_eui( stack_id, smtc_modem_helper_get_eui( ) ) );
+            SMTC_HAL_TRACE_ARRAY( "CHIP_EUI", smtc_modem_helper_get_eui( ), SMTC_MODEM_EUI_LENGTH );
+            ASSERT_SMTC_MODEM_RC( smtc_modem_get_pin( stack_id, smtc_modem_helper_get_pin( ) ) );
+            SMTC_HAL_TRACE_ARRAY( "CHIP_PIN", smtc_modem_helper_get_pin( ), SMTC_MODEM_PIN_LENGTH );
 #endif
             /* Set user region */
             ASSERT_SMTC_MODEM_RC( smtc_modem_set_region( stack_id, MODEM_REGION ) );
 #if defined( CONFIG_LORA_BASICS_MODEM_RELAY_TX )
-            relay_config.second_ch_enable = false;
-            relay_config.activation       = SMTC_MODEM_RELAY_TX_ACTIVATION_MODE_ED_CONTROLLED;
-            relay_config.number_of_miss_wor_ack_to_switch_in_nosync_mode = 1;
-            relay_config.smart_level                                     = 5;
-            relay_config.backoff                                         = 4;
-            ASSERT_SMTC_MODEM_RC( smtc_modem_relay_tx_enable( stack_id, &relay_config ) );
+            smtc_modem_helper_get_relay_config( )->second_ch_enable = false;
+            smtc_modem_helper_get_relay_config( )->activation       = SMTC_MODEM_RELAY_TX_ACTIVATION_MODE_ED_CONTROLLED;
+            smtc_modem_helper_get_relay_config( )->number_of_miss_wor_ack_to_switch_in_nosync_mode = 1;
+            smtc_modem_helper_get_relay_config( )->smart_level                                     = 5;
+            smtc_modem_helper_get_relay_config( )->backoff                                         = 4;
+            ASSERT_SMTC_MODEM_RC( smtc_modem_relay_tx_enable( stack_id, smtc_modem_helper_get_relay_config( ) ) );
 #endif
             ASSERT_SMTC_MODEM_RC( smtc_modem_get_certification_mode( stack_id, &certif_running ) );
             if( certif_running == false )
@@ -379,11 +268,12 @@ static void modem_event_callback( void )
 
         case SMTC_MODEM_EVENT_DOWNDATA:
             LOG_INF( "Event received: DOWNDATA" );
-            /* Get downlink data */
-            ASSERT_SMTC_MODEM_RC(
-                smtc_modem_get_downlink_data( rx_payload, &rx_payload_size, &rx_metadata, &rx_remaining ) );
-            LOG_INF( "Data received on port %u", rx_metadata.fport );
-            LOG_HEXDUMP_DBG( rx_payload, rx_payload_size, "Received payload" );
+            // Get downlink data
+            smtc_modem_get_downlink_data( smtc_modem_helper_get_rx_payload( ), smtc_modem_helper_get_rx_payload_size( ),
+                                          smtc_modem_helper_get_rx_metadata( ), smtc_modem_helper_get_rx_remaining( ) );
+            LOG_INF( "Data received on port %u", smtc_modem_helper_get_rx_metadata( )->fport );
+            LOG_HEXDUMP_INF( smtc_modem_helper_get_rx_payload( ), *smtc_modem_helper_get_rx_payload_size( ),
+                             "Received payload" );
             break;
 
         case SMTC_MODEM_EVENT_JOINFAIL:
@@ -506,24 +396,6 @@ static void modem_event_callback( void )
         case SMTC_MODEM_EVENT_NO_DOWNLINK_THRESHOLD:
         {
             LOG_INF( "Event received: NO_DOWNLINK_THRESHOLD\n" );
-            if( current_event.event_data.no_downlink.status != 0 )
-            {
-                // Leave and re-join network
-                smtc_modem_alarm_clear_timer( );
-                ASSERT_SMTC_MODEM_RC( smtc_modem_leave_network( STACK_ID ) );
-                ASSERT_SMTC_MODEM_RC( smtc_modem_join_network( STACK_ID ) );
-                LOG_INF( "Event received: %s-%s\n",
-                         current_event.event_data.no_downlink.status & SMTC_MODEM_EVENT_NO_RX_THRESHOLD_ADR_BACKOFF_END
-                             ? "ADR backoff end-"
-                             : "",
-                         current_event.event_data.no_downlink.status & SMTC_MODEM_EVENT_NO_RX_THRESHOLD_USER_THRESHOLD
-                             ? "-User threshold reached"
-                             : "" );
-            }
-            else  // Event cleared
-            {
-                LOG_INF( "Event type: Cleared\n" );
-            }
             break;
         }
 

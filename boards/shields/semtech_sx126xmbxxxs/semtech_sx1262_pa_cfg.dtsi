@@ -1,0 +1,38 @@
+
+
+&lora_semtech_sx126xmbxxxs {
+    tx-power-cfg =
+    /* power, pa_duty_cycle, hp_max */
+    <(  1) 0x01 0x01>, /* Expected output power = -9dBm */
+    <(  4) 0x00 0x01>, /* Expected output power = -8dBm */
+    <(  4) 0x01 0x01>, /* Expected output power = -7dBm */
+    <(  7) 0x00 0x01>, /* Expected output power = -6dBm */
+    <(  2) 0x00 0x02>, /* Expected output power = -5dBm */
+    <(  7) 0x03 0x01>, /* Expected output power = -4dBm */
+    <(  8) 0x03 0x01>, /* Expected output power = -3dBm */
+    <(  9) 0x03 0x01>, /* Expected output power = -2dBm */
+    <( 13) 0x00 0x01>, /* Expected output power = -1dBm */
+    <( 16) 0x00 0x01>, /* Expected output power = 0dBm */
+    <( 19) 0x00 0x01>, /* Expected output power = 1dBm */
+    <( 20) 0x00 0x01>, /* Expected output power = 2dBm */
+    <( 18) 0x03 0x01>, /* Expected output power = 3dBm */
+    <( 21) 0x00 0x01>, /* Expected output power = 4dBm */
+    <( 16) 0x00 0x02>, /* Expected output power = 5dBm */
+    <( 22) 0x00 0x01>, /* Expected output power = 6dBm */
+    <( 22) 0x01 0x01>, /* Expected output power = 7dBm */
+    <( 22) 0x02 0x01>, /* Expected output power = 8dBm */
+    <( 22) 0x03 0x01>, /* Expected output power = 9dBm */
+    <( 22) 0x04 0x01>, /* Expected output power = 10dBm */
+    <( 22) 0x00 0x02>, /* Expected output power = 11dBm */
+    <( 22) 0x01 0x02>, /* Expected output power = 12dBm */
+    <( 22) 0x02 0x02>, /* Expected output power = 13dBm */
+    <( 22) 0x03 0x02>, /* Expected output power = 14dBm */
+    <( 22) 0x01 0x03>, /* Expected output power = 15dBm */
+    <( 22) 0x02 0x03>, /* Expected output power = 16dBm */
+    <( 22) 0x00 0x05>, /* Expected output power = 17dBm */
+    <( 22) 0x01 0x05>, /* Expected output power = 18dBm */
+    <( 22) 0x02 0x05>, /* Expected output power = 19dBm */
+    <( 22) 0x03 0x06>, /* Expected output power = 20dBm */
+    <( 22) 0x04 0x06>, /* Expected output power = 21dBm */
+    <( 22) 0x04 0x07>; /* Expected output power = 22dBm */
+};

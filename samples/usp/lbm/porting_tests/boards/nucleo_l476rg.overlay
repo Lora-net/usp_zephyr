@@ -26,3 +26,14 @@
 &arduino_i2c {
         /delete-property/ zephyr,concat-buf-size;
 };
+
+&lptim1 {
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x80000000>,
+		 <&rcc STM32_SRC_LSE LPTIM1_SEL(3)>;
+	status = "okay";
+};
+
+// Set SPI freq @10MHz for this sample
+&{/soc/spi@40013000/lora@0} {
+	spi-max-frequency = < 10000000 >; 
+};

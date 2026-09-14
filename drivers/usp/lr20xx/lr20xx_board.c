@@ -39,6 +39,7 @@
 #include <zephyr/drivers/spi.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/version.h>
 
 #include <zephyr/usp/lora_lbm_transceiver.h>
 
@@ -232,7 +233,7 @@ static int lr20xx_init( const struct device* dev )
             ret = gpio_pin_configure_dt( &dio_config.gpio, GPIO_INPUT );
             if( ret < 0 )
             {
-                LOG_ERR( "Could not configure DIO %d gpio", dio_config.dio );
+                LOG_ERR( "Could not configure DIO %d gpio", ( int ) dio_config.dio );
                 return ret;
             }
 
@@ -285,24 +286,23 @@ static int lr20xx_pm_action( const struct device* dev, enum pm_device_action act
 
 #define DT_PROP_BY_IDX_U8( node_id, prop, idx ) ( ( uint8_t ) DT_PROP_BY_IDX( node_id, prop, idx ) )
 
-#define DT_TABLE_U8( node_id, prop )                                       \
-    {                                                                      \
-        DT_FOREACH_PROP_ELEM_SEP( node_id, prop, DT_PROP_BY_IDX_U8, (, ) ) \
-    }
+#define DT_TABLE_U8( node_id, prop ) { DT_FOREACH_PROP_ELEM_SEP( node_id, prop, DT_PROP_BY_IDX_U8, (, ) ) }
 
 #define CONFIGURE_GPIO_IF_IN_DT( node_id, name, dt_prop ) \
     COND_CODE_1( DT_NODE_HAS_PROP( node_id, dt_prop ), (.name = GPIO_DT_SPEC_GET( node_id, dt_prop ), ), ( ) )
 
-#define LR20XX_CFG_TCXO( node_id )                                                                           \
-    {                                                                                                        \
-        .xosc_cfg = COND_CODE_1( DT_PROP( node_id, tcxo_wakeup_time ) == 0, ( RAL_XOSC_CFG_XTAL ),           \
-                                 ( RAL_XOSC_CFG_TCXO_RADIO_CTRL ) ),                                         \
-        .voltage = DT_PROP( node_id, tcxo_voltage ), .wakeup_time_ms = DT_PROP( node_id, tcxo_wakeup_time ), \
+#define LR20XX_CFG_TCXO( node_id )                                                                       \
+    {                                                                                                    \
+        .xosc_cfg       = COND_CODE_1( DT_PROP( node_id, tcxo_wakeup_time ) == 0, ( RAL_XOSC_CFG_XTAL ), \
+                                       ( RAL_XOSC_CFG_TCXO_RADIO_CTRL ) ),                               \
+        .voltage        = DT_PROP( node_id, tcxo_voltage ),                                              \
+        .wakeup_time_ms = DT_PROP( node_id, tcxo_wakeup_time ),                                          \
     }
 
-#define LR20XX_CFG_LF_CLK( node_id )                                      \
-    {                                                                     \
-        .lf_clk_cfg = DT_PROP( node_id, lf_clk ), .wait_32k_ready = true, \
+#define LR20XX_CFG_LF_CLK( node_id )                  \
+    {                                                 \
+        .lf_clk_cfg     = DT_PROP( node_id, lf_clk ), \
+        .wait_32k_ready = true,                       \
     }
 
 #define LR20XX_RSSI_CFG( node_id, range )                                                  \
@@ -311,48 +311,56 @@ static int lr20xx_pm_action( const struct device* dev, enum pm_device_action act
         .gain_tune   = DT_TABLE_U8( node_id, DT_CAT3( rssi_calibration_, range, _tune ) ), \
     }
 
-#define LR20XX_DIOS_CONFIG( node_id )                                              \
-    {                                                                              \
-        DT_FOREACH_CHILD_SEP( DT_CHILD( node_id, dios ), LR20XX_DIO_CONFIG, (, ) ) \
-    }
+#define LR20XX_DIOS_CONFIG( node_id ) { DT_FOREACH_CHILD_SEP( DT_CHILD( node_id, dios ), LR20XX_DIO_CONFIG, (, ) ) }
 
 #define LR20XX_DIO_CONFIG( node_id )                                              \
     {                                                                             \
-        .dio = DT_REG_ADDR( node_id ), .function = DT_PROP( node_id, function ),  \
+        .dio           = DT_REG_ADDR( node_id ),                                  \
+        .function      = DT_PROP( node_id, function ),                            \
         .sleep_drive   = DT_PROP_OR( node_id, sleep_drive, ( 0 ) ),               \
         .irq_mask      = DT_PROP_OR( node_id, irq_mask, LR20XX_SYSTEM_IRQ_NONE ), \
         .gpio          = GPIO_DT_SPEC_GET_OR( node_id, dio_gpios, { 0 } ),        \
         .rf_switch_cfg = DT_PROP_OR( node_id, rf_sw, ( 0 ) ),                     \
     }
 
-#define LR20XX_CONFIG( node_id )                                                                                       \
-    {                                                                                                                  \
-        .spi = SPI_DT_SPEC_GET( node_id, LR20XX_SPI_OPERATION, 0 ), .reset = GPIO_DT_SPEC_GET( node_id, reset_gpios ), \
-        .busy            = GPIO_DT_SPEC_GET( node_id, busy_gpios ),                                                    \
-        .dios_config_num = ARRAY_SIZE( lr20xx_dios_config_##node_id ), .dios_config = lr20xx_dios_config_##node_id,    \
-        .hf_clk_out_scaling = DT_PROP_OR( node_id, hf_clk_out_scaling, ( 0 ) ),                                        \
-        .tcxo_cfg = LR20XX_CFG_TCXO( node_id ), .lf_clck_cfg = LR20XX_CFG_LF_CLK( node_id ),                           \
-        .reg_mode = DT_PROP( node_id, reg_mode ), .tx_power_offset_db = DT_PROP_OR( node_id, tx_power_offset, 0 ),     \
-        .rx_boosted_cfg  = ( lr20xx_radio_common_rx_path_boost_mode_t ) DT_PROP_OR( node_id, rx_boost_cfg, 0 ),        \
-        .pa_ramp_time    = ( lr20xx_radio_common_ramp_time_t ) DT_PROP_OR( node_id, pa_ramp_time, 5 ),                 \
-        .pa_lf_cfg_table = ( lr20xx_pa_pwr_cfg_t* ) DT_CAT( pa_lf_cfg_table_, node_id ),                               \
-        .pa_hf_cfg_table = ( lr20xx_pa_pwr_cfg_t* ) DT_CAT( pa_hf_cfg_table_, node_id ),                               \
-        .tx_dbm_to_ua_reg_mode_dcdc_lf_vreg = ( uint32_t* ) DT_CAT( tx_dbm_to_ua_reg_mode_dcdc_lf_vreg_, node_id ),    \
-        .tx_dbm_to_ua_reg_mode_ldo_lf_vreg  = ( uint32_t* ) DT_CAT( tx_dbm_to_ua_reg_mode_ldo_lf_vreg_, node_id ),     \
-        .tx_dbm_to_ua_reg_mode_dcdc_hf_vreg = ( uint32_t* ) DT_CAT( tx_dbm_to_ua_reg_mode_dcdc_hf_vreg_, node_id ),    \
-        .rx_bw_to_ua_reg_mode_dcdc_lf_vreg  = ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_dcdc_lf_vreg_, node_id ),     \
-        .rx_bw_to_ua_reg_mode_dcdc_hf_vreg  = ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_dcdc_hf_vreg_, node_id ),     \
-        .rx_bw_to_ua_reg_mode_dcdc_lf_vreg_boosted =                                                                   \
-            ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_dcdc_lf_vreg_boosted_, node_id ),                               \
-        .rx_bw_to_ua_reg_mode_dcdc_hf_vreg_boosted =                                                                   \
-            ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_dcdc_hf_vreg_boosted_, node_id ),                               \
-        .rx_bw_to_ua_reg_mode_ldo_lf_vreg = ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_lf_vreg_, node_id ),        \
-        .rx_bw_to_ua_reg_mode_ldo_hf_vreg = ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_hf_vreg_, node_id ),        \
-        .rx_bw_to_ua_reg_mode_ldo_lf_vreg_boosted =                                                                    \
-            ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_lf_vreg_boosted_, node_id ),                                \
-        .rx_bw_to_ua_reg_mode_ldo_hf_vreg_boosted =                                                                    \
-            ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_hf_vreg_boosted_, node_id ),                                \
-        .calibration_freqs = ( uint32_t* ) DT_CAT( calibration_freqs_, node_id ),                                      \
+#if ZEPHYR_VERSION_CODE < ZEPHYR_VERSION( 4, 3, 0 )
+#define LR20XX_SPI_SPEC( node_id ) SPI_DT_SPEC_GET( node_id, LR20XX_SPI_OPERATION, 0 )
+#else
+#define LR20XX_SPI_SPEC( node_id ) SPI_DT_SPEC_GET( node_id, LR20XX_SPI_OPERATION )
+#endif
+
+#define LR20XX_CONFIG( node_id )                                                                                    \
+    {                                                                                                               \
+        .spi                = LR20XX_SPI_SPEC( node_id ),                                                           \
+        .reset              = GPIO_DT_SPEC_GET( node_id, reset_gpios ),                                             \
+        .busy               = GPIO_DT_SPEC_GET( node_id, busy_gpios ),                                              \
+        .dios_config_num    = ARRAY_SIZE( lr20xx_dios_config_##node_id ),                                           \
+        .dios_config        = lr20xx_dios_config_##node_id,                                                         \
+        .hf_clk_out_scaling = DT_PROP_OR( node_id, hf_clk_out_scaling, ( 0 ) ),                                     \
+        .tcxo_cfg           = LR20XX_CFG_TCXO( node_id ),                                                           \
+        .lf_clck_cfg        = LR20XX_CFG_LF_CLK( node_id ),                                                         \
+        .reg_mode           = DT_PROP( node_id, reg_mode ),                                                         \
+        .tx_power_offset_db = DT_PROP_OR( node_id, tx_power_offset, 0 ),                                            \
+        .rx_boosted_cfg     = ( lr20xx_radio_common_rx_path_boost_mode_t ) DT_PROP_OR( node_id, rx_boost_cfg, 0 ),  \
+        .pa_ramp_time       = ( lr20xx_radio_common_ramp_time_t ) DT_PROP_OR( node_id, pa_ramp_time, 5 ),           \
+        .pa_lf_cfg_table    = ( lr20xx_pa_pwr_cfg_t* ) DT_CAT( pa_lf_cfg_table_, node_id ),                         \
+        .pa_hf_cfg_table    = ( lr20xx_pa_pwr_cfg_t* ) DT_CAT( pa_hf_cfg_table_, node_id ),                         \
+        .tx_dbm_to_ua_reg_mode_dcdc_lf_vreg = ( uint32_t* ) DT_CAT( tx_dbm_to_ua_reg_mode_dcdc_lf_vreg_, node_id ), \
+        .tx_dbm_to_ua_reg_mode_ldo_lf_vreg  = ( uint32_t* ) DT_CAT( tx_dbm_to_ua_reg_mode_ldo_lf_vreg_, node_id ),  \
+        .tx_dbm_to_ua_reg_mode_dcdc_hf_vreg = ( uint32_t* ) DT_CAT( tx_dbm_to_ua_reg_mode_dcdc_hf_vreg_, node_id ), \
+        .rx_bw_to_ua_reg_mode_dcdc_lf_vreg  = ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_dcdc_lf_vreg_, node_id ),  \
+        .rx_bw_to_ua_reg_mode_dcdc_hf_vreg  = ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_dcdc_hf_vreg_, node_id ),  \
+        .rx_bw_to_ua_reg_mode_dcdc_lf_vreg_boosted =                                                                \
+            ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_dcdc_lf_vreg_boosted_, node_id ),                            \
+        .rx_bw_to_ua_reg_mode_dcdc_hf_vreg_boosted =                                                                \
+            ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_dcdc_hf_vreg_boosted_, node_id ),                            \
+        .rx_bw_to_ua_reg_mode_ldo_lf_vreg = ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_lf_vreg_, node_id ),     \
+        .rx_bw_to_ua_reg_mode_ldo_hf_vreg = ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_hf_vreg_, node_id ),     \
+        .rx_bw_to_ua_reg_mode_ldo_lf_vreg_boosted =                                                                 \
+            ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_lf_vreg_boosted_, node_id ),                             \
+        .rx_bw_to_ua_reg_mode_ldo_hf_vreg_boosted =                                                                 \
+            ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_hf_vreg_boosted_, node_id ),                             \
+        .calibration_freqs = ( uint32_t* ) DT_CAT( calibration_freqs_, node_id ),                                   \
     }
 
 #define LR20XX_DEVICE_INIT( node_id )                                                            \
@@ -391,5 +399,6 @@ static int lr20xx_pm_action( const struct device* dev, enum pm_device_action act
     PM_DEVICE_DT_DEFINE( node_id, lr20xx_pm_action );                                                                    \
     LR20XX_DEVICE_INIT( node_id )
 
+DT_FOREACH_STATUS_OKAY( semtech_lr2012, LR20XX_DEFINE )
 DT_FOREACH_STATUS_OKAY( semtech_lr2021, LR20XX_DEFINE )
 DT_FOREACH_STATUS_OKAY( semtech_lr2022, LR20XX_DEFINE )

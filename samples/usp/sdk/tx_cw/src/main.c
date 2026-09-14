@@ -42,10 +42,10 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/device.h>
+#include <zephyr/logging/log.h>
 
 #include "app_tx_cw.h"
 #define SMTC_HAL_DBG_TRACE_C
-#include "main_tx_cw.h"
 
 #include "smtc_hal_dbg_trace.h"
 #include <smtc_zephyr_usp_api.h>
@@ -59,7 +59,7 @@
  * --- PRIVATE MACROS-----------------------------------------------------------
  */
 
-LOG_MODULE_REGISTER( usp, LOG_LEVEL_INF );
+LOG_MODULE_REGISTER( tx_cw, LOG_LEVEL_INF );
 
 /*
  * -----------------------------------------------------------------------------

@@ -1,0 +1,13 @@
+# Copyright (c) 2024 Semtech Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+config USE_FLRP
+	bool "Hardware modem FLRC burst commands (0xB0-0xB2)"
+	default n
+	depends on SEMTECH_LR20XX
+	help
+	  When enabled, adds FLRC burst commands and a ~20 KB static buffer in
+	  cmd_parser. Use the FLRC protocol (FLRP). Requires a LR20XX radio.
+	  Disable on RAM-constrained targets.
+
+source "Kconfig.zephyr"

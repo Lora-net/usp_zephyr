@@ -57,7 +57,7 @@ typedef struct sx126x_pa_pwr_cfg_s
 {
     int8_t  power;
     uint8_t pa_duty_cycle;
-    uint8_t pa_hp_sel;
+    uint8_t hp_max;
 } sx126x_pa_pwr_cfg_t;
 
 struct sx126x_hal_context_cfg_t
@@ -76,9 +76,10 @@ struct sx126x_hal_context_cfg_t
     uint8_t                              capa_xta; /* set to 0xFF if not configured*/
     uint8_t                              capa_xtb; /* set to 0xFF if not configured*/
 
-    sx126x_reg_mod_t reg_mode;
-    int8_t           tx_power_offset_db; /* Board TX power offset */
-    bool             rx_boosted;         /* RXBoosted option */
+    sx126x_pa_pwr_cfg_t* pa_cfg_table;
+    sx126x_reg_mod_t     reg_mode;
+    int8_t               tx_power_offset_db; /* Board TX power offset */
+    bool                 rx_boosted;         /* RXBoosted option */
 
     sx126x_ramp_time_t pa_ramp_time; /* PA ramp time */
 };

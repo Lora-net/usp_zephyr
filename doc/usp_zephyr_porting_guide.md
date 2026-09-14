@@ -153,7 +153,7 @@ CONFIG_LOG=y
 ### 1.4 Platform/Modem HAL
 
 The MCU-specific HAL functions required by USP & LoRa Basics Modem are already implemented in USP for Zephyr in those files : `modules/smtc_modem_hal/`.
-In case the targeted MCU requires some modifications, please refer to the [USP Porting Guide - HAL Implementation](https://github.com/Lora-net/usp/blob/main/doc/usp_porting_guide.md).
+In case the targeted MCU requires some modifications, please refer to the [USP Porting Guide - HAL Implementation](https://github.com/Lora-net/usp/blob/v1.2.1-rc18/doc/usp_porting_guide.md).
 
 </details>
 

@@ -1,0 +1,18 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// SX1262MB1CAS commercial name is SX1262DVK1CAS
+// PCB ref is e428v03a
+// Freq is 915MHz (Regions: North America / Australia)
+
+
+#include "semtech_sx126xmbxxxs_common.dtsi" // Common
+#include "semtech_sx126xmb1xxs.dtsi" 		// Specificities for MB1 shields
+#include "semtech_sx1262_pa_cfg.dtsi" 		// Specificities for sx1262 version
+
+lora_semtech_sx1262mb1xxs: &lora_semtech_sx126xmbxxxs {
+	compatible = "semtech,sx1262-new";
+};

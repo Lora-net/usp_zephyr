@@ -15,6 +15,10 @@ if(CONFIG_ZEPHYR_USP_MODULE)
       set(LBM_SMTC_MODEM_CORE_DIR ${LBM_LIB_DIR}/smtc_modem_core)
     endif()
 
+    if(CONFIG_USP_FLRP)
+      set(FLRP_DIR ${USP_DIR}/protocols/smtc_flrc_protocol)
+    endif()
+
     zephyr_library()
 
     if(CONFIG_SEMTECH_LR11XX)

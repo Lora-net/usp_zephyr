@@ -187,12 +187,12 @@ Everything is automatically managed using the `west.yml` manifest.
 ### LoRa Basics Modem library
 
 LoRa Basics Modem library code can be found in folder `protocols/lbm_lib` .
-Please refer to `README.md`[LOCAL](../../modules/lib/usp/protocols/lbm_lib/README) [ONLINE](https://github.com/Lora-net/usp/blob/main/protocols/lbm_lib/README.md) to get all information related to LoRa Basics Modem library
+Please refer to `README.md`[LOCAL](../../modules/lib/usp/protocols/lbm_lib/README) [ONLINE](https://github.com/Lora-net/usp/blob/v1.2.1-rc18/protocols/lbm_lib/README.md) to get all information related to LoRa Basics Modem library
 
 ## Radio Access Controller (RAC) API
 
-- Documentation for the USP API is available in [LOCAL](../../modules/lib/usp/smtc_rac_lib/README.md) [ONLINE](https://github.com/Lora-net/usp/blob/main/smtc_rac_lib/README.md)
-- API is avalable here : [LOCAL](../../modules/lib/usp/smtc_rac_lib/smtc_rac_api/smtc_rac_api.h) [ONLINE](https://github.com/Lora-net/usp/blob/main/smtc_rac_lib/smtc_rac_api/smtc_rac_api.h)
+- Documentation for the USP API is available in [LOCAL](../../modules/lib/usp/smtc_rac_lib/README.md) [ONLINE](https://github.com/Lora-net/usp/blob/v1.2.1-rc18/smtc_rac_lib/README.md)
+- API is avalable here : [LOCAL](../../modules/lib/usp/smtc_rac_lib/smtc_rac_api/smtc_rac_api.h) [ONLINE](https://github.com/Lora-net/usp/blob/v1.2.1-rc18/smtc_rac_lib/smtc_rac_api/smtc_rac_api.h)
 
 ## Dynamic Behaviour, Priorities, ASAP & Scheduled transactions
 

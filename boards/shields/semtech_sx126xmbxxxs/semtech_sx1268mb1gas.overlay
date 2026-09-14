@@ -1,0 +1,13 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "semtech_sx126xmbxxxs_common.dtsi" // Common
+#include "semtech_sx126xmb1xxs.dtsi" 		// Specificities for MB1 shields
+#include "semtech_sx1262_pa_cfg.dtsi" 		// sx1268 uses same PA cfg as sx1262
+
+lora_semtech_sx1268mb1xxs: &lora_semtech_sx126xmbxxxs {
+	compatible = "semtech,sx1268-new";
+};

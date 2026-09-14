@@ -1,0 +1,52 @@
+// /*
+//  * Copyright (c) 2024 Semtech Corporation
+//  *
+//  * SPDX-License-Identifier: Apache-2.0
+//  */
+
+/ {
+	aliases {
+		smtc-watchdog = &wdt31;
+		smtc-user-button = &usr_btn;
+	};
+};
+
+// Set rx-delay to 5*64MHz clock cycles
+&xiao_spi {
+	rx-delay = <5>;
+};
+
+&xiao_serial {
+	status = "disabled";
+};
+
+&i2c22 {
+	status = "disabled";
+};
+
+&i2c30 {
+	status = "disabled";
+};
+
+&adc {
+	status = "disabled";
+};
+
+&wdt31 {
+	status = "okay";
+};
+
+// Override xiao_nrf54l15 default configuration for USP applications
+// Disable boot-on for RF switch regulators to save power
+
+&rfsw_ctl {
+	/delete-property/ regulator-boot-on;
+};
+
+&rfsw_pwr {
+	/delete-property/ regulator-boot-on;
+};
+
+&vbat_pwr {
+	/delete-property/ regulator-boot-on;
+};

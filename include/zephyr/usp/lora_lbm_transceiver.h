@@ -48,10 +48,11 @@ extern "C" {
 typedef void ( *event_cb_t )( const struct device* dev );
 
 /**
- * @brief Attach interrupt cb to event pin.
+ * @brief Attach interrupt cb to event pin (main IRQ).
  *
  * @param dev context
  * @param cb cb function
+ *
  */
 void lora_transceiver_board_attach_interrupt( const struct device* dev, event_cb_t cb );
 

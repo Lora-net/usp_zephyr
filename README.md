@@ -1,5 +1,8 @@
 # USP For Zephyr
 
+> **USP RELEASE v1.2.1 - Stable Release**
+>
+
 **USP for Zephyr** integrates Semtech’s Unified Software Platform **[USP](https://github.com/Lora-net/usp)** into the Zephyr RTOS, which leverage fourth-generation LoRa® technology and providing ready-to-use advanced multi-protocol support.
 
 This **out-of-tree Zephyr module** supports flexible integration ([see Zephyr topologies](https://docs.zephyrproject.org/latest/develop/west/workspaces.html#topologies-supported)):
@@ -9,13 +12,39 @@ This **out-of-tree Zephyr module** supports flexible integration ([see Zephyr to
 
 For an in-depth explanation of system components, interactions, and design principles, refer to [USP Architecture](doc/USP_Architecture.md).
 
-Current Version is v1.0.0:
+Current Version is v1.2.1:
 - [Changelog](CHANGELOG.md)
 - [known limitations](doc/KNOWN_LIMITATIONS.md)
 
+<table width="100%">
+<tr>
+<td>
+
+<h3>&#10024; What's new in this release</h3>
+
+<a href="doc/FLRP.md"><img alt="New feature: FLRP" src="doc/assets/badge_flrp.svg"></a>
+&nbsp;<b><a href="doc/FLRP.md">FLRP &mdash; Fast LoRa communication Protocol</a></b><br>
+Principles, API and samples for the high-speed LoRa&nbsp;+&nbsp;FLRC protocol.
+
+<br>
+
+<a href="doc/LORA_PLUS_EVK.md"><img alt="New hardware: LoRa Plus EVK" src="doc/assets/badge_evk.svg"></a>
+&nbsp;<b><a href="doc/LORA_PLUS_EVK.md">LoRa Plus&trade; Evaluation Kit</a></b><br>
+New EVK based on LR2021 / LR2022 / LR2012 (+ XIAO nRF54L15).
+
+<br>
+
+<a href="doc/VALIDATION_AND_PERFORMANCES.md"><img alt="Validation and Performances" src="doc/assets/badge_validation.svg"></a>
+&nbsp;<b><a href="doc/VALIDATION_AND_PERFORMANCES.md">Validation &amp; Performances</a></b><br>
+Validation configuration, build options and SPI clock speeds (memory footprint coming next).
+
+</td>
+</tr>
+</table>
+
 ## Prerequisites
 
-Install Zephyr 4.2 following : https://docs.zephyrproject.org/latest/develop/getting_started/index.html. \
+Install Zephyr 4.4 following : https://docs.zephyrproject.org/latest/develop/getting_started/index.html. \
 If using a natively-supported MCU Board, you may test it with `blinky` sample. \
 Note: Advanced users may install only the dependancy tools & SDK.
 
@@ -23,9 +52,11 @@ Notes regarding SDK & Toolchains :
 - The Zephyr SDK contains toolchains for each of Zephyr’s supported architectures (i.e arm, x86, ...). That does include a compiler, assembler, linker and other programs required to build and debug Zephyr applications.
 - Only the SDK files of the targeted MCU may be installed
 - **Zephyr RTOS Version Support:**
-  - Samples are Validated<sup>1</sup> with **Zephyr RTOS v4.2 & Zephyr SDK v0.17.0.**
+  - Samples are Validated<sup>1</sup> with **Zephyr RTOS v4.4.0 & Zephyr SDK v1.0.1.**
+  - Samples are Buildable<sup>1</sup> with **Zephyr RTOS v4.4-branch & Zephyr SDK v1.0.1.** (This branch is recommended to get fixes from Zephyr)
   - Samples are Buildable<sup>1</sup> with **Zephyr RTOS v3.7.0 LTS & Zephyr SDK v0.16.9.** (see [Supported Boards & Shields](#supported-boards--shields) for limitations)
-- Follow steps [here](https://docs.zephyrproject.org/4.2.0/develop/getting_started/index.html#install-the-zephyr-sdk) to install/update the Zephyr SDK on your specific platform. This needs to be done only once.
+  - See [known limitations](doc/KNOWN_LIMITATIONS.md) for known limitations with some other versions.
+- Follow steps [here](https://docs.zephyrproject.org/4.4.0/develop/getting_started/index.html#install-the-zephyr-sdk) to install/update the Zephyr SDK on your specific platform. This needs to be done only once.
 - Ensure your SDK is compliant with the used version of Zephyr RTOS : https://github.com/zephyrproject-rtos/sdk-ng/wiki/Zephyr-Version-Compatibility
 - To use other Toolchains than the one provided by default with the Zephyr SDK, please refer to https://docs.zephyrproject.org/latest/develop/toolchains/index.html (**Please be aware that the current delivery was not validated with other toolchains than the one from the default Zephyr SDK**)
 
@@ -93,7 +124,7 @@ manifest:
   projects:
     - name: zephyr
       url: https://github.com/zephyrproject-rtos/zephyr
-      revision: v4.2.0
+      revision: v4.4.0
       import: true
     - name: usp_zephyr
       path: usp_zephyr
@@ -129,7 +160,7 @@ application/my_project
 And compile & flash as usual :
 ```bash
 west build --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_wio_lr2021 application/xxx
-west flash
+west flash --runner pyocd
 ```
 
 </details>
@@ -138,7 +169,7 @@ west flash
 <summary><b>Integration in NCS workspace (experimental)</b></summary>
 <br>
 
-**WARNING : This integration is experimental as the official validated integration is for Zephyr RTOS v4.2**
+**WARNING : This integration is experimental as the official validated integration is for Zephyr RTOS v4.4**
 
 Can be used for T2/T3 topology.
 Edit `nrf/west.yml` (or your manifest):
@@ -185,7 +216,7 @@ Using the Semtech LoRa Plus Xiao EVK (Xiao-nRF54L15 + LR2021-Wio) on `periodical
 ```bash
 cd zephyr_workspace
 west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_wio_lr2021 usp_zephyr/samples/usp/lbm/periodical_uplink
-west flash
+west flash --runner pyocd
 ```
 
 All samples are located in [`samples/usp`](samples/usp/README.md) directory, you can use any supported board/shield as define in next section to build and flash other samples :
@@ -204,7 +235,7 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
 <summary><strong>Seed Studio [XIAO nRF54L15] and [XIAO ESP32S3]</strong></summary>
 <br>
 
--   **Supported Zephyr:** Validated<sup>1</sup> on 4.2
+-   **Supported Zephyr:** Validated<sup>1</sup> on 4.4
 
 -   **Build board option**
 
@@ -218,8 +249,10 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
 
     >   | Type | Status<sup>1</sup> | Image | Command |
     >   |------|--------|--------|---------|
-    >   | **Wio-LR2021 Standalone<sup>3</sup>** | Validated for Xiao nRF54l15 | <img src="doc/assets/Wio_standalone.jpg" width="80"/> | `--shield semtech_wio_lr2021` |
-    >   | **Wio-LR2021 LoRa Plus Expansion Board<sup>3</sup>** | Validated for Xiao nRF54l15 | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021` |
+    >   | **Wio-LR2021 Standalone** | Validated for Xiao nRF54l15 | <img src="doc/assets/Wio_standalone.jpg" width="80"/> | `--shield semtech_wio_lr2021` |
+    >   | **Wio-LR2021 LoRa Plus Expansion Board<sup>3</sup>** | Validated for Xiao nRF54l15 | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021` or `--shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021_cn` |
+    >   | **Wio-LR2012 LoRa Plus Expansion Board<sup>3</sup>** | Validated for Xiao nRF54l15 | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_loraplus_expansion_board --shield semtech_wio_lr2012` or `--shield semtech_loraplus_expansion_board --shield semtech_wio_lr2012_cn` |
+    >   | **Wio-LR2022 LoRa Plus Expansion Board<sup>3</sup>** | Validated for Xiao nRF54l15 | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_loraplus_expansion_board --shield semtech_wio_lr2022` or `--shield semtech_loraplus_expansion_board --shield semtech_wio_lr2022_cn` |
 
     > <sup>1</sup> `Validated` : passed the Semtech nominal validation process.<br>`Buildable` : can be compiled but did not go through full Semtech validation process and can be considered experimental.<br>`Might work` : was compiled and tested on `periodical_uplink` sample only with low validation
     >
@@ -228,8 +261,6 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
     > ```
     > west blobs fetch hal_espressif
     > ```
-    > **<sup>3</sup> WIO-LR2021 CN version** ⚠️
-    > For WIO-LR2021 China (CN) versions the PA table configuration `tx-power-cfg-lf`defined in `usp_zephyr/boards/shields/semtech_wio_lr20xx/semtech_wio_lr20xx_common.dtsi` need to be adjusted as defined in LR2021 Datasheet page 134 to (CN - 490Mhz) band for optimal performances. Look for the 2 `470MHz` prefilled tables in the `semtech_wio_lr20xx_common.dtsi` file.
 
 -   **Flashing**
 
@@ -253,28 +284,27 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
 <summary><strong>STMicro [NUCLEO-L476RG] and [NUCLEO-U575ZI-Q]</strong></summary>
 <br>
 
--   **Supported Zephyr:** Validated<sup>1</sup> on 4.2 (buildable<sup>1</sup> on v3.7.0 LTS)
+-   **Supported Zephyr:** Validated<sup>1</sup> on 4.4 (buildable<sup>1</sup> on v3.7.0 LTS)
 
 -   **MCU board build option**
 
     >   | Type | Status<sup>1</sup> | Image | Command |
     >   |------|--------|--------|---------|
     >   | [**Nucleo-L476RG**](https://www.st.com/en/evaluation-tools/nucleo-l476rg.html) | Validated | <img src="doc/assets/Nucleo_L476RG.png" width="60"/> | `--board nucleo_l476rg/stm32l476xx` |
-    >   | [**Nucleo-U575ZI-Q**](https://www.st.com/en/evaluation-tools/nucleo-u575zi-q.html)| Buildable |<img src="doc/assets/Nucleo_U575ZI_Q.png" width="60"/> | `--board nucleo_u575zi_q/stm32u575xx` |
+    >   | [**Nucleo-U575ZI-Q**](https://www.st.com/en/evaluation-tools/nucleo-u575zi-q.html)| Buildable (except *Hardware Modem* sample where Nucleo-U575ZI-Q is not supported) |<img src="doc/assets/Nucleo_U575ZI_Q.png" width="60"/> | `--board nucleo_u575zi_q/stm32u575xx` |
 
 -   **RF shield build option**
 
     >   | Type | Status<sup>1</sup> | Image | Command |
     >   |------|--------|--------|---------|
-    >   | **Wio-LR2021 LoRa Plus Expansion Board<sup>3</sup>** | Validated for Nucleo-L476RG | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2021</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2021</code> |
+    >   | **Wio-LR2021 LoRa Plus Expansion Board** | Validated for Nucleo-L476RG | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2021</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2021</code> or<br><code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2021_cn</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2021_cn</code> |
+    >   | **Wio-LR2022 LoRa Plus Expansion Board** | Validated for Nucleo-L476RG | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2022</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2022</code> or<br><code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2022_cn</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2022_cn</code> |
+    >   | **Wio-LR2012 LoRa Plus Expansion Board** | Validated for Nucleo-L476RG | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2012</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2012</code> or<br><code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2012_cn</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2012_cn</code> |
     >   | **LR11xx (multi-option)** | Buildable | <img src="doc/assets/LR1110.jpg" width="80"/> | `--shield semtech_lr1110mb1xxs` or <br> `--shield semtech_lr1120mb1xxs` or<br>`--shield semtech_lr1121mb1xxs` |
-    >   | **SX126x** | Buildabled | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. `--shield semtech_sx1261mb2bas` (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
+    >   | **SX126x** | Buildabled | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. `--shield semtech_sx1261mb2bas_usp` (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
 
     > <sup>1</sup> `Validated` : passed the Semtech nominal validation process.<br>`Buildable` : can be compiled but did not go through full Semtech validation process and can be considered experimental.<br>`Might work` : was compiled and tested on `periodical_uplink` sample only with low validation
     >
-    > **<sup>3</sup> WIO-LR2021 CN version** ⚠️
-    > For WIO-LR2021 China (CN) versions the PA table configuration `tx-power-cfg-lf`defined in `usp_zephyr/boards/shields/semtech_wio_lr20xx/semtech_wio_lr20xx_common.dtsi` need to be adjusted as defined in LR2021 Datasheet page 134 to (CN - 490Mhz) band for optimal performances. Look for the 2 `470MHz` prefilled tables in the `semtech_wio_lr20xx_common.dtsi` file.
-
 -   **Flashing**
 
     STM32 chips use ST-Link as interface, and are programmed using STM32CubeProgrammer tool. You might want to [download and install STM32CubeProg](https://www.st.com/en/development-tools/stm32cubeprog.html) from ST website. Then, Zephyr should be able to locate the installation folder and use the tool.
@@ -289,8 +319,8 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
 <br>
 
 -   **Supported Zephyr:**
-    -   nRF52840 DK: Buildable<sup>3</sup> on 4.2 & v3.7.0 LTS)
-    -   nRF54l15 DK: Buildable<sup>3</sup> on 4.2
+    -   nRF52840 DK: Buildable<sup>3</sup> on 4.4 & v3.7.0 LTS)
+    -   nRF54l15 DK: Buildable<sup>3</sup> on 4.4
 
 
 -   **MCU board build option**
@@ -305,18 +335,22 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
 
     >   | Type | Status<sup>1</sup> | Image | Command[<sup>2</sup> |
     >   |------|--------|--------|---------|
-    >   | **Wio-LR2021<br>LoRa Plus Expansion Board<sup>3</sup>** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2021` |
+    >   | **Wio-LR2021<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2021</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021</code> or<br><code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2021_cn</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021_cn</code> |
+    >   | **Wio-LR2022<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2022</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2022</code> or<br><code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2022_cn</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2022_cn</code> |
+    >   | **Wio-LR2012<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2012</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2012</code> or<br><code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2012_cn</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2012_cn</code> |
     >   | **LR11xx<br>(multi-option)** | Buildable | <img src="doc/assets/LR1110.jpg" width="80"/>   | <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_lr1110mb1xxs</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_lr1120mb1xxs</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_lr1121mb1xxs</code> |
-    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_sx1261mb2bas</code> (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
+    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_sx1261mb2bas_usp</code> (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
     <br>
 
 -   **RF shield build option for nRF52840 DK**
 
     >   | Type | Status<sup>1</sup> | Image | Command<sup>2</sup> |
     >   |------|--------|--------|---------|
-    >   | **Wio-LR2021<br>LoRa Plus Expansion Board<sup>3</sup>** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2021` |
+    >   | **Wio-LR2021<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2021` or `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2021_cn` |
+    >   | **Wio-LR2022<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2022` or `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2022_cn` |
+    >   | **Wio-LR2012<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2012` or `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2012_cn` |
     >   | **LR11xx<br>(multi-option)** | Buildable | <img src="doc/assets/LR1110.jpg" width="80"/>   | `--shield semtech_lr1110mb1xxs`<br>`--shield semtech_lr1120mb1xxs`<br>`--shield semtech_lr1121mb1xxs` |
-    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. `--shield semtech_sx1261mb2bas` (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
+    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. `--shield semtech_sx1261mb2bas_usp` (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
     <br>
 
     > <sup>1</sup> `Validated` : passed the Semtech nominal validation process.<br>`Buildable` : can be compiled but did not go through full Semtech validation process and can be considered experimental.<br>`Might work` : was compiled and tested on `periodical_uplink` sample only with low validation
@@ -347,8 +381,6 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
     >> | P0.02 | A4 | LED_TX |
     >> | P0.03 | D14 | I2C_SDA |
     >> | P0.04 | D15 | I2C_SCL |
-    > **<sup>3</sup> WIO-LR2021 CN version** ⚠️
-    > For WIO-LR2021 China (CN) versions the PA table configuration `tx-power-cfg-lf`defined in `usp_zephyr/boards/shields/semtech_wio_lr20xx/semtech_wio_lr20xx_common.dtsi` need to be adjusted as defined in LR2021 Datasheet page 134 to (CN - 490Mhz) band for optimal performances. Look for the 2 `470MHz` prefilled tables in the `semtech_wio_lr20xx_common.dtsi` file.
 
 -   **Flashing**
     For Nordic DKs, you will need:
@@ -574,7 +606,7 @@ It is important to note that the Zephyr PM actions are correctly handled by the 
 
 | Board | Current (uA) |
 | ----- | ------------ |
-| Xiao-nRF54L15 | ~30<sup>1</sup> |
+| Xiao-nRF54L15 | ~400<sup>1</sup> |
 | nRF52840-DK | ~505/~25<sup>2</sup> |
 | nRF54L15-DK | ~18.1<sup>3</sup> |
 | NUCLEO-L476RG | ~5 | |
@@ -587,7 +619,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_wio
 Notes :
 - Be aware of differencies when using `CONFIG_PM_DEVICE_RUNTIME` or `CONFIG_PM_DEVICE_SYSTEM_MANAGED` in your prj.conf file.
 
-> <sup>1</sup> It is impossible to measure only the 3.3V used to power the nRF54L15 on the Xiao-nRF54L15 board, as Seeed didn’t provide for that in the design. Instead, we have to measure the whole current supplied to the board via the VBAT pads. This does include the LR2021 IC, the DC/DC buck converter and a few more active components. For the measurement, the VBAT voltage was 3.7V (Li-Ion nominal voltage).
+> <sup>1</sup> It is impossible to measure only the 3.3V used to power the nRF54L15 on the Xiao-nRF54L15 board, as Seeed didn’t provide for that in the design. Instead, we have to measure the whole current supplied to the board via the VBAT pads. This does include the LR2021 IC, the DC/DC buck converter, the LDO who is most part responsible for the over comption to compare to nRF54L15-DK and a few more active components. Without LDO, the Xiao-nRF54L15 + LoRa Plus EVK consumption would be ~30uA. For the measurement, the VBAT voltage was 3.7V (Li-Ion nominal voltage).
 
 > <sup>2</sup> Measured @VDD = 3V. Due du a [documented nRF52840 anomaly](https://docs.nordicsemi.com/bundle/errata_nRF52840_Rev3/page/ERR/nRF52840/Rev3/latest/anomaly_840_195.html), this chip draws more current when SPI3 is used, and SPI3 is the default one routed on the board’s Arduino header. Using SPI0 instead of SPI3 will lead to ~25uA.
 

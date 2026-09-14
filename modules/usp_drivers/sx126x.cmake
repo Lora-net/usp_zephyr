@@ -43,3 +43,11 @@ set(SMTC_RALF_SOURCES ${SMTC_RALF_DIR}/src/ralf_sx126x.c)
 zephyr_compile_definitions(
   SX126X
 )
+
+if(CONFIG_DT_HAS_SEMTECH_SX1261_NEW_ENABLED)
+  zephyr_compile_definitions( SX1261 )
+elseif(CONFIG_DT_HAS_SEMTECH_SX1262_NEW_ENABLED)
+  zephyr_compile_definitions( SX1262 )
+elseif(CONFIG_DT_HAS_SEMTECH_SX1268_NEW_ENABLED)
+  zephyr_compile_definitions( SX1268 )
+endif()

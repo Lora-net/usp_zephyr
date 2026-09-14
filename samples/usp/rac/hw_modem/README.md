@@ -16,12 +16,13 @@ This application implements a **complete LoRa Basics Modem hardware interface** 
 
 ### Using CMake
 
-| Parameter                            | Default Value | Description                   |
-|--------------------------------------|---------------|-------------------------------|
-| `CONFIG_MAIN_STACK_SIZE`             | `12288`       | Main thread stack size (12KB) |
-| `CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE` | `8192`        | System workqueue stack size   |
-| `CONFIG_HEAP_MEM_POOL_SIZE`          | `8192`        | Heap memory pool size         |
-| `CONFIG_LOG_BUFFER_SIZE`             | `4096`        | Logging buffer size           |
+| Parameter                            | Default Value | Description                       |
+|--------------------------------------|---------------|-----------------------------------|
+| `CONFIG_MAIN_STACK_SIZE`             | `12288`       | Main thread stack size (12KB)     |
+| `CONFIG_SYSTEM_WORKQUEUE_STACK_SIZE` | `8192`        | System workqueue stack size       |
+| `CONFIG_HEAP_MEM_POOL_SIZE`          | `8192`        | Heap memory pool size             |
+| `CONFIG_LOG_BUFFER_SIZE`             | `4096`        | Logging buffer size               |
+| `CONFIG_USP_FLRP`                    | `n`           | FLRC burst commands + 20KB buffer |
 
 ### GPIO Configuration (Device Tree)
 
@@ -44,40 +45,31 @@ hw-modem-led-scan-gpios = <&arduino_header 11 GPIO_ACTIVE_HIGH>;
 - Device management and store-and-forward
 - Relay TX/RX functionality
 
+### FLRC features (disabled by default)
+
+- Use the FLRC protocol (FLRP)
+- Burst commands (`0xB0`–`0xB2`) and the 20KB payload buffer are compiled only when this option is enabled
+- Requires a LR20XX radio (FLRC burst support)
+- Set `CONFIG_USP_FLRP=y` in `prj.conf` to enable
+
 ## Compilation
 
-### USP Zephyr
 
 **Build:**
 ```bash
 west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/rac/hw_modem
 ```
 
+**Build for FLRP:**
+```bash
+west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/rac/hw_modem -- -DDTC_OVERLAY_FILE=boards/xiao_nrf54l15_nrf54l15_cpuapp_flrp.overlay -DCONFIG_USP_FLRP=y
+
+west build --pristine --board nucleo_l476rg/stm32l476xx --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2021 usp_zephyr/samples/usp/rac/hw_modem -- -DDTC_OVERLAY_FILE=boards/nucleo_l476rg_flrp.overlay -DCONFIG_USP_FLRP=y
+```
+
 **Flash the firmware:**
 ```bash
-west flash
-```
-
-### USP 
-**Build sample:**
-- hw_modem for lr2021 (no geolocation)
-```
-rm -Rf build/ ; cmake -L -S examples  -B build -DAPP=HW_MODEM -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -DLBM_GEOLOCATION=OFF -G Ninja; cmake --build build --target hw_modem
-```
-
-- hw_modem for lr1120
-```
-rm -Rf build/ ; cmake -L -S examples  -B build -DAPP=HW_MODEM -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target hw_modem
-```
-
-- hw_modem for lr1120 with LBM_CRYPTO=LR11XX
-```
-rm -Rf build/ ; cmake -L -S examples  -B build -DAPP=HW_MODEM -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr1120 -DLBM_RELAY_TX=OFF -DLBM_RELAY_RX=OFF -DLBM_CRYPTO=LR11XX -G Ninja; cmake --build build --target hw_modem
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/hw_modem verify reset exit"
+west flash --runner pyocd
 ```
 
 
@@ -164,6 +156,11 @@ response = ser.read(100)
 - Clock sync commands (0x80-0x8F)
 - Device management commands (0x90-0x9F)
 
+### FLRC burst (requires `CONFIG_USP_FLRP=y`)
+- `0xB0` - Start FLRC burst TX or RX mode (returns `radio_access_id`)
+- `0xB1` - Set FLRC burst RX parameters (parameter `flrc_burst_params_pb_t`)
+- `0xB2` - Get FLRC burst statistics (payload can be retrieved via NHM get results command)
+
 ## Technical Notes
 
 - **Protocol Buffers**: Complex data serialization for RAC context and results
@@ -179,3 +176,4 @@ response = ser.read(100)
 ## Limitations
 
 - On NUCLEO-STM32L476RG, due to the USART, the power mode is deactivated
+- The NUCLEO-U575ZI-Q is not supported

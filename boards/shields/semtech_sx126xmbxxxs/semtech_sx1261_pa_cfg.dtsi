@@ -1,0 +1,38 @@
+
+&lora_semtech_sx126xmbxxxs {
+    tx-power-cfg =
+    /* power, pa_duty_cycle, hp_max */
+    <(-14) 0x00 0x00>, /* Expected output power = -17dBm */
+    <(-13) 0x00 0x00>, /* Expected output power = -16dBm */
+    <(-12) 0x00 0x00>, /* Expected output power = -15dBm */
+    <(-10) 0x00 0x00>, /* Expected output power = -14dBm */
+    <(-12) 0x04 0x00>, /* Expected output power = -13dBm */
+    <(-9) 0x01 0x00>, /* Expected output power = -12dBm */
+    <(-9) 0x02 0x00>, /* Expected output power = -11dBm */
+    <(-6) 0x00 0x00>, /* Expected output power = -10dBm */
+    <(-6) 0x01 0x00>, /* Expected output power = -9dBm */
+    <(-4) 0x00 0x00>, /* Expected output power = -8dBm */
+    <(-5) 0x03 0x00>, /* Expected output power = -7dBm */
+    <(-2) 0x00 0x00>, /* Expected output power = -6dBm */
+    <(-1) 0x00 0x00>, /* Expected output power = -5dBm */
+    <( 0) 0x00 0x00>, /* Expected output power = -4dBm */
+    <( 1) 0x00 0x00>, /* Expected output power = -3dBm */
+    <( 2) 0x00 0x00>, /* Expected output power = -2dBm */
+    <( 3) 0x00 0x00>, /* Expected output power = -1dBm */
+    <( 3) 0x01 0x00>, /* Expected output power = 0dBm */
+    <( 3) 0x03 0x00>, /* Expected output power = 1dBm */
+    <( 6) 0x00 0x00>, /* Expected output power = 2dBm */
+    <( 7) 0x00 0x00>, /* Expected output power = 3dBm */
+    <( 6) 0x03 0x00>, /* Expected output power = 4dBm */
+    <( 9) 0x00 0x00>, /* Expected output power = 5dBm */
+    <( 8) 0x03 0x00>, /* Expected output power = 6dBm */
+    <( 12) 0x00 0x00>, /* Expected output power = 7dBm */
+    <( 13) 0x00 0x00>, /* Expected output power = 8dBm */
+    <( 14) 0x00 0x00>, /* Expected output power = 9dBm */
+    <( 14) 0x01 0x00>, /* Expected output power = 10dBm */
+    <( 14) 0x02 0x00>, /* Expected output power = 11dBm */
+    <( 14) 0x03 0x00>, /* Expected output power = 12dBm */
+    <( 14) 0x04 0x00>, /* Expected output power = 13dBm */
+    <( 14) 0x05 0x00>, /* Expected output power = 14dBm */
+    <( 14) 0x07 0x00>; /* Expected output power = 15dBm */
+};

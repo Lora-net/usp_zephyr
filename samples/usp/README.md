@@ -6,15 +6,21 @@ For detailled informations about each sample, please refer to the README.md file
 # Available samples
 
 * lbm
-  - [geolocation](lbm/geolocation/README.md)
+  * geolocation
+    - [geolocation](lbm/geolocation/geolocation/README.md)
+    - [full_almanac_update](lbm/geolocation/full_almanac_update/README.md)
+    - [wifi_region_detection](lbm/geolocation/wifi_region_detection/README.md)
   - [lctt_certif](lbm/lctt_certif/README.md)
   - [periodical_uplink](lbm/periodical_uplink/README.md)
   - [porting_tests](lbm/porting_tests/README.md)
 * rac
+  - [immediate_radio_access](rac/immediate_radio_access/README.md)
   - [direct_driver_access](rac/direct_driver_access/README.md)
   - [hw_modem](rac/hw_modem/README.md)
   - [cad](rac/cad/README.md)
   - [multiprotocol](rac/multiprotocol/README.md)
+  - [flrp_api](rac/flrp_api/README.md)
+  - [flrp_api_lorawan](rac/flrp_api_lorawan/README.md)
 * sdk
   - [lrfhss](sdk/lrfhss/README.md)
   - [packet_error_rate_flrc](sdk/packet_error_rate_flrc/README.md)
@@ -22,6 +28,7 @@ For detailled informations about each sample, please refer to the README.md file
   - [packet_error_rate_lora](sdk/packet_error_rate_lora/README.md)
   - [ping_pong](sdk/ping_pong/README.md)
   - [ranging_demo](sdk/ranging_demo/README.md)
+  - [rf_certification](sdk/rf_certification/README.md)
   - [spectral_scan](sdk/spectral_scan/README.md)
   - [tx_cw](sdk/tx_cw/README.md)
 

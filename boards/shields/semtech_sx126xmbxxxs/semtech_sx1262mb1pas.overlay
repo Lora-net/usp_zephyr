@@ -1,0 +1,21 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// SX1262MB1PAS commercial name is SX1262DVK1PAS
+// PCB ref is e449v01a
+// Freq is 915MHz (Regions: North America / Australia)
+
+#include "semtech_sx126xmbxxxs_common.dtsi" // Common
+#include "semtech_sx126xmb1xxs.dtsi" 		// Specificities for MB1 shields
+#include "semtech_sx1262_pa_cfg.dtsi" 		// Specificities for sx1261 version
+
+lora_semtech_sx1262mb1xxs: &lora_semtech_sx126xmbxxxs {
+	compatible = "semtech,sx1262-new";
+
+	dio3-as-tcxo-control;
+	tcxo-wakeup-time = <8>;
+	tcxo-voltage = <SX126X_TCXO_SUPPLY_1_8V>;
+};

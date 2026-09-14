@@ -13,6 +13,11 @@
 	};
 };
 
+// Set SPI freq @4MHz
+&{/soc/peripheral@50000000/spi@4a000/lora@0} {
+	spi-max-frequency = < 4000000 >;
+};
+
 &radio {
 	status = "disabled";
 };

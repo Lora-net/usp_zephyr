@@ -44,12 +44,13 @@
 #include <zephyr/pm/policy.h>
 
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
+#include <zephyr/usp/lora_lbm_transceiver.h>
 #include "smtc_modem_utilities.h"
 
 #include "hw_modem.h"
 #include "cmd_parser.h"
 
-LOG_MODULE_DECLARE( hw_modem, 3 );
+LOG_MODULE_DECLARE( usp, LOG_LEVEL_INF );
 
 #define HW_MODEM_RX_BUFF_MAX_LENGTH 261
 
@@ -199,6 +200,26 @@ int hw_modem_init( void )
     LOG_WRN( "HARDWARE MODEM RUNNING PERF TEST MODE" );
 #endif
     return 0;
+}
+
+void hw_modem_unset_event_pin( void )
+{
+    gpio_pin_set_dt( &hw_modem_event_gpios, 0 );
+}
+
+void hw_modem_disable_irq( void )
+{
+    irq_lock( );
+}
+
+void hw_modem_set_tx_power_offset( const void* context, uint8_t tx_pwr_offset_db )
+{
+    radio_utilities_set_tx_power_offset( context, tx_pwr_offset_db );
+}
+
+uint8_t hw_modem_get_tx_power_offset( const void* context )
+{
+    return radio_utilities_get_tx_power_offset( context );
 }
 
 static void uart_irq_rx_callback_handler( const struct device* dev, void* user_data )
@@ -419,10 +440,10 @@ void hw_modem_event_handler( void )
  * from entering STOP modes that would suspend the UART.
  */
 #ifdef CONFIG_PM_POLICY_CUSTOM
-const struct pm_state_info *pm_policy_next_state(uint8_t cpu, int32_t ticks)
+const struct pm_state_info* pm_policy_next_state( uint8_t cpu, int32_t ticks )
 {
-    ARG_UNUSED(cpu);
-    ARG_UNUSED(ticks);
+    ARG_UNUSED( cpu );
+    ARG_UNUSED( ticks );
 
     /* Return NULL to prevent any sleep - keep CPU running for UART responsiveness.
      * This is the safest approach for the modem bridge application.

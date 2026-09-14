@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) 2024 Semtech Corporation
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// There are LEDS in MB1 variants (absent in MB2)
+
+/ {
+	leds {
+		lora_rx_led: sx126x_rx_led {
+			gpios = <&arduino_header 5 GPIO_ACTIVE_HIGH>;
+			label = "RX LED";
+		};
+		lora_tx_led: sx126x_tx_led {
+			gpios = <&arduino_header 4 GPIO_ACTIVE_HIGH>;
+			label = "TX LED";
+		};
+	};
+};

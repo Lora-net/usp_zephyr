@@ -1,0 +1,32 @@
+# Copyright (c) 2026 Semtech Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+menu "FLRP API lorawan sample defaults"
+
+config FLRP_TEST_APPLY_DEFAULT_CONFIG
+	bool "Apply FLRP testing defaults at boot (crypto off, fixed EUIs)"
+	default n
+
+config DISPLAY_THREAD_PRIORITY
+	int "Display task priority"
+	default 5
+	help
+	  Priority of the FLRP display task.
+
+# Sample policy: enable sentinel only when MPU guard is off
+config STACK_SENTINEL
+	default y if !MPU_STACK_GUARD
+
+config ICACHE
+	default y if CPU_HAS_ICACHE
+
+config DCACHE
+	default y if CPU_HAS_DCACHE
+	
+config STM32_FLASH_PREFETCH
+	depends on HAS_STM32_FLASH_PREFETCH
+	default y
+
+endmenu
+
+source "Kconfig.zephyr"

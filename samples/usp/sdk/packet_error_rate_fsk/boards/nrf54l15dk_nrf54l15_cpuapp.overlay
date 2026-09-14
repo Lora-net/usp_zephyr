@@ -11,6 +11,11 @@
 	};
 };
 
+// Set SPI freq @4MHz
+&{/soc/peripheral@50000000/spi@4a000/lora@0} {
+	spi-max-frequency = < 4000000 >;
+};
+
 // 	arduino_header: connector {
 // 		compatible = "arduino-header-r3";
 // 		#gpio-cells = <2>;

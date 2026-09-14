@@ -1,7 +1,7 @@
 /**
  * @file      smtc_sw_platform_helper.h
  *
- * @brief     Ranging and frequency hopping for LR1110 or LR1120 chip
+ * @brief     Helper functions to handle led and semaphore array
  *
  * The Clear BSD License
  * Copyright Semtech Corporation 2025. All rights reserved.
@@ -151,6 +151,23 @@ void set_led( smtc_led_pin_e led, bool state );
  * @retval >=0 Index of the semaphore that was given
  */
 int wait_on_sems( struct k_sem* sems[], size_t count, k_timeout_t timeout );
+
+/**
+ * @brief Wait on semaphores and event simultaneously
+ *
+ * @param sems Array of semaphore pointers
+ * @param sem_count Number of semaphores
+ * @param event Event object pointer
+ * @param event_mask Event mask to wait for
+ * @param timeout Timeout value
+ * @return int Index of triggered semaphore (0-based), or negative for event/error
+ *         -1: Parameter error
+ *         -2: Timeout
+ *         -3: No signal (should not happen)
+ *         -4: Event triggered (check event_mask)
+ */
+int wait_on_sems_and_event( struct k_sem* sems[], size_t sem_count, struct k_event* event, uint32_t event_mask,
+                            k_timeout_t timeout );
 
 #ifdef __cplusplus
 }

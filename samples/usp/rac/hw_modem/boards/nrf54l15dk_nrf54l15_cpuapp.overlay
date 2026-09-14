@@ -23,6 +23,11 @@
 //Label for flash controller (needed cause we need properties, and we grab alias in user code)
 smtc_flash: &cpuapp_rram {};
 
+// Set SPI freq @4MHz
+&{/soc/peripheral@50000000/spi@4a000/lora@0} {
+	spi-max-frequency = < 4000000 >;
+};
+
 &radio {
 	status = "disabled";
 };

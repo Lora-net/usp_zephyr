@@ -36,16 +36,15 @@ The PER test uses a structured payload with variable size (up to 255 bytes):
 |------------------------|------------------------------------|----------------------------------------------------|
 | `ROLE`                 | *Required*                         | Device role: `RECEIVER` (1) or `TRANSMITTER` (2)   |
 | `MAX_EXCHANGE_COUNT`   | `100`                              | Number of packets per test series                  |
-| `RX_TIMEOUT`           | `200`                              | Reception timeout in ms (2 × INTER_EXCHANGE_DELAY) |
-| `INTER_EXCHANGE_DELAY` | `100`                              | Delay between packets in ms                        |
+| `RX_TIMEOUT`           | `400`                              | Reception timeout in ms (2 × INTER_EXCHANGE_DELAY) |
+| `INTER_EXCHANGE_DELAY` | `200`                              | Delay between packets in ms                        |
 | `INTER_SERIES_DELAY`   | `10000`                            | Delay between test series in ms                    |
 | `RF_FREQ_IN_HZ`        | `866500000`                        | Operating frequency in Hz                          |
 | `TX_OUTPUT_POWER_DBM`  | `14`                               | Transmit power in dBm                              |
-| `FLRC_BR_BPS`          | `2600000`                          | FLRC bitrate in bps (2.6 Mbps)                     |
-| `FLRC_BW_HZ`           | `2666000`                          | FLRC bandwidth in Hz (2.666 MHz)                   |
+| `FLRC_RAW_BIT_RATE`    | `RAL_FLRC_RAW_BIT_RATE_2_600_MBPS` | FLRC bitrate in bps (2.6 Mbps)                     |
 | `FLRC_CR`              | `RAL_FLRC_CR_3_4`                  | FLRC coding rate (3/4)                             |
-| `FLRC_PULSE_SHAPE`     | `RAL_FLRC_PULSE_SHAPE_BT_07`       | FLRC pulse shaping (BT=0.7)                        |
-| `FLRC_PREAMBLE_BITS`   | `32`                               | Preamble length in bits                            |
+| `FLRC_PULSE_SHAPE`     | `RAL_FLRC_PULSE_SHAPE_BT_05`       | FLRC pulse shaping (BT=0.5)                        |
+| `FLRC_PREAMBLE_BITS`   | `RAL_FLRC_PREAMBLE_LENGTH_32_BITS` | Preamble length in bits                            |
 | `FLRC_SYNCWORD_LEN`    | `RAL_FLRC_SYNCWORD_LENGTH_4_BYTES` | Sync word length (4 bytes)                         |
 | `FLRC_TX_SYNCWORD`     | `RAL_FLRC_TX_SYNCWORD_1`           | TX sync word selection                             |
 | `FLRC_MATCH_SYNCWORD`  | `RAL_FLRC_RX_MATCH_SYNCWORD_1`     | RX sync word matching                              |
@@ -54,7 +53,6 @@ The PER test uses a structured payload with variable size (up to 255 bytes):
 
 ## Compilation
 
-### USP Zephyr
 
 **Build receiver:**
 ```bash
@@ -68,27 +66,8 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 **Flash:**
 ```bash
-west flash
+west flash --runner pyocd
 ```
-
-### USP
-
-**Build receiver:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target per_flrc_rx
-```
-
-**Build transmitter:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target per_flrc_tx
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/per_flrc_rx verify reset exit"
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/per_flrc_tx verify reset exit"
-```
-
 
 ## Usage
 

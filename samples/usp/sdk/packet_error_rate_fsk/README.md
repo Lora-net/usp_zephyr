@@ -29,27 +29,26 @@ The PER test uses an 8-byte structured payload:
 
 ### Using CMake
 
-| Parameter              | Default Value              | Description                                      |
-|------------------------|----------------------------|--------------------------------------------------|
-| `ROLE`                 | *Required*                 | Device role: `RECEIVER` (1) or `TRANSMITTER` (2) |
-| `MAX_EXCHANGE_COUNT`   | `100`                      | Number of packets per test series                |
-| `RX_TIMEOUT`           | `30000`                    | Reception timeout in ms                          |
-| `INTER_EXCHANGE_DELAY` | `0` (RX) / `500` (TX)      | Delay between packets in ms                      |
-| `INTER_SERIES_DELAY`   | `10000`                    | Delay between test series in ms                  |
-| `RF_FREQ_IN_HZ`        | `866500000`                | Operating frequency in Hz                        |
-| `TX_OUTPUT_POWER_DBM`  | `14`                       | Transmit power in dBm                            |
-| `FSK_BITRATE`          | `50000`                    | FSK bitrate in bps (50 kbps)                     |
-| `FSK_FDEV`             | `25000`                    | Frequency deviation in Hz (25 kHz)               |
-| `FSK_BANDWIDTH`        | `138000`                   | FSK bandwidth in Hz (138 kHz)                    |
-| `FSK_PREAMBLE_LENGTH`  | `5`                        | Preamble length in bytes                         |
-| `FSK_SYNC_WORD_LENGTH` | `3`                        | Sync word length in bytes                        |
-| `FSK_CRC`              | `RAL_GFSK_CRC_2_BYTES_INV` | CRC type (2-byte inverted CRC)                   |
-| `FSK_WHITENING`        | `true`                     | Enable/disable data whitening                    |
-| `FSK_PACKET_TYPE`      | `RAL_GFSK_PKT_VAR_LEN`     | Packet length mode (variable length)             |
+| Parameter                        | Default Value              | Description                                      |
+|----------------------------------|----------------------------|--------------------------------------------------|
+| `ROLE`                           | *Required*                 | Device role: `RECEIVER` (1) or `TRANSMITTER` (2) |
+| `MAX_EXCHANGE_COUNT`             | `100`                      | Number of packets per test series                |
+| `RX_TIMEOUT`                     | `30000`                    | Reception timeout in ms                          |
+| `INTER_EXCHANGE_DELAY`           | `0` (RX) / `300` (TX)      | Delay between packets in ms                      |
+| `INTER_SERIES_DELAY_TRANSMITTER` | `5000`                     | Delay between test series in ms for `TRANSMITTER`   |
+| `RF_FREQ_IN_HZ`                  | `866500000`                | Operating frequency in Hz                        |
+| `TX_OUTPUT_POWER_DBM`            | `14`                       | Transmit power in dBm                            |
+| `FSK_BITRATE`                    | `50000`                    | FSK bitrate in bps (50 kbps)                     |
+| `FSK_FDEV`                       | `25000`                    | Frequency deviation in Hz (25 kHz)               |
+| `FSK_BANDWIDTH`                  | `138000`                   | FSK bandwidth in Hz (138 kHz)                    |
+| `FSK_PREAMBLE_LENGTH`            | `5`                        | Preamble length in bytes                         |
+| `FSK_SYNC_WORD_LENGTH`           | `3`                        | Sync word length in bytes                        |
+| `FSK_CRC`                        | `RAL_GFSK_CRC_2_BYTES_INV` | CRC type (2-byte inverted CRC)                   |
+| `FSK_WHITENING`                  | `true`                     | Enable/disable data whitening                    |
+| `FSK_PACKET_TYPE`                | `RAL_GFSK_PKT_VAR_LEN`     | Packet length mode (variable length)             |
 
 ## Compilation
 
-### USP Zephyr
 
 **Build receiver:**
 ```bash
@@ -62,22 +61,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 ```
 
 ```bash
-west flash
-```
-
-### USP
-**Build receiver:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target per_fsk_tx
-```
-
-**Build transmitter:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target per_fsk_rx
-```
-
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/per_fsk_rx verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage

@@ -39,6 +39,7 @@
 #include <zephyr/drivers/spi.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/pm/device.h>
+#include <zephyr/version.h>
 
 #include <zephyr/usp/lora_lbm_transceiver.h>
 
@@ -316,9 +317,15 @@ static int lr11xx_pm_action( const struct device* dev, enum pm_device_action act
         .gain_tune   = DT_TABLE_U8( node_id, DT_CAT3( rssi_calibration_, range, _tune ) ), \
     }
 
+#if ZEPHYR_VERSION_CODE < ZEPHYR_VERSION(4, 3, 0)
+    #define LR11XX_SPI_SPEC( node_id ) SPI_DT_SPEC_GET( node_id, LR11XX_SPI_OPERATION, 0 )
+#else
+    #define LR11XX_SPI_SPEC( node_id ) SPI_DT_SPEC_GET( node_id, LR11XX_SPI_OPERATION )
+#endif
+
 #define LR11XX_CONFIG( node_id )                                                                                       \
     {                                                                                                                  \
-        .spi = SPI_DT_SPEC_GET( node_id, LR11XX_SPI_OPERATION, 0 ), .reset = GPIO_DT_SPEC_GET( node_id, reset_gpios ), \
+        .spi = LR11XX_SPI_SPEC( node_id ), .reset = GPIO_DT_SPEC_GET( node_id, reset_gpios ),                          \
         .busy = GPIO_DT_SPEC_GET( node_id, busy_gpios ), .event = GPIO_DT_SPEC_GET( node_id, event_gpios ),            \
         .lf_tx_path_options = DT_PROP( node_id, lf_tx_path ), .chip_type = LR11XX_CHIP_TYPE( node_id ),                \
         LR11XX_CFG_TCXO( node_id ), LR11XX_CFG_LF_CLCK( node_id ), LR11XX_CFG_RF_SW( node_id ),                        \

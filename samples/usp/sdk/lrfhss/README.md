@@ -24,7 +24,6 @@ This application demonstrates **Long Range - Frequency Hopping Spread Spectrum (
 
 ## Compilation
 
-### USP Zephyr
 
 **Build LR-FHSS transmitter:**
 ```bash
@@ -33,18 +32,7 @@ west build --pristine --board xiao_nrf54l15/nrf54l15/cpuapp --shield semtech_lor
 
 **Flash the firmware:**
 ```bash
-west flash
-```
-
-### USP
-**Build sample:**
-```bash
-rm -Rf build/ ; cmake -L -S examples  -B build -DCMAKE_BUILD_TYPE=MinSizeRel -DBOARD=NUCLEO_L476 -DRAC_RADIO=lr2021 -G Ninja; cmake --build build --target lrfhss_tx
-```
-
-**Example of `openocd`command to flash:**
-```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg -c "adapter serial <SERIAL_NUMBER>" -c "program build/lrfhss_tx verify reset exit"
+west flash --runner pyocd
 ```
 
 ## Usage

@@ -31,7 +31,11 @@ config USP_LOG_VERBOSE
 
 config USP_LORA_BASICS_MODEM
 	bool "Include LoRa Basics Modem over USP/RAC"
- 	default n
+	default n
+
+config USP_FLRP
+	bool "Include FLRC protocol (FLRP) over USP/RAC"
+	default n
 
 config USP_MAIN_THREAD
 	bool "Build a main loop thread that runs USP/RAC."

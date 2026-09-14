@@ -1,7 +1,7 @@
 /**
  * @file      smtc_sw_platform_helper.c
  *
- * @brief     Ranging and frequency hopping for LR1110 or LR1120 chip
+ * @brief     Helper functions to handle led and semaphore array
  *
  * The Clear BSD License
  * Copyright Semtech Corporation 2025. All rights reserved.
@@ -42,6 +42,7 @@
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/logging/log.h>  // LOG_MODULE_REGISTER
 
 #include "smtc_sw_platform_helper.h"
 
@@ -76,6 +77,8 @@
  * -----------------------------------------------------------------------------
  * --- PRIVATE VARIABLES -------------------------------------------------------
  */
+LOG_MODULE_REGISTER( usp, LOG_LEVEL_INF );
+
 // If USP/RAC thread is not used, the transceiver has to be initialized
 #if !defined( CONFIG_USP_MAIN_THREAD )
 const struct device* transceiver = DEVICE_DT_GET( DT_CHOSEN( zephyr_lorawan_transceiver ) );
@@ -87,6 +90,7 @@ K_MUTEX_DEFINE( rac_api_mutex );
 #endif
 #endif
 
+#if HAS_LED_SCAN || HAS_LED_TXRX
 static const struct gpio_dt_spec pf_led_pin[SMTC_PF_LED_MAX] = {
 #if HAS_LED_TXRX
     [SMTC_PF_LED_RX] = GPIO_DT_SPEC_GET( RX_LED_NODE, gpios ),
@@ -101,6 +105,7 @@ static const struct gpio_dt_spec pf_led_pin[SMTC_PF_LED_MAX] = {
     [SMTC_PF_LED_SCAN] = { 0 },
 #endif
 };
+#endif
 
 /*
  * -----------------------------------------------------------------------------
@@ -196,6 +201,70 @@ int wait_on_sems( struct k_sem* sems[], size_t count, k_timeout_t timeout )
     }
 
     return -3;  // No semaphore, issue
+}
+
+int wait_on_sems_and_event( struct k_sem* sems[], size_t sem_count, struct k_event* event, uint32_t event_mask,
+                                   k_timeout_t timeout )
+{
+    if( ( sem_count == 0 || sems == NULL ) && event == NULL )
+    {
+        return -1;  // Parameter error
+    }
+
+    // Compute total number of events to wait on
+    size_t              total_count = sem_count + ( event ? 1 : 0 );
+    struct k_poll_event poll_events[total_count];
+    size_t              event_index = 0;
+
+    // Initialize semaphore events
+    if( sems != NULL )
+    {
+        for( size_t i = 0; i < sem_count; i++ )
+        {
+            k_poll_event_init( &poll_events[event_index], K_POLL_TYPE_SEM_AVAILABLE, K_POLL_MODE_NOTIFY_ONLY, sems[i] );
+            event_index++;
+        }
+    }
+
+    // Initialize the event if provided
+    if( event != NULL )
+    {
+        k_poll_event_init( &poll_events[event_index], K_POLL_TYPE_SIGNAL, K_POLL_MODE_NOTIFY_ONLY, event );
+        poll_events[event_index].tag = event_mask;
+    }
+
+    // Wait for any object to be signaled
+    int ret = k_poll( poll_events, total_count, timeout );
+    if( ret != 0 )
+    {
+        return -2;  // Timeout or error
+    }
+
+    // Check which semaphore was signaled
+    if( sems != NULL )
+    {
+        for( size_t i = 0; i < sem_count; i++ )
+        {
+            if( poll_events[i].state == K_POLL_STATE_SEM_AVAILABLE )
+            {
+                k_sem_take( sems[i], K_NO_WAIT );
+                return ( int ) i;  // Return the index of the semaphore
+            }
+        }
+    }
+
+    // Check if event was signaled
+    if( event != NULL && poll_events[sem_count].state == K_POLL_STATE_DATA_AVAILABLE )
+    {
+        // Check which events are set
+        uint32_t current_events = k_event_test( event, event_mask );
+        if( current_events & event_mask )
+        {
+            return -4;
+        }
+    }
+
+    return -3;  // No signal, issue
 }
 
 /*

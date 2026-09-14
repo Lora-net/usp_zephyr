@@ -23,6 +23,29 @@
 	/delete-property/ overrun-character;
 };
 
+// Remove continuous warning log in ranging demo ( i2c_ll_stm32_common: I2C pinctrl sleep state not available)
+&pinctrl {
+	i2c1_scl_pb8_sleep: i2c1_scl_pb8_sleep {
+		pinmux = <STM32_PINMUX('B', 8, ANALOG)>;
+	};
+
+	i2c1_sda_pb9_sleep: i2c1_sda_pb9_sleep {
+		pinmux = <STM32_PINMUX('B', 9, ANALOG)>;
+	};
+};
+
 &arduino_i2c {
-        /delete-property/ zephyr,concat-buf-size;
+	/delete-property/ zephyr,concat-buf-size;
+	pinctrl-1 = <&i2c1_scl_pb8_sleep &i2c1_sda_pb9_sleep>;
+	pinctrl-names = "default", "sleep";
+};
+
+&i2c3 {
+	status = "disabled";
+};
+
+&lptim1 {
+	clocks = <&rcc STM32_CLOCK_BUS_APB1 0x80000000>,
+		 <&rcc STM32_SRC_LSE LPTIM1_SEL(3)>;
+	status = "okay";
 };
