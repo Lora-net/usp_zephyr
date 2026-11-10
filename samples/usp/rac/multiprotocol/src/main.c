@@ -43,7 +43,7 @@
 #include <smtc_modem_api.h>
 #include <smtc_modem_test_api.h>
 #include <smtc_modem_utilities.h>
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
 
 #include <smtc_zephyr_usp_api.h>
 #include <smtc_sw_platform_helper.h>
@@ -91,7 +91,7 @@ LOG_MODULE_REGISTER( multiprotocol, LOG_LEVEL_INF );
  * @brief Periodical uplink alarm delay in seconds
  */
 #ifndef PERIODICAL_UPLINK_DELAY_S
-#define PERIODICAL_UPLINK_DELAY_S 600
+#define PERIODICAL_UPLINK_DELAY_S 60
 #endif
 
 /**

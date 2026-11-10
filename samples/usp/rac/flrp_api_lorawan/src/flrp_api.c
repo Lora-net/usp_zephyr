@@ -100,7 +100,7 @@ static uint32_t total_payload_size_expected   = 0;
 static void user_rx_callback( const void* context, smtc_flrp_return_code_t status, uint32_t payload_size,
                               uint8_t* src_addr, smtc_flrp_rx_stats_t payload_stats );
 static void user_tx_callback( const void* context, smtc_flrp_return_code_t err_code, bool send_successful,
-                              uint8_t* dest_addr );
+                              uint8_t* dest_addr, smtc_flrp_tx_stats_t flrp_stats );
 static void flrp_api_setup_tx_buffer( void );
 
 /*
@@ -292,12 +292,14 @@ static void user_rx_callback( const void* context, smtc_flrp_return_code_t statu
     {
         LOG_INF( "user_rx_callback %d %d (no src_addr) %d", status, payload_size, data_flrp.counter );
     }
-    LOG_INF(
-        "RX stats: nb pkt OK=%" PRIu32 ", nb pkt err=%" PRIu32 ", nb pkt Nok=%" PRIu32 ", "
-        "rssi burst=%" PRId32 ", expected payload size=%" PRIu32 ", wor rssi=%" PRId16 ", wor snr=%" PRId8,
-        rx_stats.burst.nb_packets_received_ok, rx_stats.burst.nb_packets_check_error,
-        rx_stats.burst.nb_packets_received_nok, rx_stats.burst.rssi_mean, rx_stats.burst.payload_size_expected,
-        rx_stats.wor.rssi, rx_stats.wor.snr );
+    LOG_INF( "RX stats: nb pkt OK=%" PRIu32 ", nb pkt err=%" PRIu32 ", nb pkt Nok=%" PRIu32 ", "
+             "rssi burst=%" PRId32 ", expected payload size=%" PRIu32 ", wor rssi=%" PRId16 ", wor snr=%" PRId8
+             " -- Payload/burst effective bitrate: %" PRIu32 ".%06" PRIu32 " / %" PRIu32 ".%06" PRIu32 " Mbit/s",
+             rx_stats.burst.nb_packets_received_ok, rx_stats.burst.nb_packets_check_error,
+             rx_stats.burst.nb_packets_received_nok, rx_stats.burst.rssi_mean, rx_stats.burst.payload_size_expected,
+             rx_stats.wor.rssi, rx_stats.wor.snr, rx_stats.burst.payload_bit_rate_bps / 1000000U,
+             rx_stats.burst.payload_bit_rate_bps % 1000000U, rx_stats.burst.burst_bit_rate_bps / 1000000U,
+             rx_stats.burst.burst_bit_rate_bps % 1000000U );
 
     total_nb_packets_received_ok += rx_stats.burst.nb_packets_received_ok;
     total_nb_packets_check_error += rx_stats.burst.nb_packets_check_error;
@@ -316,7 +318,7 @@ static void user_rx_callback( const void* context, smtc_flrp_return_code_t statu
 }
 
 static void user_tx_callback( const void* context, smtc_flrp_return_code_t err_code, bool send_successful,
-                              uint8_t* dest_addr )
+                              uint8_t* dest_addr, smtc_flrp_tx_stats_t flrp_stats )
 {
     if( dest_addr != NULL )
     {

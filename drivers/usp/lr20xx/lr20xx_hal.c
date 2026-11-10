@@ -278,7 +278,7 @@ lr20xx_hal_status_t lr20xx_hal_direct_read_fifo( const void* context, const uint
                                            .len = command_length,
                                        },
                                        {
-                                           .buf = ( uint8_t* ) data,
+                                           .buf = ( uint8_t* ) NULL,
                                            .len = data_length,
                                        } };
 

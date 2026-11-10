@@ -29,7 +29,7 @@ The same wording is used in the [root README](../README.md):
 
 ## Validated configuration
 
-- **Zephyr RTOS:** Validated with **Zephyr RTOS v4.4.0 & Zephyr SDK v1.0.1**.
+- **Zephyr RTOS:** Validated with **Zephyr RTOS v4.4.2 & Zephyr SDK v1.0.1**.
   - Buildable with **v4.4-branch & SDK v1.0.1** (recommended to get Zephyr fixes) and with
     **v3.7.0 LTS & SDK v0.16.9** (see limitations).
   - The delivery was **not** validated with toolchains other than the default Zephyr SDK.

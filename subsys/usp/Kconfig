@@ -24,10 +24,23 @@ module = USP
 module-str = USP
 source "subsys/logging/Kconfig.template.log_config"
 
-config USP_LOG_VERBOSE
-	bool "Additional very verbose logging"
+config USP_MODEM_HAL_DBG_TRACE
+	bool "Modem HAL debug traces"
+	default y
 	help
-	 An even more verbose log level than debug
+	 Enable the SMTC_MODEM_HAL_TRACE_* traces used by LoRa Basics Modem,
+	 the RAC and the radio planner. When disabled, MODEM_HAL_DBG_TRACE=0
+	 is defined for the whole build: these traces are removed at compile
+	 time (strings and formatting code included), whatever the log level.
+
+config USP_HAL_DBG_TRACE
+	bool "HAL debug traces"
+	default y
+	help
+	 Enable the SMTC_HAL_TRACE_* traces used by the USP samples and helpers.
+	 When disabled, HAL_DBG_TRACE=0 is defined for the whole build: these
+	 traces are removed at compile time (strings and formatting code
+	 included), whatever the log level.
 
 config USP_LORA_BASICS_MODEM
 	bool "Include LoRa Basics Modem over USP/RAC"

@@ -293,7 +293,7 @@ static int lr20xx_pm_action( const struct device* dev, enum pm_device_action act
 
 #define LR20XX_CFG_TCXO( node_id )                                                                       \
     {                                                                                                    \
-        .xosc_cfg       = COND_CODE_1( DT_PROP( node_id, tcxo_wakeup_time ) == 0, ( RAL_XOSC_CFG_XTAL ), \
+        .xosc_cfg       = COND_CODE_0( DT_PROP( node_id, tcxo_wakeup_time ), ( RAL_XOSC_CFG_XTAL ), \
                                        ( RAL_XOSC_CFG_TCXO_RADIO_CTRL ) ),                               \
         .voltage        = DT_PROP( node_id, tcxo_voltage ),                                              \
         .wakeup_time_ms = DT_PROP( node_id, tcxo_wakeup_time ),                                          \
@@ -305,10 +305,41 @@ static int lr20xx_pm_action( const struct device* dev, enum pm_device_action act
         .wait_32k_ready = true,                       \
     }
 
-#define LR20XX_RSSI_CFG( node_id, range )                                                  \
-    {                                                                                      \
-        .gain_offset = DT_PROP( node_id, DT_CAT3( rssi_calibration_, range, _offset ) ),   \
-        .gain_tune   = DT_TABLE_U8( node_id, DT_CAT3( rssi_calibration_, range, _tune ) ), \
+#define LR20XX_RSSI_GAIN_ITEM( node_id, prop, gain_idx, noise_idx )         \
+    {                                                                      \
+        .gain_value   = ( uint16_t ) DT_PROP_BY_IDX( node_id, prop, gain_idx ),  \
+        .noise_figure = ( uint8_t ) DT_PROP_BY_IDX( node_id, prop, noise_idx ),  \
+    }
+
+#define LR20XX_RSSI_GAIN_TABLE( node_id, prop )                              \
+    {                                                                        \
+        .g1         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 0, 1 ),          \
+        .g2         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 2, 3 ),          \
+        .g3         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 4, 5 ),          \
+        .g4         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 6, 7 ),          \
+        .g5         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 8, 9 ),          \
+        .g6         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 10, 11 ),        \
+        .g7         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 12, 13 ),        \
+        .g8         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 14, 15 ),        \
+        .g9         = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 16, 17 ),        \
+        .g10        = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 18, 19 ),        \
+        .g11        = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 20, 21 ),        \
+        .g12_boost0 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 22, 23 ),        \
+        .g12_boost1 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 24, 25 ),        \
+        .g12_boost2 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 26, 27 ),        \
+        .g12_boost3 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 28, 29 ),        \
+        .g12_boost4 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 30, 31 ),        \
+        .g12_boost5 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 32, 33 ),        \
+        .g12_boost6 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 34, 35 ),        \
+        .g12_boost7 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 36, 37 ),        \
+        .g13_boost0 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 38, 39 ),        \
+        .g13_boost1 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 40, 41 ),        \
+        .g13_boost2 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 42, 43 ),        \
+        .g13_boost3 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 44, 45 ),        \
+        .g13_boost4 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 46, 47 ),        \
+        .g13_boost5 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 48, 49 ),        \
+        .g13_boost6 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 50, 51 ),        \
+        .g13_boost7 = LR20XX_RSSI_GAIN_ITEM( node_id, prop, 52, 53 ),        \
     }
 
 #define LR20XX_DIOS_CONFIG( node_id ) { DT_FOREACH_CHILD_SEP( DT_CHILD( node_id, dios ), LR20XX_DIO_CONFIG, (, ) ) }
@@ -361,6 +392,8 @@ static int lr20xx_pm_action( const struct device* dev, enum pm_device_action act
         .rx_bw_to_ua_reg_mode_ldo_hf_vreg_boosted =                                                                 \
             ( uint32_t* ) DT_CAT( rx_bw_to_ua_reg_mode_ldo_hf_vreg_boosted_, node_id ),                             \
         .calibration_freqs = ( uint32_t* ) DT_CAT( calibration_freqs_, node_id ),                                   \
+        .rssi_calibration_table_lf = LR20XX_RSSI_GAIN_TABLE( node_id, rssi_calibration_lf_table ),                  \
+        .rssi_calibration_table_hf = LR20XX_RSSI_GAIN_TABLE( node_id, rssi_calibration_hf_table ),                  \
     }
 
 #define LR20XX_DEVICE_INIT( node_id )                                                            \

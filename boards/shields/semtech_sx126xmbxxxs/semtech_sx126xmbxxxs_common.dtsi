@@ -35,5 +35,9 @@
 		// Default value for regulator mode
 		reg-mode = <SX126X_REG_MODE_LDO>;
 
+		/* Set tcxo-wakeup-time = <0> when using XTAL (default)  */
+		tcxo-wakeup-time = <0>;
+		tcxo-voltage = <SX126X_TCXO_SUPPLY_1_8V>; /* Unused in case of XTAL */
+
 	};
 };

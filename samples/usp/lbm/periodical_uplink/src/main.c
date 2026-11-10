@@ -40,7 +40,7 @@
 #include <smtc_modem_api.h>
 #include <smtc_modem_test_api.h>
 #include <smtc_modem_utilities.h>
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
 #include <smtc_modem_helper.h>
 
 #include <smtc_zephyr_usp_api.h>

@@ -6,6 +6,8 @@ set(LBM_SMTC_REGIONS_DIR ${LBM_SMTC_MODEM_CORE_DIR}/lr1mac/src/smtc_real/src/)
 # Regional parameters version
 zephyr_library_compile_definitions_ifdef(CONFIG_LORA_BASICS_MODEM_RP2_101 RP2_101)
 zephyr_library_compile_definitions_ifdef(CONFIG_LORA_BASICS_MODEM_RP2_103 RP2_103)
+zephyr_library_compile_definitions_ifdef(CONFIG_LORA_BASICS_MODEM_RP2_104 RP2_104)
+zephyr_library_compile_definitions_ifdef(CONFIG_LORA_BASICS_MODEM_RP2_105 RP2_105)
 
 # enabled regions
 zephyr_library_compile_definitions_ifdef(CONFIG_LORA_BASICS_MODEM_REGION_AS_923 REGION_AS_923)

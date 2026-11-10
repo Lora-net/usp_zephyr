@@ -24,6 +24,7 @@ target_include_directories(app PRIVATE
 target_sources(app PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c
   ${CMAKE_CURRENT_SOURCE_DIR}/src/hw_modem.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/unified_uart.c
   ${USP_HW_MODEM_DIR}/cmd_parser.c
   ${USP_HW_MODEM_DIR}/git_version.c
 

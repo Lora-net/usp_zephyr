@@ -5,11 +5,11 @@ manifest:
   projects:
   - import: true
     name: zephyr
-    revision: v4.4.0
+    revision: v4.4.2
     url: https://github.com/zephyrproject-rtos/zephyr
   - name: usp
     path: modules/lib/usp
-    revision: v1.2.1
+    revision: v1.3.0
     submodules: true
     url: https://github.com/Lora-net/usp.git
   self:

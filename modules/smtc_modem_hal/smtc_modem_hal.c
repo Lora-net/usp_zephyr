@@ -52,7 +52,10 @@
 #include <zephyr/logging/log_ctrl.h>
 #include <zephyr/usp/lora_lbm_transceiver.h>
 
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
+#if defined( CONFIG_USP_LORA_BASICS_MODEM )
+#include <smtc_modem_hal.h> /* LBM specific HAL prototypes, checked against the definitions below */
+#endif
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
 
 #if defined( CONFIG_USP )
@@ -159,10 +162,10 @@ void smtc_modem_hal_set_offset_to_test_wrapping( const uint32_t offset_to_test_w
      */
 }
 
-void smtc_modem_hal_interruptible_msleep( k_timeout_t timeout )
+void smtc_modem_hal_interruptible_msleep( uint32_t timeout )
 {
     /* Sleep until we are notified by smtc_modem_hal_wake_up(). */
-    k_sem_take( &lbm_main_loop_sem, timeout );
+    k_sem_take( &lbm_main_loop_sem, K_MSEC( timeout ) );
 }
 
 void smtc_modem_hal_wake_up( void )
@@ -269,11 +272,12 @@ void smtc_modem_hal_on_panic( uint8_t* func, uint32_t line, const char* fmt, ...
 
     LOG_ERR( "Modem panic: %s", buffer );
 
+#if defined( CONFIG_USP_LORA_BASICS_MODEM )
     /* NOTE: smtc_modem_hal_crashlog_set_status(true) is done by
      * smtc_modem_hal_crashlog_store() for simplicity of flash usage
      */
     smtc_modem_hal_crashlog_store( buffer, length );
-
+#endif
     smtc_modem_hal_reset_mcu( );
 }
 

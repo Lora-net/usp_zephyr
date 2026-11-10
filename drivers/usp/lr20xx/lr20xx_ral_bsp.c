@@ -163,9 +163,9 @@ void ral_lr20xx_bsp_get_xosc_cfg( const void* context, ral_xosc_cfg_t* xosc_cfg,
     const struct lr20xx_hal_context_cfg_t*     config      = transceiver->config;
     const struct lr20xx_hal_context_tcxo_cfg_t tcxo_cfg    = config->tcxo_cfg;
 
-    *xosc_cfg             = tcxo_cfg.xosc_cfg;
-    *supply_voltage       = tcxo_cfg.voltage;
-    *startup_time_in_tick = lr20xx_radio_common_convert_time_in_ms_to_rtc_step( tcxo_cfg.wakeup_time_ms );
+    *xosc_cfg       = tcxo_cfg.xosc_cfg;
+    *supply_voltage = tcxo_cfg.voltage;
+    *startup_time_in_tick = ( uint32_t ) ( tcxo_cfg.wakeup_time_ms * 32000UL );
 }
 
 void radio_utilities_set_tx_power_offset( const void* context, uint8_t tx_pwr_offset_db )

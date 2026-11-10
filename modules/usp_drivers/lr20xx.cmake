@@ -21,8 +21,7 @@ zephyr_library_sources(
   ${LBM_LR20XX_DIR}/src/lr20xx_regmem.c
   ${LBM_LR20XX_DIR}/src/lr20xx_system.c
   ${LBM_LR20XX_DIR}/src/lr20xx_workarounds.c
-  ${LBM_LR20XX_DIR}/src/lr20xx_pram_load.c
-  ${LBM_LR20XX_DIR}/src/lr20xx_patch.c
+  ${LBM_LR20XX_DIR}/src/lr20xx_pram.c
   ${LBM_LR20XX_DIR}/src/lr20xx_rttof.c # protect with define ?
 )
 

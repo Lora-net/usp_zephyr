@@ -4,17 +4,45 @@
 
 This guide explains how to port existing LoRa Basics Modem applications to the **USP for Zephyr** environment. It covers the key API changes, initialization sequence, and compile definitions management specific to the Zephyr integration.
 
-**Target Audience:** Developers porting existing LBM applications (from bare-metal or other RTOS) to Zephyr.
+**Target Audience:** Developers porting existing LBM applications (from [SWL2001](https://github.com/Lora-net/SWL2001), [USP](https://github.com/Lora-net/usp) bare-metal or other RTOS) to Zephyr.
 
 ---
 
 ## Table of Contents
 
-1. [Key Changes Summary](#key-changes-summary)
-2. [Initialization Sequence](#initialization-sequence)
-3. [Main Loop Integration](#main-loop-integration)
-4. [Multithreading Considerations](#multithreading-considerations)
-5. [Compile Definitions Management](#compile-definitions-management)
+1. [Migrating from SWL2001 to USP for Zephyr](#migrating-from-swl2001-to-usp-for-zephyr)
+2. [Key Changes Summary](#key-changes-summary)
+3. [Initialization Sequence](#initialization-sequence)
+4. [Main Loop Integration](#main-loop-integration)
+5. [Multithreading Considerations](#multithreading-considerations)
+6. [Compile Definitions Management](#compile-definitions-management)
+
+---
+
+## Migrating from SWL2001 to USP for Zephyr
+
+The **[SWL2001](https://github.com/Lora-net/SWL2001)** LBM Git repository is now in Maintenance Mode. All ongoing and future LoRa Basics Modem development now takes place in **[USP – Unified Software Platform](https://github.com/Lora-net/usp)**: USP for Zephyr gets LBM through the USP west module (`modules/lib/usp`, LBM v4.9.3 in this release).
+
+For more details on USP before moving to USP_ZEPHYR, please review the **[LBM Porting Guide to USP](https://github.com/Lora-net/usp/blob/main/doc/usp_lbm_porting_guide.md)**.
+
+### Supported radios
+
+> ⚠️ Contrary to SWL2001 and USP (bare-metal), **SX127X (SX1272/SX1276) and SX128X (SX1280/SX1281) radios are not supported by USP for Zephyr**. Only the LR20XX, LR11XX and SX126X radios are supported (Zephyr radio drivers in `drivers/usp`).
+
+### What changes vs. SWL2001
+
+| Topic | SWL2001 | USP for Zephyr |
+|---|---|---|
+| Git repository | `Lora-net/SWL2001` | `Lora-net/usp_zephyr` (USP is fetched as a west module) |
+| Build system | Make or CMake (`lbm_examples`) | west / Zephyr build system, LBM samples in `samples/usp/lbm/` |
+| Board selector | `BOARD=NUCLEO_L476` / `NUCLEO_L073` | `west build --board <board>` (any Zephyr board, see the supported boards in the README) |
+| Radio selector | `LBM_RADIO=<radio>` (CMake) or Make target `<radio>` | `west build --shield <shield>`: the radio is described in the devicetree |
+| Supported radios | SX126X, SX127X, SX128X, LR11XX, LR20XX | LR20XX, LR11XX & SX126X only |
+| LBM options | Make variables / `LBM_*` CMake symbols | `CONFIG_LORA_BASICS_MODEM_*` Kconfig options in `prj.conf` (see [Compile Definitions Management](#compile-definitions-management)) |
+| Regions | `REGION=<region>` (Make) / `LBM_REGIONS=<region>` (CMake) | `CONFIG_LORA_BASICS_MODEM_ENABLE_ALL_REGIONS=n` + `CONFIG_LORA_BASICS_MODEM_REGION_<region>=y` (all regions by default) |
+| Regional Parameters version | `RP_VERSION=RP2_103` / `RP2_104` / `RP2_105` | `CONFIG_LORA_BASICS_MODEM_RP2_103=y` (default) / `CONFIG_LORA_BASICS_MODEM_RP2_104=y` / `CONFIG_LORA_BASICS_MODEM_RP2_105=y` |
+| Radio access | LBM sits on top of the radio planner | LBM sits on top of the RAC (Radio Access Component), which arbitrates radio access across LoRaWAN, FLRP, ranging, etc. (see [Key Changes Summary](#key-changes-summary)) |
+| nRF52840 port (`lbm_applications`) | Nordic nRF52840 port | Use the nRF52840 DK support of USP for Zephyr |
 
 ---
 
@@ -44,13 +72,13 @@ int main(void)
 {
     // 1. Initialize the platform (Zephyr-specific setup)
     SMTC_SW_PLATFORM_INIT();
-    
+
     // 2. Initialize RAC (Radio Access Controller) - MUST BE FIRST
     SMTC_SW_PLATFORM_VOID(smtc_rac_init());
-    
+
     // 3. Initialize LBM modem - AFTER RAC
     SMTC_SW_PLATFORM_VOID(smtc_modem_init(&modem_event_callback));
-    
+
     // Your application code...
 }
 ```
@@ -86,19 +114,19 @@ while(1) {
 while(true) {
     // 1. Run the modem engine
     uint32_t sleep_time_ms = smtc_modem_run_engine();
-    
+
     // 2. Run the RAC engine - REQUIRED!
     smtc_rac_run_engine();
-    
+
     // 3. Check for pending IRQ before sleeping
     if(smtc_rac_is_irq_flag_pending()) {
         continue; // Don't sleep if radio IRQ is pending
     }
-    
+
     // 4. Wait for events or timeout
-    struct k_sem* sems[] = { 
-        smtc_modem_hal_get_event_sem(), 
-        &my_app_event_sem 
+    struct k_sem* sems[] = {
+        smtc_modem_hal_get_event_sem(),
+        &my_app_event_sem
     };
     wait_on_sems(sems, 2, K_MSEC(sleep_time_ms));
 }
@@ -179,7 +207,7 @@ static void modem_event_callback(void)
     // Already protected by USP thread mutex
     // Safe to call LBM API directly here
     smtc_modem_get_event(&event, &count);
-    
+
     // If you need to signal your application thread:
     k_sem_give(&my_app_sem); // Wake up application
 }
@@ -357,6 +385,7 @@ This example demonstrates:
 
 ## Additional Resources
 
+- **LBM Porting Guide to USP**: https://github.com/Lora-net/usp/blob/main/doc/usp_lbm_porting_guide.md
 - **USP Architecture**: `doc/USP_Architecture.md`
 - **Multi-Threading Management**: `doc/THREAD_MANAGEMENT.md`
 - **Zephyr Porting Guide**: `doc/usp_zephyr_porting_guide.md`
@@ -377,5 +406,3 @@ The platform macros (`SMTC_SW_PLATFORM_*`) and Zephyr semaphores handle threadin
 For a complete working example, refer to `samples/usp/lbm/periodical_uplink/`.
 
 ---
-
-

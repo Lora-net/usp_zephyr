@@ -61,6 +61,12 @@ config LORA_BASICS_MODEM_RP2_101
 config LORA_BASICS_MODEM_RP2_103
 	bool "Use RP 1.0.3"
 
+config LORA_BASICS_MODEM_RP2_104
+	bool "Use RP 1.0.4"
+
+config LORA_BASICS_MODEM_RP2_105
+	bool "Use RP 1.0.5"
+
 endchoice
 
 config LORA_BASICS_MODEM_ENABLE_ALL_REGIONS

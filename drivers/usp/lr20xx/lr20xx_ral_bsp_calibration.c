@@ -253,6 +253,17 @@ ral_status_t ral_lr20xx_bsp_get_instantaneous_gfsk_rx_power_consumption( const v
     return RAL_STATUS_OK;
 }
 
+void ral_lr20xx_bsp_get_rssi_calibration_table(
+    const void* context, const lr20xx_radio_common_rssi_calibration_gain_table_t** rssi_calibration_table_lf,
+    const lr20xx_radio_common_rssi_calibration_gain_table_t** rssi_calibration_table_hf )
+{
+    const struct device*                   dev    = ( const struct device* ) context;
+    const struct lr20xx_hal_context_cfg_t* config = dev->config;
+
+    *rssi_calibration_table_lf = &config->rssi_calibration_table_lf;
+    *rssi_calibration_table_hf = &config->rssi_calibration_table_hf;
+}
+
 ral_status_t ral_lr20xx_bsp_get_instantaneous_lora_rx_power_consumption( const void*              context,
                                                                          lr20xx_system_reg_mode_t radio_reg_mode,
                                                                          const ral_lora_bw_t bw, const bool rx_boosted,

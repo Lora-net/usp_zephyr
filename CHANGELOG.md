@@ -4,6 +4,131 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.3.0] 2026-11-09
+
+### Added
+
+- New sample `samples/usp/sdk/fhss_exemple`: LoRa intra-packet frequency hopping PING/PONG between two LR20XX radios
+- LR20XX RSSI calibration gain tables configured from the devicetree
+  - New required properties `rssi-calibration-lf-table` (RX path below 1.5GHz) & `rssi-calibration-hf-table` (RX path above 1.5GHz) in `dts/bindings/usp/semtech,lr20xx-common.yaml` (27 `<gain_value noise_figure>` cells)
+  - `ral_lr20xx_bsp_get_rssi_calibration_table()` implemented in `drivers/usp/lr20xx/lr20xx_ral_bsp_calibration.c`
+  - Reference tables added for the WIO LR20XX shields (`semtech_wio_lr20xx_region_eu_us.dtsi`: 868/915MHz, `semtech_wio_lr20xx_region_cn.dtsi`: 490MHz) and the LR2021MB1xxS shield
+  - Documentation in the [USP Zephyr porting guide](doc/usp_zephyr_porting_guide.md) (§2.3)
+- hw_modem
+  - Single-UART transport without external bridge (`src/unified_uart.c`, `include/zephyr/usp/unified_uart.h`): modem data & log traces are multiplexed on the same UART with a framed protocol, through a dedicated log backend (`log_backend_unified_uart`). Host side: `python_bridge.py` tool provided by USP
+  - The host UART is automatically the board console UART (chosen `zephyr,console`, i.e. the USB / VCP link of the board); the `smtc-hal-uart` alias can still be defined in an overlay to force another UART
+  - New sample `Kconfig`: `USE_FLRP` option (FLRP commands, requires a LR20XX radio) and log configuration required by the single-UART transport
+  - NUCLEO-U575ZI-Q support (overlay & conf, LPTIM1 on LSE used as system timer like on NUCLEO-L476RG)
+  - Commands ported from modem-e (USP): `CMD_WIFI_SCAN_MODE`, `CMD_GNSS_ALM_DEMOD_STOP`, `CMD_WIFI_GET_SCAN_DONE_SCAN_DATA_RESULT`, `CMD_GET/SET_NO_RX_PACKET_THRESHOLD`, `CMD_GET/SET_CHANNEL_MASK`
+- FLRP (from USP)
+  - TX statistics given to the TX done callback (`smtc_flrp_tx_stats_t`: frequency, frequency offset, payload & burst bit rates)
+  - Frequency, frequency offset, payload & burst bit rates in RX burst statistics (printed by the `flrp_api_lorawan` sample)
+  - `smtc_flrp_is_transaction_active()` API
+  - `frequency_offset_enabled` advanced FLRC parameter to disable the frequency offset application
+- LBM (from USP) : see below
+- `CONFIG_USP_MODEM_HAL_DBG_TRACE` Kconfig option: when disabled, the LBM, RAC and radio planner traces (`SMTC_MODEM_HAL_TRACE_*`) are removed from the build
+- `CONFIG_USP_HAL_DBG_TRACE` Kconfig option: when disabled, the samples and helpers traces (`SMTC_HAL_TRACE_*`) are removed from the build
+
+### Changed
+
+- Zephyr updated from v4.4.0 to v4.4.2
+- USP updated from v1.2.1 to v1.3.0, see USP changelog
+- Zephyr module CMake adapted to the new USP architecture (radio drivers, RAL & RALF from `smtc_radio_interface`, `smtc_core_hal_interface`, LBM decoupled from the modem HAL & storage)
+- FLRP (from USP)
+  - `smtc_flrp_tx_done_f` TX callback has a new `smtc_flrp_tx_stats_t flrp_stats` parameter: `flrp_api` & `flrp_api_lorawan` samples updated
+  - `smtc_flrp_initiate_transmission()` / `smtc_flrp_initiate_reception()` return `SMTC_FLRP_RC_BUSY` if a transaction is already in progress
+  - Sub-GHz defines renamed (`WOR_SUBGIG_RF_FREQ_IN_HZ`, `DATA_FLRC_SUBGIG_RF_FREQ_IN_HZ`, `DATA_FLRC_CHANNEL_STEP_SUBGIG_HZ`) and default sub-GHz frequency moved from 865.1MHz to 865.7MHz
+- LBM (from USP) : see below
+- Radio drivers & RAL (from USP)
+  - LR20xx driver upgraded from v2.0.2 to v2.1.0 (FLRC FEI, BT 0.3 & double rate sampling workaround, CCA with gain, LR-FHSS hopping table, ...)
+  - smtc_ral: LR20XX RSSI calibration applied at RAL init, LR2021 PRAM version checked at init, new LoRa LDRO computation for all radios, missing LR20XX IRQs mapped
+- SX126X devicetree: `tcxo-voltage` & `tcxo-wakeup-time` are now required (same approach as LR11XX), `tcxo-wakeup-time = <0>` selects the XTAL (default wake-up time is now 0 instead of 8ms); `semtech_sx126xmbxxxs` shields updated accordingly
+- WIO LR20XX PA tables (`semtech_wio_lr20xx_region_eu_us.dtsi` & `semtech_wio_lr20xx_region_cn.dtsi`) regenerated from the smtc-shields reference tables
+- hw_modem
+  - Bridge GPIOs (`hw-modem-command-gpios`, `hw-modem-busy-gpios`, `hw-modem-event-gpios`) removed from all board overlays
+  - Host UART: `smtc-hal-uart` alias removed on NUCLEO & XIAO boards, the console UART is used: NUCLEO-L476RG (all variants) `usart2` (ST-Link VCP) instead of `usart3`, NUCLEO-U575ZI-Q `usart1` (ST-Link VCP), XIAO nRF54L15 (all variants) `uart20` (USB serial) with `uart21` disabled. nRF52840-DK (`uart1`) & nRF54L15-DK (`uart22`) keep an explicit alias
+  - Log configuration forced by the sample Kconfig (`LOG_BACKEND_UART=n`, `UART_CONSOLE=n`, `LOG_OUTPUT=y`, `LOG_PRINTK=y`) and `CONFIG_LOG_MODE_IMMEDIATE=y` in `prj.conf`
+  - `python_test` & `serialization` directories (and the nanopb submodule) removed: the USP ones are used
+  - `CMD_FLRP_START_PERIODIC_LISTENING` & `CMD_FLRP_INITIATE_RECEPTION` now take the expected payload size (USP)
+- multiprotocol: periodical uplink delay set to 60s (instead of 600s)
+- LR20XX devicetree: the RSSI calibration `offset`/`tune` properties are replaced by the RSSI calibration gain tables
+- Display (Zephyr 4.4): SSD1306 compatible `solomon,ssd1306fb` replaced by `solomon,ssd1306` in the `semtech_loraplus_expansion_board` overlay
+- HAL API (USP new architecture): `smtc_modem_hal.h` split into `smtc_core_hal.h` (core HAL, always used) and the LBM specific `smtc_modem_hal.h`, `smtc_modem_hal_dbg_trace.h` renamed `smtc_core_hal_trace.h`. `smtc_modem_hal_interruptible_msleep()` now takes a `uint32_t` timeout in ms (instead of a `k_timeout_t`) and, like `smtc_modem_hal_wake_up()`, is declared in `smtc_core_hal.h` (no more in `lorawan_hal_init.h`): applications must include `smtc_core_hal.h` and pass milliseconds
+
+### Fixed
+
+- LR2021MB1xxS shield overlay: missing RSSI calibration table (build error)
+- SSD1306 build warning
+- TCXO: XTAL / TCXO selection from `tcxo-wakeup-time` for LR20XX & LR11XX, LR20XX TCXO startup time
+- LR20XX HAL: direct FIFO read was sending the RX buffer content on MOSI (0 is now sent)
+- Storage: flash padding for store & forward (`smtc_modem_hal_storage.c`)
+- Low power (`prj_lowpower.conf`, NUCLEO-L476RG): `CONFIG_RESET` re-enabled for the LPTIM when the debug UART is disabled
+- CMake: include directory for `CONFIG_LORA_BASICS_MODEM_BEACON_TX`
+- lctt_certif: `SMTC_MODEM_EVENT_RESET_REQUEST` (reset requested by the certification) managed
+- FLRP (from USP): channel index boundary & default channel checks, frequencies `memcpy()` size, busy guards & IDLE transitions, division by zero & bit rate overflow, FLRC burst TX IRQ clear
+- LBM (from USP): see below
+- hw_modem: circular buffer issue, missing return checks (Coverity)
+
+### Bugfixing
+
+- Unused I2C / SSD1306 configuration removed from `direct_driver_access`, `immediate_radio_access` & `ranging_demo` `prj.conf`
+- Documentation: no more cross links between USP & USP for Zephyr
+
+### Deprecated
+
+- hw_modem FLRC protocol commands 0xB0 to 0xB2 removed (USP)
+- `CONFIG_USP_LOG_VERBOSE` Kconfig option removed (unused)
+
+### LoRa Basics Modem v4.9.3 (from [USP](https://github.com/Lora-net/usp))
+
+USP v1.3.0 embeds LoRa Basics Modem v4.9.3 (`protocols/lbm_lib`).
+
+`protocols/lbm_lib` is common to USP and SWL2001, its detailed changelogs are:
+- [Modem API changelog](protocols/lbm_lib/smtc_modem_api/CHANGELOG.md)
+- [Modem HAL changelog](protocols/lbm_lib/smtc_modem_hal/CHANGELOG.md)
+
+#### Added
+
+- Regional Parameters RP002-1.0.4 and RP002-1.0.5 support (CFList type 1 for dynamic plans, up to 80 channels on EU868, new US915 channel plan, Relay channel 1 SF update, AS923 group 4), selected with the CMake option `RP_VERSION` (`RP2_101`, `RP2_103`, `RP2_104`, `RP2_105`; default remains `RP2_103`)
+- LR2022 added to the list of WW_2G4-compatible radios
+- CMake: `LBM_CMAKE_CONFIG_AUTO` option
+- Relay Tx: `number_of_miss_wor_ack_to_switch_in_nosync_mode` can now be configured by the user
+
+#### Changed
+
+- The radio planner and RALF are provided externally to LBM (RAC dependency removed), the LBM HAL is split in the LBM specific `smtc_modem_hal.h` and the core HAL `smtc_core_hal.h` (see the Modem HAL changelog), simplified CMake architecture, LBM specific compilation definitions are now PUBLIC
+- Class B beacon DPLL: `BEACON_PLL_PHASE_GAIN_MUL/DIV` set to 1/2 for a faster convergence and accept a bigger crystal error
+- Multicast Class B/C: the session now starts 2 s before its session time
+- Duty-cycle frequency list now takes the 80 channels into account
+
+#### Fixed
+
+- NbTrans > 1: the duty-cycle time off is now updated on retransmission, all retransmissions are sent before the duty-cycle delay is enforced
+- Wrong index boundary check when decrementing the datarate (AU915 / LR-FHSS)
+- `lr1_stack_mac_cmd_ans_cut()` could block the modem because DeviceTimeAns and Class B MAC commands were missing in the array used for length check
+- Class B/C Multicast v1/v2 ping slot hopping when frequency is 0
+- Modem was not able to retain sleep when `lorawan_dwn_ack_management` variable was less than or equal to 96 bytes (context added)
+- Missing check of `SMTC_MULTICAST` definition (Class B or C only)
+- `smtc_modem_get_suspend_radio_communications()` can no longer be called in test mode
+- Porting guide: `CONTEXT_SECURE_ELEMENT` needs 484 bytes
+- Issue [#141](https://github.com/Lora-net/SWL2001/issues/141) Missing semicolons when `SMTC_TRACE` is compiled
+- IN865, AU915 and AS923_GRP4 region typos/out-of-bound fixes
+- MAC commands answer size table: `LINK_CHECK_ANS` replaced by `LINK_CHECK_REQ` (command sent by the end-device)
+- SX127x (SX1272/SX1276) build and management
+
+#### Security
+
+Robustness fixes found by static analysis and code audit (out-of-bound access, unvalidated lengths and indexes):
+
+- FOpts extraction read past the valid payload before MIC verification
+- FUOTA: fragment payload size validated against the received RF payload; `FragDecoderProcess()` rejects `fragCounter == 0` (row index underflow); `frag_index` bounds checked before use; `frag_req_cmd_size` table initialisation; unicast DataFragment refused on multicast-only sessions; `fmp_test()` duplicated declaration
+- Remote Multicast Setup: `MC_GROUP_STATUS_REQ` answer buffer bound check
+- Multi Package Access: `MULTI_PACK_BUFFER_REQ` read past the payload
+- Certification: `TX_PERIODICITY_CHANGE_REQ` and `EchoPlayReq` size validation
+- `link_adr_parser()` size check performed before dereference
+- Function pointers are checked (`SMTC_LBM_IS_VALID_FN_PTR`) before being called; `smtc_lbt_get_obj()` panics on out-of-bound instead of returning NULL
+- Coverity findings: uninitialised variables, integer overflow, `MIN/MAX` macros brackets, `CRYPTO_MAXMESSAGE_SIZE` limited to 255 in the LR11xx crypto engine
+
 ## [v1.2.1] 2026-06-26
 
 ### Added
@@ -46,7 +171,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Deprecated
 
-- FLRC BURST application removed (replaced with FLRP examples)
+- NA
 
 ## [v1.1.2] 2026-04-16
 

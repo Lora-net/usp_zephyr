@@ -259,3 +259,23 @@ properties:
       Frequency[0] is (430 MHZ - 510 MHz)
       Frequency[1] is (867 MHZ - 928 MHz)
       Frequency[2] is (2.403 GHZ - 2.479 GHz)
+
+  rssi-calibration-lf-table:
+    type: array
+    required: true
+    description: |
+      RSSI calibration gain table for the low-frequency RX path (below 1.5GHz).
+
+      An array of 27 <gain_value noise_figure> cells, in the following order:
+      G1 G2 G3 G4 G5 G6 G7 G8 G9 G10 G11 G12boost0..7 G13boost0..7.
+
+      gain_value is a signed value in fixed 8.2 format, noise_figure is an
+      unsigned value in fixed 6.2 format.
+
+  rssi-calibration-hf-table:
+    type: array
+    required: true
+    description: |
+      RSSI calibration gain table for the high-frequency RX path (above 1.5GHz).
+
+      Same cell format as rssi-calibration-lf-table.

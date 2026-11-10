@@ -283,7 +283,7 @@ static int lr11xx_pm_action( const struct device* dev, enum pm_device_action act
                                                ( LR11XX_SYSTEM_VERSION_TYPE_LR1121 ), ( /**/ ) ) ) ) ) )
 
 #define LR11XX_XOSC_CFG( node_id ) \
-    COND_CODE_1( DT_PROP( node_id, tcxo_wakeup_time ) == 0, ( RAL_XOSC_CFG_XTAL ), ( RAL_XOSC_CFG_TCXO_RADIO_CTRL ) )
+    COND_CODE_0( DT_PROP( node_id, tcxo_wakeup_time ), ( RAL_XOSC_CFG_XTAL ), ( RAL_XOSC_CFG_TCXO_RADIO_CTRL ) )
 
 /* LR11xx does not support external TCXO control (by the MCU) */
 #define LR11XX_CFG_TCXO( node_id )                              \

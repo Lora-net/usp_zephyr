@@ -176,7 +176,7 @@ int main( void )
         {
             uint32_t real_sleep_time_ms = MIN( sleep_time_ms, WATCHDOG_RELOAD_PERIOD_MS );
 
-            smtc_modem_hal_interruptible_msleep( K_MSEC( real_sleep_time_ms ) );
+            smtc_modem_hal_interruptible_msleep( real_sleep_time_ms );
         }
     }
     return 0;
@@ -396,6 +396,13 @@ void modem_event_callback( void )
         case SMTC_MODEM_EVENT_NO_DOWNLINK_THRESHOLD:
         {
             LOG_INF( "Event received: NO_DOWNLINK_THRESHOLD\n" );
+            break;
+        }
+
+        case SMTC_MODEM_EVENT_RESET_REQUEST:
+        {
+            LOG_INF( "Event received: RESET_REQUEST\n" );
+            smtc_modem_hal_reset_mcu( );
             break;
         }
 

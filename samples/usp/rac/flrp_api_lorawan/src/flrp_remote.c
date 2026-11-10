@@ -41,7 +41,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
 #include <smtc_modem_helper.h>
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
 
 #include "flrp_remote.h"
 #include "flrp_api_menu.h"

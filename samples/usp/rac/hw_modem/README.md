@@ -75,14 +75,114 @@ west flash --runner pyocd
 
 ## Usage
 
-### 1. Hardware Setup
+### Using the software bridge (recommended)
+
+This sample talks to the host over a single UART (`src/unified_uart.c`), with no bridge board or CMD/BUSY/EVENT control GPIOs required. `python_bridge.py` is the preferred way to communicate with it: it demultiplexes the UART into a trace channel and a data channel and exposes each over stdout/stderr, a TCP socket, a PTY, or a file.
+
+The script lives in the bare-metal project, not in this Zephyr tree: `examples/main_examples/hw_modem/python_test/python_bridge.py`
+
+#### 1. Parameters
+
+  * device selection and configuration
+    --port PORT: set the port used for the connection
+    --baudrate BAUDRATE: set the baudrate of the connection
+    --timeout TIMEOUT: set the timeout of the connection
+  * output setup
+    --trace-out SINK: set the destination(s) for the trace channel (repeatable)
+    --data-out SINK: set the destination(s) for the data channel (repeatable)
+
+The SINK can be any of:
+- 'stdout' or 'stderr' (this process's streams)
+- 'pty' (Unix only; allocates a PTY and prints its path, forwards raw bytes both ways)
+- 'socket[:PORT]' (TCP server, bidirectional, default port 5551 if PORT is omitted)
+- 'file:PATH' (writes raw bytes to PATH, truncated at startup)
+
+#### 2.1 Usage as a module
+
+You can import the following symbols from the script:
+  * add_python_bridge_options: add the script options to a user-provided ArgumentParser
+  * extract_python_bridge_config: extract a HostConfig from the parsed arguments
+  * open_device: a context manager that takes a HostConfig, opens the configured device, exposes and display trace and data output
+
+Example:
+```python
+from python_bridge import *
+
+def main():
+    parser = ArgumentParser(description=__doc__)
+    add_python_bridge_options(parser)
+    args = parser.parse_args()
+    config = extract_python_bridge_config(args)
+
+    with open_device(config) as device:
+        device.write(b"...")
+        reply = device.read()
+        ...
+```
+
+Using the `with` syntax, the hub will live as long as the scope.
+
+#### 2.2 Usage as a standalone
+
+The script is intended to be invoked by the `uv` tool, that takes care of the dependencies. If `uv` is not installed, you can still invoke the script with `python3`, but you will need to manually install the dependencies. Typical use:
+
+
+#### 3.1 Linux example
+
+Terminal 1 (bridge running in the background):
+```
+$ uv run python_bridge.py --port /dev/ttyACM0 --trace-out stdout
+Python bridge on /dev/ttyACM0 @ 115200
+  trace -> stdout
+  data  -> socket: 127.0.0.1:5552
+Ctrl+C to stop.
+```
+
+Terminal 2 (application communicating with hw_modem):
+```python
+from python_bridge import *
+
+def main():
+    parser = ArgumentParser(description=__doc__)
+    add_python_bridge_options(parser)
+    args = parser.parse_args()
+    config = extract_python_bridge_config(args)
+
+    with open_device(config, attach=True) as device:
+        device.write(b"...")
+        reply = device.read()
+        ...
+```
+
+Note the `attach = True` parameter of `open_device`, it allows to connect to an already running python_bridge (the hub keeps on living after the scope). This option is not compatible with `--data-out pty`.
+
+#### 3.2 Windows example
+
+The bridge runs the same way on Windows, with a few differences:
+
+  * `--port` takes a COM port instead of a tty path, e.g. `--port COM5`. Check Device Manager > Ports (COM & LPT) for the assigned number.
+  * `--trace-out pty` / `--data-out pty` are Unix only. Consider using the default option (TCP sockets).
+  * `uv run python_bridge.py ...` works the same from PowerShell or Command Prompt.
+
+Example (Command Prompt or PowerShell):
+```
+> uv run python_bridge.py --port COM5 --trace-out stdout
+Python bridge on COM5 @ 115200
+  trace -> stdout
+  data  -> socket: 127.0.0.1:5552
+Ctrl+C to stop.
+```
+
+### Using a physical bridge board
+
+#### 1. Hardware Setup
 
 1. **Connect Bridge Board**: Wire UART and GPIO signals through shield to external pins
 2. **UART Connection**: Connect `smtc-hal-uart` (UART1) to bridge module
 3. **GPIO Wiring**: Connect CMD, BUSY, EVENT GPIOs to bridge board
 4. **Power Supply**: Ensure adequate power for modem operations
 
-### 2. Command Interface
+#### 2. Command Interface
 
 Commands follow the format:
 ```
@@ -99,11 +199,11 @@ Commands follow the format:
 0xA2 0x01 0x01 0xA0
 ```
 
-### 3. Python Test Suite
+#### 3. Python Test Suite
 
 Refer to the README.md file present in the python_test directory
 
-### 4. Serial Command Example
+#### 4. Serial Command Example
 
 **Using Python:**
 ```python

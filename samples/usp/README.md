@@ -22,6 +22,7 @@ For detailled informations about each sample, please refer to the README.md file
   - [flrp_api](rac/flrp_api/README.md)
   - [flrp_api_lorawan](rac/flrp_api_lorawan/README.md)
 * sdk
+  - [fhss_exemple](sdk/fhss_exemple/README.md)
   - [lrfhss](sdk/lrfhss/README.md)
   - [packet_error_rate_flrc](sdk/packet_error_rate_flrc/README.md)
   - [packet_error_rate_fsk](sdk/packet_error_rate_fsk/README.md)
@@ -50,28 +51,40 @@ When building using `west`, the syntax is as follow:
 west build --pristine --board <board> --shield <shield> <sample> -- -DEXTRA_CFLAGS="<list of additional -D flags>"
 ```
 
-All examples use the unified logging system, which is controlled with the following flags:
+## Logging configuration
 
-| Parameter                    | Default   | Description                                         |
-|------------------------------|-----------|-----------------------------------------------------|
-| `RAC_LOGGING_ENABLE`         | `ON`      | Enable logging system                               |
-| `RAC_LOG_PROFILE`            | `DEFAULT` | logging profile (MINIMAL;DEFAULT;VERBOSE;DEBUG;ALL) |
-|------------------------------|-----------|-----------------------------------------------------|
-| `RAC_CORE_LOG_ERROR_ENABLE`  | `ON`      | Enable RAC Core ERROR logs                          |
-| `RAC_CORE_LOG_CONFIG_ENABLE` | `ON`      | Enable RAC Core CONFIG logs                         |
-| `RAC_CORE_LOG_INFO_ENABLE`   | `OFF`     | Enable RAC Core INFO logs                           |
-| `RAC_CORE_LOG_WARN_ENABLE`   | `OFF`     | Enable RAC Core WARN logs                           |
-| `RAC_CORE_LOG_DEBUG_ENABLE`  | `OFF`     | Enable RAC Core DEBUG logs                          |
-| `RAC_CORE_LOG_API_ENABLE`    | `OFF`     | Enable RAC Core API logs                            |
-| `RAC_CORE_LOG_RADIO_ENABLE`  | `OFF`     | Enable RAC Core RADIO logs                          |
-|------------------------------|-----------|-----------------------------------------------------|
-| `RAC_LORA_LOG_TX_ENABLE`     | `ON`      | Enable RAC LoRa TX logs                             |
-| `RAC_LORA_LOG_RX_ENABLE`     | `ON`      | Enable RAC LoRa RX logs                             |
-| `RAC_LORA_LOG_CONFIG_ENABLE` | `ON`      | Enable RAC LoRa CONFIG logs                         |
-| `RAC_LORA_LOG_ERROR_ENABLE`  | `ON`      | Enable RAC LoRa ERROR logs                          |
-| `RAC_LORA_LOG_INFO_ENABLE`   | `OFF`     | Enable RAC LoRa INFO logs                           |
-| `RAC_LORA_LOG_WARN_ENABLE`   | `OFF`     | Enable RAC LoRa WARN logs                           |
-| `RAC_LORA_LOG_DEBUG_ENABLE`  | `OFF`     | Enable RAC LoRa DEBUG logs                          |
+Logs are configured with Kconfig options, passed in a `.conf` file or directly on the command line:
+```bash
+west build --pristine --board <board> --shield <shield> <sample> -- -DCONFIG_USP_LOG_LEVEL_DBG=y
+```
+
+| Kconfig option                                     | Default | Description                                                                                  |
+|----------------------------------------------------|---------|----------------------------------------------------------------------------------------------|
+| `CONFIG_USP_LOG_LEVEL_{OFF,ERR,WRN,INF,DBG}`       | Zephyr default | Log level of the USP modules (`usp`, `lorawan`, `lorawan_hal`). Use `_OFF` to disable (there is no `_NONE`) |
+| `CONFIG_LORA_BASICS_MODEM_LOG_LEVEL_{OFF,ERR,WRN,INF,DBG}` | Zephyr default | Log level of the LoRa Basics Modem module                                             |
+| `CONFIG_LORA_BASICS_MODEM_LOG_VERBOSE`             | `n`     | LoRa Basics Modem deep (debug) traces                                                        |
+| `CONFIG_LORA_BASICS_MODEM_RADIO_PLANNER_LOG_VERBOSE` | `n`   | Radio planner deep traces                                                                    |
+| `CONFIG_LORA_BASICS_MODEM_GEOLOCATION_LOG_VERBOSE` | `n`     | Geolocation and Wi-Fi middlewares deep traces                                                |
+| `CONFIG_USP_MODEM_HAL_DBG_TRACE`                   | `y`     | `SMTC_MODEM_HAL_TRACE_*` traces (LBM, RAC, radio planner). `n` removes them from the build   |
+| `CONFIG_USP_HAL_DBG_TRACE`                         | `y`     | `SMTC_HAL_TRACE_*` traces (samples and helpers). `n` removes them from the build             |
+
+The RAC core logs are selected with C definitions, passed through `EXTRA_CFLAGS` with a `0` or `1` value (`ON`/`OFF` are silently ignored).
+They are printed only when `CONFIG_USP_MODEM_HAL_DBG_TRACE=y` and the USP log level is high enough:
+```bash
+west build --pristine --board <board> --shield <shield> <sample> -- -DEXTRA_CFLAGS="-DRAC_CORE_LOG_INFO_ENABLE=1"
+```
+
+| C definition                 | Default | Description                  |
+|------------------------------|---------|------------------------------|
+| `RAC_CORE_LOG_ERROR_ENABLE`  | `1`     | Enable RAC Core ERROR logs   |
+| `RAC_CORE_LOG_CONFIG_ENABLE` | `1`     | Enable RAC Core CONFIG logs  |
+| `RAC_CORE_LOG_INFO_ENABLE`   | `0`     | Enable RAC Core INFO logs    |
+| `RAC_CORE_LOG_WARN_ENABLE`   | `0`     | Enable RAC Core WARN logs    |
+| `RAC_CORE_LOG_DEBUG_ENABLE`  | `0`     | Enable RAC Core DEBUG logs   |
+| `RAC_CORE_LOG_API_ENABLE`    | `0`     | Enable RAC Core API logs     |
+| `RAC_CORE_LOG_RADIO_ENABLE`  | `0`     | Enable RAC Core RADIO logs   |
+
+To build without any log, see "Building without logs" in the [main README](../../README.md).
 
 ## Using the Device Tree
 

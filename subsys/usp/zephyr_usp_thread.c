@@ -45,6 +45,7 @@
 #endif
 #include "zephyr/usp/smtc_sw_platform_helper.h"
 #include "zephyr_usp_initialization.h"
+#include <smtc_core_hal.h>
 
 /*
  * -----------------------------------------------------------------------------
@@ -119,7 +120,7 @@ static void usp_main_thread( void* p1, void* p2, void* p3 )
 #if defined( CONFIG_USP_THREADS_MUTEXES )
             k_mutex_unlock( &rac_api_mutex );
 #endif
-            smtc_modem_hal_interruptible_msleep( K_MSEC( 50 ) );
+            smtc_modem_hal_interruptible_msleep( 50 );
             continue;
         }
         sleep_time_ms = smtc_modem_run_engine( );
@@ -148,6 +149,6 @@ static void usp_main_thread( void* p1, void* p2, void* p3 )
         }
 #endif
         LOG_DBG( "Sleeping for %dms", sleep_time_ms );
-        smtc_modem_hal_interruptible_msleep( K_MSEC( sleep_time_ms ) );
+        smtc_modem_hal_interruptible_msleep( sleep_time_ms );
     }
 }

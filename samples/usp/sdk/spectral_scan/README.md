@@ -52,6 +52,7 @@ The output can be seen using minicom
 ```
 minicom -D /dev/USB0 -b 115200
 ```
+Please note that the `spectral_scan` application is configured for a baudrate of 115200
 
 ### Application Startup
 

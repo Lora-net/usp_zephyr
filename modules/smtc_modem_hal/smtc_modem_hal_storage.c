@@ -37,7 +37,10 @@
 #include <zephyr/storage/flash_map.h>
 #include <zephyr/drivers/flash.h>
 
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
+#if defined( CONFIG_USP_LORA_BASICS_MODEM )
+#include <smtc_modem_hal.h> /* LBM HAL prototypes (crashlog, store & forward) checked against the definitions below */
+#endif
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
 #include <zephyr/version.h>
 
@@ -204,37 +207,36 @@ void smtc_modem_hal_context_store( const modem_context_type_t ctx_type, uint32_t
     else
     {
         /* Align data and pad it */
-        uint32_t padding_bytes_size = real_offset % MIN_FLASH_WRITE_SIZE_BYTES;
-        uint32_t real_write_size    = size + padding_bytes_size;
-        if( padding_bytes_size != 0 )
+        uint32_t left_padding_bytes_size = real_offset % MIN_FLASH_WRITE_SIZE_BYTES;
+        uint32_t real_write_size         = size + left_padding_bytes_size;
+        if( left_padding_bytes_size != 0 )
         {
             /* Read the data where the padding is */
-            flash_area_read( context_flash_area, real_offset - padding_bytes_size, page_buffer, padding_bytes_size );
+            flash_area_read( context_flash_area, real_offset - left_padding_bytes_size, page_buffer,
+                             left_padding_bytes_size );
         }
-        /* Case where it is an unaligned AND smaller than the minimal */
-        if( ( size + padding_bytes_size ) < MIN_FLASH_WRITE_SIZE_BYTES )
+        uint32_t right_padding_bytes_size = 0;
+        if( ( real_write_size % MIN_FLASH_WRITE_SIZE_BYTES ) != 0 )
         {
-            flash_area_read( context_flash_area, real_offset + size, page_buffer + padding_bytes_size + size,
-                             MIN_FLASH_WRITE_SIZE_BYTES - ( padding_bytes_size + size ) );
-            real_write_size = MIN_FLASH_WRITE_SIZE_BYTES;
+            right_padding_bytes_size = MIN_FLASH_WRITE_SIZE_BYTES - ( real_write_size % MIN_FLASH_WRITE_SIZE_BYTES );
+        }
+        if( right_padding_bytes_size != 0 )  // Need to read on the right of the buf to align
+        {
+            // Read on the right, up to the min write boundary
+            flash_area_read( context_flash_area, real_offset + size, page_buffer + left_padding_bytes_size + size,
+                             right_padding_bytes_size );
+            real_write_size += right_padding_bytes_size;
         }
         /* Copy the data that actually need to be written but was not aligned */
-        memcpy( page_buffer + padding_bytes_size, buffer, size );
+        memcpy( page_buffer + left_padding_bytes_size, buffer, size );
         /* Write the buffer at aligned address */
-        flash_area_write( context_flash_area, real_offset - padding_bytes_size, page_buffer, real_write_size );
+        flash_area_write( context_flash_area, real_offset - left_padding_bytes_size, page_buffer, real_write_size );
     }
 }
 
-/* NOTE: We assume that erases are aligned on sectors */
-void smtc_modem_hal_context_flash_pages_erase( const modem_context_type_t ctx_type, uint32_t offset, uint8_t nb_page )
-{
-    const uint32_t real_offset = priv_hal_context_address( ctx_type, offset );
-
-    flash_init( );
-    flash_area_erase( context_flash_area, real_offset, smtc_modem_hal_flash_get_page_size( ) * nb_page );
-}
-
-uint16_t smtc_modem_hal_flash_get_page_size( void )
+/* Page size used by the store-and-forward area: single source of truth for erase, page size and page count, so that
+ * this file does not depend on the LBM specific smtc_modem_hal.h prototypes */
+static uint16_t priv_flash_get_page_size( void )
 {
     const struct device*    flash_device;
     struct flash_pages_info info;
@@ -245,13 +247,27 @@ uint16_t smtc_modem_hal_flash_get_page_size( void )
     return info.size;
 }
 
+/* NOTE: We assume that erases are aligned on sectors */
+void smtc_modem_hal_context_flash_pages_erase( const modem_context_type_t ctx_type, uint32_t offset, uint8_t nb_page )
+{
+    const uint32_t real_offset = priv_hal_context_address( ctx_type, offset );
+
+    flash_init( );
+    flash_area_erase( context_flash_area, real_offset, priv_flash_get_page_size( ) * nb_page );
+}
+
+uint16_t smtc_modem_hal_flash_get_page_size( void )
+{
+    return priv_flash_get_page_size( );
+}
+
 uint16_t smtc_modem_hal_store_and_forward_get_number_of_pages( void )
 {
     uint16_t page_size;
     size_t   flash_size;
     uint16_t pages_possible;
 
-    page_size  = smtc_modem_hal_flash_get_page_size( );
+    page_size  = priv_flash_get_page_size( );
     flash_size = context_flash_area->fa_size;
 
     /* 8192B are taken by contexts before store_and_forward */

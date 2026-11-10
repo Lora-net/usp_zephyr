@@ -352,18 +352,17 @@ static int sx126x_pm_action( const struct device* dev, enum pm_device_action act
 #define CONFIGURE_GPIO_IF_IN_DT( node_id, name, dt_prop ) \
     COND_CODE_1( DT_NODE_HAS_PROP( node_id, dt_prop ), (.name = GPIO_DT_SPEC_GET( node_id, dt_prop ), ), ( ) )
 
-#define SX126X_XOSC_CFG( node_id )                                                                          \
-    COND_CODE_1( DT_NODE_HAS_PROP( node_id, tcxo_wakeup_time ),                                             \
-                 ( COND_CODE_1( DT_PROP( node_id, dio3_as_tcxo_control ), ( RAL_XOSC_CFG_TCXO_RADIO_CTRL ), \
-                                ( RAL_XOSC_CFG_TCXO_EXT_CTRL ) ) ),                                         \
-                 ( RAL_XOSC_CFG_XTAL ) )
+#define SX126X_XOSC_CFG( node_id )                                                                        \
+    COND_CODE_0( DT_PROP( node_id, tcxo_wakeup_time ), ( RAL_XOSC_CFG_XTAL ),                             \
+                 ( COND_CODE_0( DT_PROP( node_id, dio3_as_tcxo_control ), ( RAL_XOSC_CFG_TCXO_EXT_CTRL ), \
+                                ( RAL_XOSC_CFG_TCXO_RADIO_CTRL ) ) ) )
 
 /* Derive dio3-as-tcxo-control to know xosc_cfg */
 #define SX126X_CFG_TCXO( node_id )                                                      \
     .tcxo_cfg = {                                                                       \
         .xosc_cfg       = SX126X_XOSC_CFG( node_id ),                                   \
         .voltage        = DT_PROP_OR( node_id, tcxo_voltage, SX126X_TCXO_SUPPLY_1_8V ), \
-        .wakeup_time_ms = DT_PROP_OR( node_id, tcxo_wakeup_time, 8 ),                   \
+        .wakeup_time_ms = DT_PROP_OR( node_id, tcxo_wakeup_time, 0 ),                   \
     }
 
 #if ZEPHYR_VERSION_CODE < ZEPHYR_VERSION( 4, 3, 0 )

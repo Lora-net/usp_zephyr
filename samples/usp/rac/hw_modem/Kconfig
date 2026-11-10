@@ -10,4 +10,32 @@ config USE_FLRP
 	  cmd_parser. Use the FLRC protocol (FLRP). Requires a LR20XX radio.
 	  Disable on RAM-constrained targets.
 
+# src/unified_uart.c multiplexes modem data and log traces on a single UART using a binary
+# framed protocol, and registers a custom log backend (log_backend_unified_uart) that routes
+# log output through unified_uart_tx(). Zephyr's stock UART log backend and console write
+# raw, unframed bytes straight to the same UART and would corrupt that framing, and printk()
+# must stay routed through the log subsystem (not the UART driver) to reach the custom
+# backend too. The backend's own char-out batching (src/unified_uart.c) also assumes
+# immediate (synchronous, per-call) log processing. These are hard requirements of this
+# sample, not tunable build options, so they are forced here instead of being left as
+# settings in prj.conf.
+
+config LOG_BACKEND_UART
+	default n
+
+config UART_CONSOLE
+	default n
+
+config LOG_OUTPUT
+	default y
+
+config LOG_PRINTK
+	default y
+
+# LOG_MODE_IMMEDIATE is a member of Zephyr's anonymous LOG_MODE choice (subsys/logging/
+# Kconfig.mode): Kconfig does not let "default" or "select" force a choice member from
+# another file (both are no-ops on choice symbols), so it stays set directly in prj.conf
+# as CONFIG_LOG_MODE_IMMEDIATE=y — the mechanism Kconfig actually supports for picking a
+# choice option from application configuration.
+
 source "Kconfig.zephyr"

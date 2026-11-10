@@ -1,7 +1,7 @@
 /**
- * @file      smtc_modem_hal_dbg_trace.h
+ * @file      smtc_core_hal_trace.h
  *
- * @brief     smtc_modem_hal_dbg_trace HAL implementation
+ * @brief     smtc_core_hal_trace HAL implementation (Zephyr logging)
  *
  * The Clear BSD License
  * Copyright Semtech Corporation 2025. All rights reserved.
@@ -32,8 +32,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __SMTC_MODEM_HAL_DBG_TRACE_H__
-#define __SMTC_MODEM_HAL_DBG_TRACE_H__
+#ifndef __SMTC_CORE_HAL_TRACE_H__
+#define __SMTC_CORE_HAL_TRACE_H__
 
 /**
  * @brief This file is provided *to* the LoRa Basics Modem source code as a
@@ -46,13 +46,13 @@
 #include <zephyr/logging/log.h>
 
 /* NOTE: Only required because other sources are missing this include… */
-#include "smtc_modem_hal.h"
+#include "smtc_core_hal.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifndef SMTC_MODEM_HAL_DBG_TRACE_C
+#ifndef SMTC_CORE_HAL_TRACE_C
 #ifdef CONFIG_USP
 LOG_MODULE_DECLARE( lorawan, CONFIG_USP_LOG_LEVEL );
 #elif CONFIG_LORA_BASICS_MODEM
@@ -90,7 +90,9 @@ void smtc_str_trim_end( char* text );
         log_fn( "%s", __log_buffer );                                  \
     } while( 0 )
 
+#ifndef MODEM_HAL_DBG_TRACE
 #define MODEM_HAL_DBG_TRACE MODEM_HAL_FEATURE_ON
+#endif
 
 #define MODEM_HAL_DBG_TRACE_COLOR_BLACK ""
 #define MODEM_HAL_DBG_TRACE_COLOR_RED ""
@@ -102,6 +104,7 @@ void smtc_str_trim_end( char* text );
 #define MODEM_HAL_DBG_TRACE_COLOR_WHITE ""
 #define MODEM_HAL_DBG_TRACE_COLOR_DEFAULT ""
 
+#if( MODEM_HAL_DBG_TRACE == MODEM_HAL_FEATURE_ON )
 #define SMTC_MODEM_HAL_TRACE_MSG( msg ) SMTC_LOG( LOG_INF, "%s", msg );
 #define SMTC_MODEM_HAL_TRACE_PRINTF( ... ) SMTC_LOG( LOG_INF, __VA_ARGS__ );
 #define SMTC_MODEM_HAL_TRACE_INFO( ... ) SMTC_LOG( LOG_INF, __VA_ARGS__ )
@@ -109,8 +112,17 @@ void smtc_str_trim_end( char* text );
 #define SMTC_MODEM_HAL_TRACE_ERROR( ... ) SMTC_LOG( LOG_ERR, __VA_ARGS__ );
 #define SMTC_MODEM_HAL_TRACE_ARRAY( msg, array, len ) LOG_HEXDUMP_INF( array, len, msg );
 #define SMTC_MODEM_HAL_TRACE_PACKARRAY( msg, array, len ) LOG_HEXDUMP_INF( array, len, msg );
+#else
+#define SMTC_MODEM_HAL_TRACE_MSG( msg )
+#define SMTC_MODEM_HAL_TRACE_PRINTF( ... )
+#define SMTC_MODEM_HAL_TRACE_INFO( ... )
+#define SMTC_MODEM_HAL_TRACE_WARNING( ... )
+#define SMTC_MODEM_HAL_TRACE_ERROR( ... )
+#define SMTC_MODEM_HAL_TRACE_ARRAY( msg, array, len )
+#define SMTC_MODEM_HAL_TRACE_PACKARRAY( msg, array, len )
+#endif
 
-#if CONFIG_LORA_BASICS_MODEM_LOG_VERBOSE
+#if CONFIG_LORA_BASICS_MODEM_LOG_VERBOSE && ( MODEM_HAL_DBG_TRACE == MODEM_HAL_FEATURE_ON )
 
 #define MODEM_HAL_DEEP_DBG_TRACE MODEM_HAL_FEATURE_ON
 
@@ -162,4 +174,4 @@ void smtc_str_trim_end( char* text );
 }
 #endif
 
-#endif /* __SMTC_MODEM_HAL_DBG_TRACE_H__*/
+#endif /* __SMTC_CORE_HAL_TRACE_H__*/

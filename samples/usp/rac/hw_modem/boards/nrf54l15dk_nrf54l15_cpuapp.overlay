@@ -7,9 +7,6 @@
 / {
 	zephyr,user {
 		/* PINS used for the HW modem sample. */
-		hw-modem-command-gpios = <&gpio1 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>; //LED1
-		hw-modem-busy-gpios = <&gpio2 10 GPIO_ACTIVE_HIGH>;
-		hw-modem-event-gpios = <&gpio2 7 GPIO_ACTIVE_HIGH>; //LED2
 		hw-modem-led-scan-gpios = <&gpio1 14 GPIO_ACTIVE_HIGH>; //LED3
 	};
 

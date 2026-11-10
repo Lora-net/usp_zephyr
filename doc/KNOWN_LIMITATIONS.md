@@ -2,7 +2,7 @@
 
 This document presents USP-Zephyr current known limitations and their workarounds, when available.
 
-### This USP-Zephyr version includes the first version of FLRP
+### This USP-Zephyr version includes FLRP
 
 Known Limitations specific to FLRP are gathered in the [FLRP documentation](FLRP_guidelines.md#limitations).
 
@@ -11,6 +11,7 @@ Known Limitations specific to FLRP are gathered in the [FLRP documentation](FLRP
 The following are **not validated / not fully tested** in this release:
 - **geolocation**
 - **rf_certification**
+- specific to USP : **Renesas FPB-RA0E2**
 
 ### Xiao-nRF54L15 & STM32-U5 are not more managed with Zephyr < 4.3
 
@@ -108,12 +109,6 @@ to the sample's `boards/nucleo_l476rg.conf`.
 
 - The clock drift was not evaluated on nucleo U5. Consider applying such a workaround if the same issue is detected. But CONFIG_PM=y in prj.conf causes deep STOP entry when idle, which breaks UART and radio (SPI/DIO) in USP samples with U5. Workaround: use CONFIG_PM=n, or add a U5 board conf with same settings as nucleo_l476rg.conf and re-enable lptime within nucleo_u575zi_q.overlay.
 
-### hw_modem integration (#131)
-
-hw_modem is an application embedding most of the USP platform on the tested MCU. This MCU can then be controlled by UART to test USP & LoRa Basics Modem API.
-However, `modem-bridge`, a bridge application between the hw_modem MCU and the controlling computer, is not provided.
-hw_modem documentation will be completed in future releases.
-
 ### US915 TX power index offset via LinkAdrRequest on LR11xx/SX126x (#300)
 
 Network servers can modify the transmit power of devices with the LinkAdrRequest command.
@@ -164,21 +159,13 @@ For example :
 - Low-power modes are not fully optimized for all MCU targets
 - Additional Kconfig options are needed to enable fine-grained feature selection
 
-### LBM/FUOTA non-functional (multicast issue)
+### SX127X & SX128X radio shields
 
-FUOTA is currently non-functional due to an issue with multicast. A fix is planned for the next release.
+The support of those boards is
+- not available on usp_zephyr
+- limited to LoRa Basics Modem on usp
 
-### LBM instabilities detected in certain regions
+### OnChannelHub & SX126X radio shields (#385)
 
-Instabilities have been identified in the following regions: AS923_GRP1, AS923_GRP4, KR920, and AU915.
-This issue may cause periodic panic reboots. A fix is planned for the next release.
-
-### LBM/Relay WOR window misaligned (US 915 MHz)
-
-In US 915 MHz band, the Relay feature is not operational when using different/mismatched boards (e.g. Nucleo-L476RG and Xiao-nRF54L15), due to WOR window misalignment. We recommend using the same MCU/board on both sides.
-
-### SX1262 & SX1268 support issue
-
-The SX1262 & SX1268 radios are currently not well supported.
-Please add `-- -DEXTRA_CFLAGS="SX1262"` or `-- -DEXTRA_CFLAGS="SX1268"` in the `west build` command.
-A fix is planned for the next release.
+The sensitivity of the device side of the one_channel_hub in US915 or AU915 with an SX126x may be degraded by about 20 dB when RX bandwidth is updated without sleep.
+Observed with Rx BW125 -> standby -> Rx BW500 .

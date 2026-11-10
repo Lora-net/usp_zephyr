@@ -45,7 +45,7 @@
 #if( CONFIG_USP_LORA_BASICS_MODEM )
 #include <smtc_modem_api.h>
 #endif
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
 
 
 /*

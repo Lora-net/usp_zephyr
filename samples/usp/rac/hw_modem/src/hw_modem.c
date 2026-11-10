@@ -1,7 +1,12 @@
 /**
  * @file      hw_modem.c
  *
- * @brief     hw_modem implementation
+ * @brief     Single-UART hw_modem transport (no external bridge)
+ *
+ * Copied from USP examples/main_examples/hw_modem/hw_modem_serial.c with Zephyr
+ * radio_utilities and unified_uart includes.
+ * Host sends [CMD][LEN][PAYLOAD] without CRC. Responses include a 2-byte bridge
+ * header for compatibility with rac_modem_api / device_manager.py.
  *
  * The Clear BSD License
  * Copyright Semtech Corporation 2025. All rights reserved.
@@ -36,254 +41,76 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <zephyr/kernel.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/drivers/gpio.h>
-#include <zephyr/drivers/uart.h>
-#include <zephyr/pm/pm.h>
-#include <zephyr/pm/policy.h>
-
-#include <zephyr/lorawan_lbm/lorawan_hal_init.h>
 #include <zephyr/usp/lora_lbm_transceiver.h>
-#include "smtc_modem_utilities.h"
+#include <zephyr/usp/smtc_hal_dbg_trace.h>
 
 #include "hw_modem.h"
+#include "smtc_modem_utilities.h"
+#include "unified_uart.h"
 #include "cmd_parser.h"
 
-LOG_MODULE_DECLARE( usp, LOG_LEVEL_INF );
-
 #define HW_MODEM_RX_BUFF_MAX_LENGTH 261
+#define BRIDGE_HEADER_BYTE0 0x01
+#define BRIDGE_HEADER_BYTE1 0x00
+#define BRIDGE_HEADER_SIZE 2
 
-typedef enum
+static uint8_t       modem_response_buff[HW_MODEM_RX_BUFF_MAX_LENGTH];
+static uint8_t       modem_received_buff[HW_MODEM_RX_BUFF_MAX_LENGTH];
+static size_t        response_length;
+static volatile bool hw_cmd_available;
+static bool          stay_awake_once;
+
+static void hw_modem_event_handler( void );
+static void serial_poll_rx( void );
+
+static void serial_poll_rx( void )
 {
-    HW_MODEM_LP_ENABLE,
-    HW_MODEM_LP_DISABLE_ONCE,
-    HW_MODEM_LP_DISABLE,
-} hw_modem_lp_mode_t;
+    uint16_t avail = unified_uart_rx_available( );
+    uint8_t  len;
 
-static uint8_t            modem_received_buff[HW_MODEM_RX_BUFF_MAX_LENGTH];
-static size_t             received_length;
-static uint8_t            modem_response_buff[HW_MODEM_RX_BUFF_MAX_LENGTH];
-static size_t             response_length;
-static volatile bool      hw_cmd_available;
-static volatile bool      is_hw_modem_ready_to_receive = true;
-static hw_modem_lp_mode_t lp_mode                      = HW_MODEM_LP_ENABLE;
+    if( avail < 2 )
+    {
+        return;
+    }
 
-static const struct gpio_dt_spec hw_modem_event_gpios =
-    GPIO_DT_SPEC_GET( DT_PATH( zephyr_user ), hw_modem_event_gpios );
-static const struct gpio_dt_spec hw_modem_busy_gpios = GPIO_DT_SPEC_GET( DT_PATH( zephyr_user ), hw_modem_busy_gpios );
-static const struct gpio_dt_spec hw_modem_command_gpios =
-    GPIO_DT_SPEC_GET( DT_PATH( zephyr_user ), hw_modem_command_gpios );
+    if( !unified_uart_rx_peek( 1, &len ) )
+    {
+        return;
+    }
 
-#if defined( CONFIG_LORA_BASICS_MODEM_GEOLOCATION )
+    if( avail < ( uint16_t ) ( 2 + len ) )
+    {
+        return;
+    }
 
-#if DT_NODE_EXISTS( DT_NODELABEL( lora_scanning_led ) )
-static const struct gpio_dt_spec hw_modem_led_scan_gpios = GPIO_DT_SPEC_GET(
-    DT_PATH( zephyr_user ), hw_modem_led_scan_gpios );  // In future release change this to point on the shield one.
-#endif
+    for( uint16_t i = 0; i < 2 + len; i++ )
+    {
+        unified_uart_rx_get_byte( &modem_received_buff[i] );
+    }
 
-#if DT_NODE_EXISTS( DT_NODELABEL( lora_gnss_lna_control ) )
-static const struct gpio_dt_spec lora_gnss_lna_control =
-    GPIO_DT_SPEC_GET( DT_NODELABEL( lora_gnss_lna_control ), gpios );
-#endif
+    uint8_t crc = 0;
+    for( uint16_t i = 0; i < 2 + len; i++ )
+    {
+        crc ^= modem_received_buff[i];
+    }
+    modem_received_buff[2 + len] = crc;
 
-#endif  // CONFIG_LORA_BASICS_MODEM_GEOLOCATION
-
-static const struct device* hw_modem_uart = DEVICE_DT_GET( DT_ALIAS( smtc_hal_uart ) );
-
-/**
- * @brief prepare and start the reception of the command on a uart using a dma
- * @param [none]
- * @return [none]
- */
-void hw_modem_start_reception( void );
-
-/**
- * @brief function that will be called every time the COMMAND line in asserted or de-asserted by the
- * host
- * @param *context  unused context
- * @return none
- */
-void wakeup_line_irq_handler( const struct device* port, struct gpio_callback* cb, gpio_port_pins_t pins );
-
-/**
- * @brief function that will be called by the soft modem engine each time an async event is
- * available
- * @param *context  unused context
- * @return none
- */
-void                 hw_modem_event_handler( void );
-struct gpio_callback command_callback;
+    hw_cmd_available = true;
+}
 
 int hw_modem_init( void )
 {
-    int ret;
-
-    /* init hw modem pins */
-    ret = gpio_pin_configure_dt( &hw_modem_event_gpios, GPIO_OUTPUT_INACTIVE );
-    if( ret )
-    {
-        printk( "Error %d: failed to configure %s pin %d\n", ret, hw_modem_event_gpios.port->name,
-                hw_modem_event_gpios.pin );
-        return ret;
-    }
-    ret = gpio_pin_configure_dt( &hw_modem_busy_gpios, GPIO_OUTPUT_LOW );
-    if( ret )
-    {
-        printk( "Error %d: failed to configure %s pin %d\n", ret, hw_modem_busy_gpios.port->name,
-                hw_modem_busy_gpios.pin );
-        return ret;
-    }
-    gpio_pin_set_dt( &hw_modem_busy_gpios, 1 );
-
-#if defined( CONFIG_LORA_BASICS_MODEM_GEOLOCATION )
-/* init LED and LNA enable in case of LR1110/LR1120 w/ geoloc */
-#if DT_NODE_EXISTS( DT_NODELABEL( lora_scanning_led ) )
-    ret = gpio_pin_configure_dt( &hw_modem_led_scan_gpios, GPIO_OUTPUT_LOW );
-    if( ret )
-    {
-        printk( "Error %d: failed to configure %s pin %d\n", ret, hw_modem_led_scan_gpios.port->name,
-                hw_modem_led_scan_gpios.pin );
-        return ret;
-    }
-#endif
-
-#if DT_NODE_EXISTS( DT_NODELABEL( lora_gnss_lna_control ) )
-    ret = gpio_pin_configure_dt( &lora_gnss_lna_control, GPIO_OUTPUT_LOW );
-    if( ret )
-    {
-        printk( "Error %d: failed to configure %s pin %d\n", ret, lora_gnss_lna_control.port->name,
-                lora_gnss_lna_control.pin );
-        return ret;
-    }
-#endif
-
-#endif  // CONFIG_LORA_BASICS_MODEM_GEOLOCATION
-
-    /* init irq on COMMAND pin */
-    gpio_pin_configure_dt( &hw_modem_command_gpios, GPIO_INPUT | GPIO_PULL_UP );
-    ret = gpio_pin_interrupt_configure_dt( &hw_modem_command_gpios, GPIO_INT_ENABLE | GPIO_INT_EDGE_BOTH );
-    if( ret )
-    {
-        printk( "Error %d: failed to configure interrupt on %s pin %d\n", ret, hw_modem_command_gpios.port->name,
-                hw_modem_command_gpios.pin );
-        return ret;
-    }
-
-    gpio_init_callback( &command_callback, wakeup_line_irq_handler, BIT( hw_modem_command_gpios.pin ) );
-    ret = gpio_add_callback_dt( &hw_modem_command_gpios, &command_callback );
-    if( ret )
-    {
-        printk( "Error %d: failed to add interrupt on %s pin %d\n", ret, hw_modem_command_gpios.port->name,
-                hw_modem_command_gpios.pin );
-        return ret;
-    }
-
-    if( !device_is_ready( hw_modem_uart ) )
-    {
-        printk( "Hardware modem UART is not ready!" );
-        return 1;
-    }
-
-    // TESTING
-    // Disable uart RX at startup (doesn't seem to really work)
-    // uart_irq_rx_disable( hw_modem_uart );
-
     memset( modem_response_buff, 0, HW_MODEM_RX_BUFF_MAX_LENGTH );
-    hw_cmd_available             = false;
-    is_hw_modem_ready_to_receive = true;
+    memset( modem_received_buff, 0xFF, HW_MODEM_RX_BUFF_MAX_LENGTH );
+    hw_cmd_available = false;
+    stay_awake_once  = false;
 
-    /* init the soft modem */
     smtc_modem_init( &hw_modem_event_handler );
 
 #if defined( PERF_TEST_ENABLED )
-    LOG_WRN( "HARDWARE MODEM RUNNING PERF TEST MODE" );
+    SMTC_HAL_TRACE_WARNING( "HARDWARE MODEM RUNNING PERF TEST MODE" );
 #endif
     return 0;
-}
-
-void hw_modem_unset_event_pin( void )
-{
-    gpio_pin_set_dt( &hw_modem_event_gpios, 0 );
-}
-
-void hw_modem_disable_irq( void )
-{
-    irq_lock( );
-}
-
-void hw_modem_set_tx_power_offset( const void* context, uint8_t tx_pwr_offset_db )
-{
-    radio_utilities_set_tx_power_offset( context, tx_pwr_offset_db );
-}
-
-uint8_t hw_modem_get_tx_power_offset( const void* context )
-{
-    return radio_utilities_get_tx_power_offset( context );
-}
-
-static void uart_irq_rx_callback_handler( const struct device* dev, void* user_data )
-{
-    ARG_UNUSED( user_data );
-    uint8_t c;
-
-    if( !uart_irq_update( dev ) )
-    {
-        return;
-    }
-
-    if( !uart_irq_rx_ready( dev ) )
-    {
-        return;
-    }
-
-    int status = uart_err_check( dev );
-    if( status > 0 )
-    {
-        LOG_ERR( "UART error detected: %d", status );
-    }
-
-    /* read until FIFO empty */
-    while( uart_fifo_read( dev, &c, 1 ) == 1 )
-    {
-        if( received_length == HW_MODEM_RX_BUFF_MAX_LENGTH )
-        {
-            LOG_ERR( "Received more data than the buffer can hold!" );
-        }
-        else
-        {
-            modem_received_buff[received_length++] = c;
-        }
-    }
-}
-
-void hw_modem_start_reception( void )
-{
-    memset( modem_received_buff, 0xFF, HW_MODEM_RX_BUFF_MAX_LENGTH );
-    received_length = 0;
-
-    /* during the receive process the hw modem cannot accept an other cmd, prevent it */
-    is_hw_modem_ready_to_receive = false;
-
-    uart_irq_callback_user_data_set( hw_modem_uart, uart_irq_rx_callback_handler, NULL );
-    int ret = uart_irq_rx_ready( hw_modem_uart );
-    if( ret >= 1 )
-    {  // If there was a previously-generated event (should not happen) (EVENTS_RXDRDY)
-        // Read FIFO
-        if( !uart_irq_update( hw_modem_uart ) )
-        {
-            return;
-        }
-
-        // Empty UART RX FIFO if there were trailing chars
-        uint8_t c;
-        while( uart_fifo_read( hw_modem_uart, &c, 1 ) == 1 )
-            ;
-    }
-    uart_irq_rx_enable( hw_modem_uart );
-
-    /* indicate to bridge or host that the modem is ready to receive on uart */
-    gpio_pin_set_dt( &hw_modem_busy_gpios, 0 );
 }
 
 void hw_modem_process_cmd( void )
@@ -292,12 +119,11 @@ void hw_modem_process_cmd( void )
     cmd_response_t       output;
     cmd_input_t          input;
     cmd_serial_rc_code_t rc_code;
+    uint8_t              crc = 0;
 
-    /* check if not false detection (0xFF is default filled buff value) */
     if( modem_received_buff[0] < 0xFF )
     {
-        cmd_length  = modem_received_buff[1];
-        uint8_t crc = 0;
+        cmd_length = modem_received_buff[1];
 
         for( int i = 0; i < cmd_length + 2; i++ )
         {
@@ -311,19 +137,17 @@ void hw_modem_process_cmd( void )
         {
             rc_code         = CMD_RC_FRAME_ERROR;
             response_length = 0;
-            LOG_ERR( "Cmd with bad crc %x / %x", calculated_crc, cmd_crc );
+            SMTC_HAL_TRACE_ERROR( "Cmd with bad crc %x / %x", calculated_crc, cmd_crc );
         }
         else if( ( modem_received_buff[cmd_length + 3] != 0xFF ) && ( cmd_length != 0xFF ) )
         {
-            /* Too Many cmd enqueued */
             rc_code         = CMD_RC_FRAME_ERROR;
             response_length = 0;
-            LOG_WRN( " Extra data after the command" );
+            SMTC_HAL_TRACE_WARNING( " Extra data after the command" );
         }
         else
         {
-            /* go into soft modem */
-            LOG_HEXDUMP_INF( modem_received_buff, cmd_length + 2, "Cmd input uart" );
+            SMTC_HAL_TRACE_ARRAY( "Cmd input uart", modem_received_buff, cmd_length + 2 );
             input.cmd_code = cmd_id;
             input.length   = cmd_length;
             input.buffer   = &modem_received_buff[2];
@@ -336,119 +160,79 @@ void hw_modem_process_cmd( void )
         modem_response_buff[0] = rc_code;
         modem_response_buff[1] = response_length;
 
-        LOG_HEXDUMP_INF( modem_response_buff, response_length + 2, "Cmd output on uart" );
+        SMTC_HAL_TRACE_ARRAY( "Cmd output on uart", modem_response_buff, response_length + 2 );
+        hw_cmd_available = false;
 
-        /* now the hw modem can accept new commands */
-        is_hw_modem_ready_to_receive = true;
-        hw_cmd_available             = false;
-
-        /* set busy pin to indicate to bridge or host that the hw_modem answer
-         * will be soon sent
-         */
-        gpio_pin_set_dt( &hw_modem_busy_gpios, 1 );
-
-        /* wait to bridge delay */
-        k_usleep( 1000 );
-
-        for( int i = 0; i < response_length + 2; i++ )
+        crc = 0;
+        for( int i = 0; i < ( int ) ( response_length + 2 ); i++ )
         {
             crc = crc ^ modem_response_buff[i];
         }
         modem_response_buff[response_length + 2] = crc;
 
-        /* Blocking send */
-        for( size_t i = 0; i < response_length + 3; i++ )
         {
-            uart_poll_out( hw_modem_uart, modem_response_buff[i] );
+            size_t  modem_len = response_length + 3;
+            uint8_t bridge_response[BRIDGE_HEADER_SIZE + HW_MODEM_RX_BUFF_MAX_LENGTH];
+
+            bridge_response[0] = BRIDGE_HEADER_BYTE0;
+            bridge_response[1] = BRIDGE_HEADER_BYTE1;
+            memcpy( &bridge_response[BRIDGE_HEADER_SIZE], modem_response_buff, modem_len );
+            unified_uart_tx( bridge_response, BRIDGE_HEADER_SIZE + modem_len, UNIFIED_UART_MSG_DATA );
         }
     }
     else
     {
-        /* now the hw modem can accept new commands */
-        is_hw_modem_ready_to_receive = true;
-        hw_cmd_available             = false;
-
-        /* set busy pin to indicate to bridge or host that the hw_modem answer
-         * will be soon sent
-         */
-        gpio_pin_set_dt( &hw_modem_busy_gpios, 1 );
+        hw_cmd_available = false;
     }
+
+    stay_awake_once = true;
+    memset( modem_received_buff, 0xFF, HW_MODEM_RX_BUFF_MAX_LENGTH );
 }
 
 bool hw_modem_is_a_cmd_available( void )
 {
+    if( !hw_cmd_available )
+    {
+        serial_poll_rx( );
+    }
     return hw_cmd_available;
 }
 
 bool hw_modem_is_low_power_ok( void )
 {
-    if( lp_mode == HW_MODEM_LP_ENABLE )
-    {
-        return true;
-    }
-    else if( lp_mode == HW_MODEM_LP_DISABLE_ONCE )
-    {
-        /* next time lp  will be ok */
-        lp_mode = HW_MODEM_LP_ENABLE;
-        return false;
-    }
-    else
+    if( hw_cmd_available || ( unified_uart_rx_available( ) > 0 ) )
     {
         return false;
     }
-}
 
-// COMMAND pin
-void wakeup_line_irq_handler( const struct device* port, struct gpio_callback* cb, gpio_port_pins_t pins )
-{
-    if( is_hw_modem_ready_to_receive && gpio_pin_get_dt( &hw_modem_command_gpios ) == 0 )
+    if( stay_awake_once )
     {
-        /* start receiving uart with dma */
-        hw_modem_start_reception( );
-
-        /* force exit of stop mode */
-        lp_mode = HW_MODEM_LP_DISABLE;
+        stay_awake_once = false;
+        return false;
     }
 
-    if( !is_hw_modem_ready_to_receive && gpio_pin_get_dt( &hw_modem_command_gpios ) == 1 )
-    {
-        /* stop uart on dma reception */
-        uart_irq_rx_disable( hw_modem_uart );
-
-        /* inform that a command has arrived */
-        hw_cmd_available = true;
-
-        /* wake up thread to process the command */
-        smtc_modem_hal_wake_up( );
-
-        /* force one more loop in main loop and then re-enable low power feature */
-        lp_mode = HW_MODEM_LP_DISABLE_ONCE;
-    }
+    return true;
 }
 
-void hw_modem_event_handler( void )
+void hw_modem_unset_event_pin( void )
 {
-    /* raise the event line to indicate to host that events are available */
-    gpio_pin_set_dt( &hw_modem_event_gpios, 1 );
-    smtc_modem_hal_wake_up( );
-    LOG_INF( "Event available" );
 }
 
-/*
- * Custom PM policy to prevent deep sleep while keeping UART operational.
- * This allows LPTIM to work (requires CONFIG_PM=y) but prevents the system
- * from entering STOP modes that would suspend the UART.
- */
-#ifdef CONFIG_PM_POLICY_CUSTOM
-const struct pm_state_info* pm_policy_next_state( uint8_t cpu, int32_t ticks )
+void hw_modem_disable_irq( void )
 {
-    ARG_UNUSED( cpu );
-    ARG_UNUSED( ticks );
-
-    /* Return NULL to prevent any sleep - keep CPU running for UART responsiveness.
-     * This is the safest approach for the modem bridge application.
-     * The LPTIM will still provide accurate timekeeping.
-     */
-    return NULL;
 }
-#endif
+
+void hw_modem_set_tx_power_offset( const void* context, uint8_t tx_pwr_offset_db )
+{
+    radio_utilities_set_tx_power_offset( context, tx_pwr_offset_db );
+}
+
+uint8_t hw_modem_get_tx_power_offset( const void* context )
+{
+    return radio_utilities_get_tx_power_offset( context );
+}
+
+static void hw_modem_event_handler( void )
+{
+    SMTC_HAL_TRACE_INFO( "Event available" );
+}

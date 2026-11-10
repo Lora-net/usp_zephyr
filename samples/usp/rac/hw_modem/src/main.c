@@ -40,7 +40,7 @@
 
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
 #include <smtc_modem_utilities.h>
-
+#include <smtc_core_hal.h>
 #include <smtc_rac_api.h>
 #if defined( CONFIG_USP_FLRP )
 #include <smtc_flrp_api.h>
@@ -190,7 +190,7 @@ int main( void )
             uint32_t real_sleep_time_ms = MIN( sleep_time_ms, WATCHDOG_RELOAD_PERIOD_MS );
 
             LOG_DBG( "Sleeping for %d ms", real_sleep_time_ms );
-            smtc_modem_hal_interruptible_msleep( K_MSEC( real_sleep_time_ms ) );
+            smtc_modem_hal_interruptible_msleep( real_sleep_time_ms );
         }
     }
     return 0;

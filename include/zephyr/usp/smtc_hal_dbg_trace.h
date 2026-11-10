@@ -75,6 +75,15 @@ void smtc_str_trim_end( char* text );
         log_fn( "%s", __log_buffer );                                  \
     } while( 0 )
 
+#define HAL_FEATURE_OFF ( 0 )
+#define HAL_FEATURE_ON ( !HAL_FEATURE_OFF )
+
+/* HAL_DBG_TRACE is set by CONFIG_USP_HAL_DBG_TRACE */
+#ifndef HAL_DBG_TRACE
+#define HAL_DBG_TRACE HAL_FEATURE_ON
+#endif
+
+#if( HAL_DBG_TRACE == HAL_FEATURE_ON )
 #define SMTC_HAL_TRACE_MSG( msg ) SMTC_LOG( LOG_INF, "%s", msg );
 #define SMTC_HAL_TRACE_PRINTF( ... ) SMTC_LOG( LOG_INF, __VA_ARGS__ );
 #define SMTC_HAL_TRACE_INFO( ... ) SMTC_LOG( LOG_INF, __VA_ARGS__ )
@@ -82,6 +91,25 @@ void smtc_str_trim_end( char* text );
 #define SMTC_HAL_TRACE_ERROR( ... ) SMTC_LOG( LOG_ERR, __VA_ARGS__ );
 #define SMTC_HAL_TRACE_ARRAY( msg, array, len ) LOG_HEXDUMP_INF( array, len, msg );
 #define SMTC_HAL_TRACE_PACKARRAY( msg, array, len ) LOG_HEXDUMP_INF( array, len, msg );
+#else
+/* Arguments stay referenced in dead code (removed by the compiler) to avoid unused variable warnings */
+#define SMTC_HAL_TRACE_PRINTF( ... )                   \
+    do                                                 \
+    {                                                  \
+        if( 0 )                                        \
+        {                                              \
+            ( void ) snprintf( NULL, 0, __VA_ARGS__ ); \
+        }                                              \
+    } while( 0 )
+#define SMTC_HAL_TRACE_MSG( msg ) SMTC_HAL_TRACE_PRINTF( "%s", msg )
+#define SMTC_HAL_TRACE_INFO( ... ) SMTC_HAL_TRACE_PRINTF( __VA_ARGS__ )
+#define SMTC_HAL_TRACE_WARNING( ... ) SMTC_HAL_TRACE_PRINTF( __VA_ARGS__ )
+#define SMTC_HAL_TRACE_ERROR( ... ) SMTC_HAL_TRACE_PRINTF( __VA_ARGS__ )
+#define SMTC_HAL_TRACE_ARRAY( msg, array, len ) \
+    SMTC_HAL_TRACE_PRINTF( "%s%p%lu", msg, ( const void* ) ( array ), ( unsigned long ) ( len ) )
+#define SMTC_HAL_TRACE_PACKARRAY( msg, array, len ) \
+    SMTC_HAL_TRACE_PRINTF( "%s%p%lu", msg, ( const void* ) ( array ), ( unsigned long ) ( len ) )
+#endif
 
 #ifdef __cplusplus
 }

@@ -38,7 +38,6 @@
 #include <stdint.h>
 
 #include <zephyr/device.h>
-#include <zephyr/sys_clock.h>
 #include <zephyr/kernel.h>
 
 #ifdef __cplusplus
@@ -225,26 +224,13 @@ void lorawan_register_user_storage_callbacks( struct lorawan_user_storage_cb* cb
 #endif /* CONFIG_LORA_BASICS_MODEM_USER_STORAGE_IMPL */
 
 /**
- * @brief Interruptible sleep that will exit when radio events happen.
- *
- */
-void smtc_modem_hal_interruptible_msleep( k_timeout_t timeout );
-
-/**
- * @brief If smtc_modem_hal_interruptible_msleep is running, interrupt it.
- *
- * This function is used to trigger the LoRa Basics Modem stack when an event occurs,
- * whether it is an interrupt from the transceiver, a timer or a user request.
- *
- */
-void smtc_modem_hal_wake_up( void );
-
-/**
  * @brief Advanced zephyr function to get the zephyr semaphore used to wait for LoRa Basics Modem stack event
  *
  * This function is used to get the semaphore used in smtc_modem_hal_interruptible_msleep()
  * and smtc_modem_hal_wake_up(). Main goal is to wait for multiple semaphores in application
  *
+ * @note smtc_modem_hal_interruptible_msleep( uint32_t timeout_ms ) and smtc_modem_hal_wake_up() are declared in
+ * smtc_core_hal.h (USP core HAL). The timeout is given in milliseconds (it was a k_timeout_t before).
  */
 struct k_sem* smtc_modem_hal_get_event_sem( void );
 

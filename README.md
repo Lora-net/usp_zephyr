@@ -1,6 +1,6 @@
 # USP For Zephyr
 
-> **USP RELEASE v1.2.1 - Stable Release**
+> **USP RELEASE v1.3.0 - Maintenance Release**
 >
 
 **USP for Zephyr** integrates Semtech’s Unified Software Platform **[USP](https://github.com/Lora-net/usp)** into the Zephyr RTOS, which leverage fourth-generation LoRa® technology and providing ready-to-use advanced multi-protocol support.
@@ -12,9 +12,11 @@ This **out-of-tree Zephyr module** supports flexible integration ([see Zephyr to
 
 For an in-depth explanation of system components, interactions, and design principles, refer to [USP Architecture](doc/USP_Architecture.md).
 
-Current Version is v1.2.1:
+Current Version is v1.3.0:
 - [Changelog](CHANGELOG.md)
 - [known limitations](doc/KNOWN_LIMITATIONS.md)
+- [Validation & Performances](doc/VALIDATION_AND_PERFORMANCES.md) (validation configuration, build options and SPI clock speeds)
+- [LoRa Plus&trade; Evaluation Kit](doc/LORA_PLUS_EVK.md) (LR2021 / LR2022 / LR2012 + XIAO nRF54L15)
 
 <table width="100%">
 <tr>
@@ -22,21 +24,11 @@ Current Version is v1.2.1:
 
 <h3>&#10024; What's new in this release</h3>
 
-<a href="doc/FLRP.md"><img alt="New feature: FLRP" src="doc/assets/badge_flrp.svg"></a>
-&nbsp;<b><a href="doc/FLRP.md">FLRP &mdash; Fast LoRa communication Protocol</a></b><br>
-Principles, API and samples for the high-speed LoRa&nbsp;+&nbsp;FLRC protocol.
-
-<br>
-
-<a href="doc/LORA_PLUS_EVK.md"><img alt="New hardware: LoRa Plus EVK" src="doc/assets/badge_evk.svg"></a>
-&nbsp;<b><a href="doc/LORA_PLUS_EVK.md">LoRa Plus&trade; Evaluation Kit</a></b><br>
-New EVK based on LR2021 / LR2022 / LR2012 (+ XIAO nRF54L15).
-
-<br>
-
-<a href="doc/VALIDATION_AND_PERFORMANCES.md"><img alt="Validation and Performances" src="doc/assets/badge_validation.svg"></a>
-&nbsp;<b><a href="doc/VALIDATION_AND_PERFORMANCES.md">Validation &amp; Performances</a></b><br>
-Validation configuration, build options and SPI clock speeds (memory footprint coming next).
+- <b>Zephyr RTOS v4.4.2</b> & <b>USP v1.3.0</b>: the HAL API is split in `smtc_core_hal.h` (core HAL) and the LBM specific `smtc_modem_hal.h`, application includes may have to be updated, see the [Changelog](CHANGELOG.md)
+- <b>FLRP bugfixing</b>: see the [FLRP documentation](doc/FLRP.md) and the [flrp_api](samples/usp/rac/flrp_api/README.md) & [flrp_api_lorawan](samples/usp/rac/flrp_api_lorawan/README.md) samples
+- <b>LBM: [USP](https://github.com/Lora-net/usp) is now the only official place for LoRa Basics Modem</b>: [SWL2001](https://github.com/Lora-net/SWL2001) is now in Maintenance Mode. To move an LBM application to USP for Zephyr, see the <b>[LBM porting guide &rarr;](doc/usp_zephyr_lbm_porting_guide.md)</b>
+- <b>LBM v4.9.3</b>: bugfixing & experimental LoRaWAN Regional Parameters RP2-1.0.4 & RP2-1.0.5, selected in the `prj.conf` with `CONFIG_LORA_BASICS_MODEM_RP2_104=y` or `CONFIG_LORA_BASICS_MODEM_RP2_105=y` (default: RP2-1.0.3), e.g. in the [periodical_uplink](samples/usp/lbm/periodical_uplink/README.md) sample
+- <b>LR20XX & LR11XX</b>: LR20XX driver v2.1.0 & LR11XX driver v3.0.0 [USP](https://github.com/Lora-net/usp)
 
 </td>
 </tr>
@@ -52,7 +44,7 @@ Notes regarding SDK & Toolchains :
 - The Zephyr SDK contains toolchains for each of Zephyr’s supported architectures (i.e arm, x86, ...). That does include a compiler, assembler, linker and other programs required to build and debug Zephyr applications.
 - Only the SDK files of the targeted MCU may be installed
 - **Zephyr RTOS Version Support:**
-  - Samples are Validated<sup>1</sup> with **Zephyr RTOS v4.4.0 & Zephyr SDK v1.0.1.**
+  - Samples are Validated<sup>1</sup> with **Zephyr RTOS v4.4.2 & Zephyr SDK v1.0.1.**
   - Samples are Buildable<sup>1</sup> with **Zephyr RTOS v4.4-branch & Zephyr SDK v1.0.1.** (This branch is recommended to get fixes from Zephyr)
   - Samples are Buildable<sup>1</sup> with **Zephyr RTOS v3.7.0 LTS & Zephyr SDK v0.16.9.** (see [Supported Boards & Shields](#supported-boards--shields) for limitations)
   - See [known limitations](doc/KNOWN_LIMITATIONS.md) for known limitations with some other versions.
@@ -124,16 +116,16 @@ manifest:
   projects:
     - name: zephyr
       url: https://github.com/zephyrproject-rtos/zephyr
-      revision: v4.4.0
+      revision: v4.4.2
       import: true
     - name: usp_zephyr
       path: usp_zephyr
       url: https://github.com/Lora-net/usp_zephyr.git
-      revision: v1.0.0
+      revision: v1.3.0
     - name: usp
       path: modules/lib/usp
       url: https://github.com/Lora-net/usp.git
-      revision: v1.0.0
+      revision: v1.3.0
       submodules: true
   self:
     path: application
@@ -291,7 +283,7 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
     >   | Type | Status<sup>1</sup> | Image | Command |
     >   |------|--------|--------|---------|
     >   | [**Nucleo-L476RG**](https://www.st.com/en/evaluation-tools/nucleo-l476rg.html) | Validated | <img src="doc/assets/Nucleo_L476RG.png" width="60"/> | `--board nucleo_l476rg/stm32l476xx` |
-    >   | [**Nucleo-U575ZI-Q**](https://www.st.com/en/evaluation-tools/nucleo-u575zi-q.html)| Buildable (except *Hardware Modem* sample where Nucleo-U575ZI-Q is not supported) |<img src="doc/assets/Nucleo_U575ZI_Q.png" width="60"/> | `--board nucleo_u575zi_q/stm32u575xx` |
+    >   | [**Nucleo-U575ZI-Q**](https://www.st.com/en/evaluation-tools/nucleo-u575zi-q.html)| Buildable |<img src="doc/assets/Nucleo_U575ZI_Q.png" width="60"/> | `--board nucleo_u575zi_q/stm32u575xx` |
 
 -   **RF shield build option**
 
@@ -301,7 +293,7 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
     >   | **Wio-LR2022 LoRa Plus Expansion Board** | Validated for Nucleo-L476RG | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2022</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2022</code> or<br><code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2022_cn</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2022_cn</code> |
     >   | **Wio-LR2012 LoRa Plus Expansion Board** | Validated for Nucleo-L476RG | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2012</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2012</code> or<br><code>--shield semtech_mbed_wio_interface --shield semtech_wio_lr2012_cn</code> or <code>--shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board  --shield semtech_wio_lr2012_cn</code> |
     >   | **LR11xx (multi-option)** | Buildable | <img src="doc/assets/LR1110.jpg" width="80"/> | `--shield semtech_lr1110mb1xxs` or <br> `--shield semtech_lr1120mb1xxs` or<br>`--shield semtech_lr1121mb1xxs` |
-    >   | **SX126x** | Buildabled | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. `--shield semtech_sx1261mb2bas_usp` (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
+    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. `--shield semtech_sx1261mb2bas_usp` (cf. [boards/shields/semtech_sx126xmbxxxs](boards/shields/semtech_sx126xmbxxxs)) |
 
     > <sup>1</sup> `Validated` : passed the Semtech nominal validation process.<br>`Buildable` : can be compiled but did not go through full Semtech validation process and can be considered experimental.<br>`Might work` : was compiled and tested on `periodical_uplink` sample only with low validation
     >
@@ -339,7 +331,7 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
     >   | **Wio-LR2022<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2022</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2022</code> or<br><code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2022_cn</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2022_cn</code> |
     >   | **Wio-LR2012<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2012</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2012</code> or<br><code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_wio_lr2012_cn</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_mbed_wio_interface --shield semtech_loraplus_expansion_board --shield semtech_wio_lr2012_cn</code> |
     >   | **LR11xx<br>(multi-option)** | Buildable | <img src="doc/assets/LR1110.jpg" width="80"/>   | <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_lr1110mb1xxs</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_lr1120mb1xxs</code> or <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_lr1121mb1xxs</code> |
-    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_sx1261mb2bas_usp</code> (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
+    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. <code>--shield semtech_nrf54l15dk_mbed_interface --shield semtech_sx1261mb2bas_usp</code> (cf. [boards/shields/semtech_sx126xmbxxxs](boards/shields/semtech_sx126xmbxxxs)) |
     <br>
 
 -   **RF shield build option for nRF52840 DK**
@@ -350,7 +342,7 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
     >   | **Wio-LR2022<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2022` or `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2022_cn` |
     >   | **Wio-LR2012<br>LoRa Plus Expansion Board** | Buildable | <img src="doc/assets/LoRa_Plus_Expansion_Board_wio.png" width="80"/> | `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2012` or `--shield semtech_mbed_wio_interface --shield semtech_wio_lr2012_cn` |
     >   | **LR11xx<br>(multi-option)** | Buildable | <img src="doc/assets/LR1110.jpg" width="80"/>   | `--shield semtech_lr1110mb1xxs`<br>`--shield semtech_lr1120mb1xxs`<br>`--shield semtech_lr1121mb1xxs` |
-    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. `--shield semtech_sx1261mb2bas_usp` (cf. [boards/shields/semtech_sx126xmb2xxs](boards/shields/semtech_sx126xmb2xxs)) |
+    >   | **SX126x** | Buildable | <img src="doc/assets/SX1261.jpg" width="80"/> | e.g. `--shield semtech_sx1261mb2bas_usp` (cf. [boards/shields/semtech_sx126xmbxxxs](boards/shields/semtech_sx126xmbxxxs)) |
     <br>
 
     > <sup>1</sup> `Validated` : passed the Semtech nominal validation process.<br>`Buildable` : can be compiled but did not go through full Semtech validation process and can be considered experimental.<br>`Might work` : was compiled and tested on `periodical_uplink` sample only with low validation
@@ -390,6 +382,8 @@ For more details on Samples, refer to [Samples Documentation](samples/usp/README
     <br>
 </details>
 <br>
+
+Note: contrary to USP (bare-metal) and SWL2001, **SX127X (SX1272/SX1276) and SX128X (SX1280/SX1281) radios are not supported** by USP for Zephyr: only LR20XX, LR11XX & SX126X radio drivers are provided ([drivers/usp](drivers/usp)).
 
 Thanks to the Zephyr ecosystem, the USP module can be ported to almost any MCU platform, enabling deployment across [850+ supported hardware](https://docs.zephyrproject.org/latest/boards/index.html#) targets, please follow the [USP porting guide](doc/usp_zephyr_porting_guide.md) for more information.
 
@@ -552,10 +546,35 @@ The user may want to update
 
 -   **Output Messages**
 
-    The samples uses Zephyr's `logging` api to oputput logging messages. Then, depending on the board, these messages are sent to the user, typically via a UART link. On all boards officialy supported by Semtech, the logs are sent simply via UART to a debugger IC present on the board, that exposes (at least) one CDC interface (Virtual Serial/COM Port) on its USB interface. Some boards may expose more than one port to the host computer, and only one will be used.
+    The samples use Zephyr's `logging` api to output logging messages. Then, depending on the board, these messages are sent to the user, typically via a UART link. On all boards officially supported by Semtech, the logs are sent simply via UART to a debugger IC present on the board, that exposes (at least) one CDC interface (Virtual Serial/COM Port) on its USB interface. Some boards may expose more than one port to the host computer, and only one will be used.
     Any serial terminal software can be used to read data. On Unix systems, `gtkterm` is recommended as it handles ANSI color formatting used by LBM in its output messages. On Windows, `TeraTerm` can be used. \
     Default config is **115200 baud, 8 data bits, 1 stop bit, no parity, no flow control**. \
-    The ANSI color formatting can be disabled in the sample prj.conf via the `CONFIG_LOG_BACKEND_SHOW_COLOR` Kconfig option.
+    The ANSI color formatting can be disabled in the sample prj.conf via the `CONFIG_LOG_BACKEND_SHOW_COLOR` Kconfig option. \
+    The log levels and trace options are described in the [samples README](samples/usp/README.md#logging-configuration).
+
+-   **Building without logs**
+
+    To remove all logs from the build (smaller flash and RAM footprint), use the following Kconfig options:
+
+    | Kconfig option                     | Removes                                                                 |
+    |------------------------------------|-------------------------------------------------------------------------|
+    | `CONFIG_USP_MODEM_HAL_DBG_TRACE=n` | LBM, RAC and radio planner traces (`SMTC_MODEM_HAL_TRACE_*`)            |
+    | `CONFIG_USP_HAL_DBG_TRACE=n`       | Samples and helpers traces (`SMTC_HAL_TRACE_*`)                         |
+    | `CONFIG_LOG=n`                     | Zephyr logging subsystem (thread, buffer, UART backend, `LOG_*` calls) |
+    | `CONFIG_PRINTK=n`                  | Direct `printk` calls                                                   |
+    | `CONFIG_BOOT_BANNER=n`             | Zephyr boot banner                                                      |
+
+    Optionally, `CONFIG_CONSOLE=n`, `CONFIG_UART_CONSOLE=n`, `CONFIG_STDOUT_CONSOLE=n` and `CONFIG_ASSERT_VERBOSE=n` remove the console and the assert messages.
+
+    ```bash
+    west build --pristine --board <board> --shield <shield> <sample> -- \
+        -DCONFIG_USP_MODEM_HAL_DBG_TRACE=n -DCONFIG_USP_HAL_DBG_TRACE=n \
+        -DCONFIG_LOG=n -DCONFIG_PRINTK=n -DCONFIG_BOOT_BANNER=n
+    ```
+
+    Notes:
+    - The `hw_modem` and `flrp_api_lorawan` samples use the Zephyr logging API directly and do not build with `CONFIG_LOG=n`: use `CONFIG_LOG_MAX_LEVEL=0` instead.
+    - The messages given to `SMTC_MODEM_HAL_PANIC` are kept, as they are stored in the crash log.
 
 -   **Debugging**
 
@@ -592,7 +611,8 @@ This [chapter](doc/usp_zephyr_porting_guide.md) explains how to port USP Zephyr 
 <summary><strong>Porting Legacy LoRa Basics Modem (LBM) to USP</strong></summary>
 <br>
 
--   This [chapter](./doc/usp_zephyr_lbm_porting_guide.md) explains how to port existing LoRa Basics Modem application to USP Zephyr.
+-   This [chapter](./doc/usp_zephyr_lbm_porting_guide.md) explains how to port existing SWL2001/LoRa Basics Modem application (e.g. from [SWL2001](https://github.com/Lora-net/SWL2001)) to USP Zephyr.
+-   SX127X & SX128X radios, supported by SWL2001 and USP, are not supported by USP for Zephyr.
 
 </details>
 

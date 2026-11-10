@@ -48,7 +48,7 @@ Configure your LoRaWAN credentials in `boards/user_keys.overlay`:
 | Configuration    | File                | Description                          |
 |------------------|---------------------|--------------------------------------|
 | Standard         | `prj.conf`          | Full logging and debug capabilities  |
-| Low Power        | `prj_lowpower.conf` | Power-optimized with minimal logging |
+| Low Power        | `prj_lowpower.conf` | Power-optimized, without logs        |
 
 ### LoRaWAN Regions
 

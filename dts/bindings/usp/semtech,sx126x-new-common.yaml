@@ -65,6 +65,7 @@ properties:
 
   tcxo-voltage:
     type: int
+    required: true
     description: |
       Supply voltage on the radio's DIO3, if set as TCXO control.
       See constants SX126X_TCXO_SUPPLY_* in dt-bindings/usp/sx126x.h.
@@ -73,6 +74,7 @@ properties:
 
   tcxo-wakeup-time:
     type: int
+    required: true
     description: |
       In milliseconds, the wakeup (or stabilization) time of the TCXO used
       by the radio.

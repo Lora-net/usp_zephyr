@@ -120,9 +120,10 @@ struct lr20xx_hal_context_cfg_t
     lr20xx_pa_pwr_cfg_t* pa_lf_cfg_table; /* Power amplifier configuration for Low frequency  */
     lr20xx_pa_pwr_cfg_t* pa_hf_cfg_table; /* Power amplifier configuration for High frequency */
 
-    // RSSI calibration not sure if needed right now - not in LR20xx driver as now.
-    //  lr20xx_radio_common_rssi_calibration_gain_table_t rssi_cal_table_lf;
-    //  lr20xx_radio_common_rssi_calibration_gain_table_t rssi_cal_table_hf;
+    lr20xx_radio_common_rssi_calibration_gain_table_t
+        rssi_calibration_table_lf; /* RSSI calibration gain table, LF RX path */
+    lr20xx_radio_common_rssi_calibration_gain_table_t
+        rssi_calibration_table_hf; /* RSSI calibration gain table, HF RX path */
 
     /* TX power to microamperes for Low Frequency, DC-DC regulator, VReg as supply */
     uint32_t* tx_dbm_to_ua_reg_mode_dcdc_lf_vreg;

@@ -42,8 +42,10 @@
 #if defined( CONFIG_USP_LORA_BASICS_MODEM )
 
 #include <zephyr/logging/log.h>
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
 #include <smtc_modem_test_api.h>
+
+#define SMTC_HAL_DBG_TRACE_C
 #include <smtc_hal_dbg_trace.h>
 
 #include "smtc_modem_helper.h"

@@ -37,8 +37,8 @@
 #include <zephyr/logging/log.h>
 
 /* Prevent LOG_MODULE_DECLARE and LOG_MODULE_REGISTER being called together */
-#define SMTC_MODEM_HAL_DBG_TRACE_C
-#include <smtc_modem_hal_dbg_trace.h>
+#define SMTC_CORE_HAL_TRACE_C
+#include <smtc_core_hal_trace.h>
 
 #ifdef CONFIG_USP
 LOG_MODULE_REGISTER( lorawan, CONFIG_USP_LOG_LEVEL );

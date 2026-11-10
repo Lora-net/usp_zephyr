@@ -55,7 +55,7 @@
 #include "main_per.h"
 
 #include <zephyr/lorawan_lbm/lorawan_hal_init.h>
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
 
 /*
  * -----------------------------------------------------------------------------

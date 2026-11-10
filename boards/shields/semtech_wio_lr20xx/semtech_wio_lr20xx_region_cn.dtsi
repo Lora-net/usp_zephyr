@@ -39,41 +39,41 @@
 	<( 40) 0x07 0x06>, /* Expected output power = 19dBm */
 	<( 42) 0x07 0x07>, /* Expected output power = 20dBm */
 	<( 44) 0x07 0x07>, /* Expected output power = 21dBm */
-	<( 44) 0x07 0x07>; /* Expected output power = 22dBm : not yet available */
+	<( 44) 0x07 0x07>; /* Expected output power = 22dBm */
 
 	tx-power-cfg-hf =
 	/* half_power, pa_duty_cycle, pa_hp_sel */
 	/* meas @2445MHz */
-	<(-36) 30   0x07>, /* Expected output power = -17dBm */
-	<(-36) 17   0x07>, /* Expected output power = -16dBm */
-	<(-32) 28   0x07>, /* Expected output power = -15dBm */
-	<(-30) 25   0x07>, /* Expected output power = -14dBm */
-	<(-28) 23   0x07>, /* Expected output power = -13dBm */
-	<(-22) 31   0x07>, /* Expected output power = -12dBm */
-	<(-22) 28   0x07>, /* Expected output power = -11dBm */
-	<(-20) 28   0x07>, /* Expected output power = -10dBm */
-	<(-18) 26   0x07>, /* Expected output power = -9dBm */
-	<(-14) 30   0x07>, /* Expected output power = -8dBm */
-	<(-12) 30   0x07>, /* Expected output power = -7dBm */
-	<(-12) 22   0x07>, /* Expected output power = -6dBm */
-	<(-10) 21   0x07>, /* Expected output power = -5dBm */
-	<( -8) 21   0x07>, /* Expected output power = -4dBm */
-	<( -2) 31   0x07>, /* Expected output power = -3dBm */
-	<(  0) 31   0x07>, /* Expected output power = -2dBm */
-	<(  2) 31   0x07>, /* Expected output power = -1dBm */
-	<(  0) 16   0x07>, /* Expected output power = 0dBm */
-	<(  2) 16   0x07>, /* Expected output power = 1dBm */
-	<(  6) 28   0x07>, /* Expected output power = 2dBm */
-	<(  8) 28   0x07>, /* Expected output power = 3dBm */
-	<( 10) 28   0x07>, /* Expected output power = 4dBm */
-	<( 12) 28   0x07>, /* Expected output power = 5dBm */
-	<( 14) 28   0x07>, /* Expected output power = 6dBm */
-	<( 14) 16   0x07>, /* Expected output power = 7dBm */
-	<( 16) 16   0x07>, /* Expected output power = 8dBm */
-	<( 18) 16   0x07>, /* Expected output power = 9dBm */
-	<( 20) 16   0x07>, /* Expected output power = 10dBm */
-	<( 22) 16   0x07>, /* Expected output power = 11dBm */
-	<( 24) 17   0x07>; /* Expected output power = 12dBm */
+	<(-39) 28   0x07>, /* Expected output power = -17dBm */
+	<(-38) 18   0x07>, /* Expected output power = -16dBm */
+	<(-35) 19   0x07>, /* Expected output power = -15dBm */
+	<(-31) 24   0x07>, /* Expected output power = -14dBm */
+	<(-29) 19   0x07>, /* Expected output power = -13dBm */
+	<(-26) 24   0x07>, /* Expected output power = -12dBm */
+	<(-24) 17   0x07>, /* Expected output power = -11dBm */
+	<(-21) 23   0x07>, /* Expected output power = -10dBm */
+	<(-19) 18   0x07>, /* Expected output power = -9dBm */
+	<(-17) 16   0x07>, /* Expected output power = -8dBm */
+	<(-14) 21   0x07>, /* Expected output power = -7dBm */
+	<(-12) 18   0x07>, /* Expected output power = -6dBm */
+	<(-10) 16   0x07>, /* Expected output power = -5dBm */
+	<( -8) 16   0x07>, /* Expected output power = -4dBm */
+	<( -5) 24   0x07>, /* Expected output power = -3dBm */
+	<( -2) 27   0x07>, /* Expected output power = -2dBm */
+	<(  1) 29   0x07>, /* Expected output power = -1dBm */
+	<(  2) 26   0x07>, /* Expected output power = 0dBm */
+	<(  4) 25   0x07>, /* Expected output power = 1dBm */
+	<(  7) 28   0x07>, /* Expected output power = 2dBm */
+	<(  8) 20   0x07>, /* Expected output power = 3dBm */
+	<( 11) 28   0x07>, /* Expected output power = 4dBm */
+	<( 13) 27   0x07>, /* Expected output power = 5dBm */
+	<( 16) 30   0x07>, /* Expected output power = 6dBm */
+	<( 17) 28   0x07>, /* Expected output power = 7dBm */
+	<( 17) 16   0x07>, /* Expected output power = 8dBm */
+	<( 22) 30   0x07>, /* Expected output power = 9dBm */
+	<( 24) 30   0x07>, /* Expected output power = 10dBm */
+	<( 24) 26   0x07>, /* Expected output power = 11dBm */
+	<( 24) 16   0x07>; /* Expected output power = 12dBm */
 
 	// Power consumptions tables
 	// DC/DC mode, LF path
@@ -154,4 +154,66 @@
 	920000000
 	2441000000
 	>;
+
+	/* RSSI calibration gain table, LF path, 490MHz */
+	rssi-calibration-lf-table =
+	/* gain_value noise_figure */
+	<(-46) 221>, /* G1 */
+	<(-22) 205>, /* G2 */
+	<(  2) 190>, /* G3 */
+	<( 24) 169>, /* G4 */
+	<( 44) 147>, /* G5 */
+	<( 63) 130>, /* G6 */
+	<( 84) 113>, /* G7 */
+	<(104)  87>, /* G8 */
+	<(138)  46>, /* G9 */
+	<(158)  30>, /* G10 */
+	<(181)  18>, /* G11 */
+	<(200)  13>, /* G12 boost0 */
+	<(196)  13>, /* G12 boost1 */
+	<(208)  13>, /* G12 boost2 */
+	<(210)  13>, /* G12 boost3 */
+	<(211)  13>, /* G12 boost4 */
+	<(215)  12>, /* G12 boost5 */
+	<(217)  12>, /* G12 boost6 */
+	<(218)  12>, /* G12 boost7 */
+	<(224)  12>, /* G13 boost0 */
+	<(228)  12>, /* G13 boost1 */
+	<(231)  12>, /* G13 boost2 */
+	<(234)  12>, /* G13 boost3 */
+	<(237)  11>, /* G13 boost4 */
+	<(238)  11>, /* G13 boost5 */
+	<(240)  10>, /* G13 boost6 */
+	<(242)  10>; /* G13 boost7 */
+
+	/* RSSI calibration gain table, HF path, 2.4GHz */
+	rssi-calibration-hf-table =
+	/* gain_value noise_figure */
+	<(-58) 240>, /* G1 */
+	<(-34) 221>, /* G2 */
+	<(-10) 208>, /* G3 */
+	<(  7) 190>, /* G4 */
+	<( 25) 171>, /* G5 */
+	<( 40) 153>, /* G6 */
+	<( 53) 137>, /* G7 */
+	<( 77) 113>, /* G8 */
+	<(102)  89>, /* G9 */
+	<(126)  65>, /* G10 */
+	<(146)  47>, /* G11 */
+	<(163)  34>, /* G12 boost0 */
+	<(166)  32>, /* G12 boost1 */
+	<(168)  31>, /* G12 boost2 */
+	<(170)  30>, /* G12 boost3 */
+	<(171)  30>, /* G12 boost4 */
+	<(172)  29>, /* G12 boost5 */
+	<(176)  26>, /* G12 boost6 */
+	<(175)  27>, /* G12 boost7 */
+	<(187)  29>, /* G13 boost0 */
+	<(190)  29>, /* G13 boost1 */
+	<(193)  27>, /* G13 boost2 */
+	<(194)  26>, /* G13 boost3 */
+	<(195)  26>, /* G13 boost4 */
+	<(196)  25>, /* G13 boost5 */
+	<(198)  24>, /* G13 boost6 */
+	<(199)  24>; /* G13 boost7 */
 };

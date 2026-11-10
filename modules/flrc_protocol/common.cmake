@@ -14,6 +14,7 @@ add_library(flrp_compile_definitions INTERFACE)
 target_compile_definitions(flrp_compile_definitions INTERFACE
   USE_FLRC_PROTOCOL
   NUMBER_OF_STACKS=1
+  USE_FLRP
 )
 
 zephyr_include_directories(

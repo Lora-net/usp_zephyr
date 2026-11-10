@@ -6,9 +6,9 @@ if(CONFIG_ZEPHYR_USP_MODULE)
 
     set(USP_DIR ${ZEPHYR_CURRENT_MODULE_DIR})
     set(RAC_LIB_DIR ${USP_DIR}/smtc_rac_lib)
-    set(SMTC_RADIO_DRIVERS_DIR ${RAC_LIB_DIR}/radio_drivers)
-    set(SMTC_RAL_DIR ${RAC_LIB_DIR}/smtc_ral)
-    set(SMTC_RALF_DIR ${RAC_LIB_DIR}/smtc_ralf)
+    set(SMTC_RADIO_DRIVERS_DIR ${RAC_LIB_DIR}/smtc_radio_interface/radio_drivers)
+    set(SMTC_RAL_DIR ${RAC_LIB_DIR}/smtc_radio_interface/smtc_ral)
+    set(SMTC_RALF_DIR ${RAC_LIB_DIR}/smtc_radio_interface/smtc_ralf)
 
     if(CONFIG_USP_LORA_BASICS_MODEM)
       set(LBM_LIB_DIR ${USP_DIR}/protocols/lbm_lib)
@@ -35,8 +35,8 @@ if(CONFIG_ZEPHYR_USP_MODULE)
 
     if(CONFIG_LORA_BASICS_MODEM_DRIVERS_RAL_RALF)
       zephyr_include_directories(
-        ${RAC_LIB_DIR}/smtc_ral/src
-        ${RAC_LIB_DIR}/smtc_ralf/src
+        ${SMTC_RAL_DIR}/src
+        ${SMTC_RALF_DIR}/src
       )
       zephyr_library_sources(
         ${SMTC_RAL_SOURCES}

@@ -128,25 +128,10 @@ zephyr_library_sources(
   ${LBM_SMTC_MODEM_CORE_DIR}/smtc_modem_crypto/smtc_modem_crypto.c
 )
 
-# RADIO_PLANNER_C_SOURCES & RAL/RALF SOURCES
-if(NOT CONFIG_USP_LORA_BASICS_MODEM)
-  zephyr_library_sources(
-    ${LBM_SMTC_MODEM_CORE_DIR}/radio_planner/src/radio_planner.c
-  )
-  zephyr_include_directories(
-    # NOTE: it is only used by the samples, could be cleaned up.
-    ${LBM_LIB_DIR}/smtc_modem_hal
-  )
-  zephyr_library_include_directories(
-    ${LBM_SMTC_MODEM_CORE_DIR}/radio_planner/src
-    ${LBM_SMTC_MODEM_CORE_DIR}/smtc_ral/src
-    ${LBM_SMTC_MODEM_CORE_DIR}/smtc_ralf/src
-  )
-endif() # if(NOT CONFIG_USP_LORA_BASICS_MODEM)
-
 zephyr_include_directories(
-  ${LBM_LIB_DIR}/smtc_modem_api
-)
+    ${LBM_LIB_DIR}/smtc_modem_hal
+    ${LBM_LIB_DIR}/smtc_modem_api
+  )
 
 zephyr_library_include_directories(
   ${LBM_LIB_DIR}
@@ -374,7 +359,7 @@ zephyr_library_sources_ifdef(CONFIG_LORA_BASICS_MODEM_BEACON_TX
   ${LBM_SMTC_MODEM_CORE_DIR}/modem_services/beacon_tx_service/lorawan_beacon_tx_service_example.c
 )
 
-zephyr_library_sources_ifdef(CONFIG_LORA_BASICS_MODEM_MULTICAST
+zephyr_library_include_directories_ifdef(CONFIG_LORA_BASICS_MODEM_BEACON_TX
   ${LBM_SMTC_MODEM_CORE_DIR}/modem_services/beacon_tx_service
 )
 

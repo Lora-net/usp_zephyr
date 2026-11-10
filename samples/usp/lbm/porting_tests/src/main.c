@@ -38,7 +38,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <smtc_modem_hal.h>
+#include <smtc_core_hal.h>
 #include <smtc_rac_api.h>
 
 #include <zephyr/usp/lora_lbm_transceiver.h>
